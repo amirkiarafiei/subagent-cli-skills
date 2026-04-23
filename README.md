@@ -7,7 +7,7 @@ A collection of Skills for cross-agent task delegation. Let Claude Code use Gemi
 Your primary agent can delegate tasks to other agents that support programmatic usage through the terminal. This offloads context-heavy work, ensuring the main orchestrator stays lean and efficient.
 
 <p align="center">
-  <img src="./assets/diagram.png" width="320" alt="Delegation Flow Diagram">
+  <img src="./assets/diagram.png" width="480" alt="Delegation Flow Diagram">
 </p>
 
 By treating CLI tools as specialized subagents, you can bypass context window limitations and significantly reduce token costs. The primary agent remains the high-level decision maker, while the subagents handle the tactical implementation, research, and codebase exploration.
@@ -20,31 +20,27 @@ By treating CLI tools as specialized subagents, you can bypass context window li
 
 ## Usage
 
-Activate the necessary skills using the `/` command (e.g., `/copilot-cli`, `/gemini-cli`) supported in many tools. Once activated, simply ask the primary agent to delegate:
+Activate the necessary skills using the `/` command (e.g., `/activate_skill copilot-cli`) supported in many tools. Once activated, simply ask the primary agent to delegate:
 
 > *"Use Gemini CLI to search for the latest documentation of [library] and summarize breaking changes."*
 
 The agent will use the skill to construct a programmatic CLI call, execute the task, and return the summary to the main thread.
 
-## Delegation Technique
-
-The delegation technique and philosophy used in this project are inspired by the principles outlined in **[Don't Build Multi-Agents](https://cognition.ai/blog/dont-build-multi-agents#applying-the-principles)** by Cognition AI:
-
-We implement a stateless delegation pattern that offloads tactical work to CLI subagents by injecting a comprehensive "shared state" into every atomic command to prevent
-  context fragmentation.
-
-   * **Shared State Handoff**: Inject the original goal, prior architectural decisions, and explicit codebase scope into the prompt to bridge the subagent's lack of session
-     history.
-   * **Contextual Preservation**: Execute high-volume tasks in isolated headless environments to save orchestrator tokens and avoid "split story" failures caused by missing
-     history.
-   * **Result Reconciliation**: Pull new technical assumptions and filesystem changes back into the main thread after every delegation to maintain a single source of truth.
-
 ## Roadmap & Support
 
-- [x] **Gemini CLI** 
-- [x] **Copilot CLI**
-- [ ] **Codex CLI**
+- [x] **Gemini CLI** (Programmatic)
+- [x] **Copilot CLI** (Programmatic)
+- [x] **Qwen-Code CLI** (Programmatic)
+- [x] **Codex CLI** (Programmatic)
 - [ ] **Junie CLI**
 - [ ] **Kiro CLI**
 - [ ] **Cursor CLI**
-- [ ] **QwenCode CLI**
+- [ ] **Antigravity IDE**
+
+## Core Philosophy
+
+The delegation technique and philosophy used in this project are inspired by the principles outlined in **[Don't Build Multi-Agents](https://cognition.ai/blog/dont-build-multi-agents#applying-the-principles)** by Cognition AI.
+
+*   **Context Optimization**: Moves high-volume edits and exploration to an isolated process.
+*   **Cost Efficiency**: Reduces the token burden on the main orchestrator.
+*   **Specialized Execution**: Leverages tool-specific strengths (e.g., Gemini's Google Search).
