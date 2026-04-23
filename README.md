@@ -33,7 +33,7 @@ The agent will use the skill to construct a programmatic CLI call, execute the t
 - [x] **Qwen-Code CLI** (Programmatic)
 - [x] **Codex CLI** (Programmatic)
 - [ ] **Junie CLI**
-- [ ] **Kiro CLI**
+- [x] **Kiro CLI** (Programmatic)
 - [ ] **Cursor CLI**
 - [ ] **Antigravity IDE**
 
