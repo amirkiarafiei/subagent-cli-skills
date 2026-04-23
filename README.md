@@ -6,6 +6,12 @@ A collection of Skills for cross-agent task delegation. Let Claude Code use Gemi
 
 Your primary agent can delegate tasks to other agents that support programmatic usage through the terminal. This offloads context-heavy work, ensuring the main orchestrator stays lean and efficient.
 
+<p align="center">
+  <img src="./assets/diagram.png" width="480" alt="Delegation Flow Diagram">
+</p>
+
+By treating CLI tools as specialized subagents, you can bypass context window limitations and significantly reduce token costs. The primary agent remains the high-level decision maker, while the subagents handle the tactical implementation, research, and codebase exploration.
+
 ## Installation
 
 1. Identify your agent's skill directory.
