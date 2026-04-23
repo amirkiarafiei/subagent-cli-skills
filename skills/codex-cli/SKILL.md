@@ -13,13 +13,13 @@ allowed-tools:
 
 Use **OpenAI Codex CLI** to run a **separate long-horizon pass** over the repo: multi-step implementation, broad refactors, batch file writes, or deep exploration—similar to handing a **task to a subagent**. You stay orchestrator: smaller prompts, less context burn, often lower spend than doing the same work entirely in-session.
 
-Codex CLI (powered by `o1` and `gpt-4o` architectures) excels at high-level reasoning and multi-turn autonomous problem solving.
+Codex CLI (powered by the latest GPT-5 architectures) excels at high-level reasoning, multi-turn autonomous problem solving, and native environment interaction.
 
 ## When to use Codex CLI
 
 - **Large or multi-step work**: several files, phases, or checkpoints (feature slice, migration, test suite, docs sweep).
 - **Heavy code generation or editing**: Codex drives `--full-auto` tool use while you summarize outcomes and merge.
-- **Reasoning-heavy tasks**: Use when logical consistency and "Chain of Thought" are critical for the subtask.
+- **Reasoning-heavy tasks**: Successor to the o-series; use when PhD-level logic and native "Thinking" modes are required.
 - **Parallel mental lane**: you continue planning or reviewing while Codex runs a bounded task (optionally background—see [reference.md](reference.md)).
 - **User explicitly asks** for Codex or “use Codex for this.”
 
@@ -50,11 +50,11 @@ If the delegation would need a long transcript to be safe, **summarize** the rel
 
 ## Model Selection & Discovery (Mandatory)
 
-**MANDATORY: Search the web for latest OpenAI Codex model names and pricing before selecting a model.** 
+**MANDATORY: Search the web for latest OpenAI model names and pricing before selecting a model.** GPT-4o is legacy/old for Codex CLI.
 
-- **Default (Reasoning/Complex)**: `o1-preview` (Deep reasoning, high logic).
-- **Balanced (Speed/Edits)**: `gpt-4o` (Fast, multimodal, stable).
-- **Strategy**: Default to `o1-preview` for complex architecture and `gpt-4o` for standard implementation or research.
+- **Default (Reasoning/Complex)**: `gpt-5.4-thinking` (Successor to o3; PHd-level logic).
+- **Standard (Speed/Implementation)**: `gpt-5.4` (Balanced, incorporates GPT-5.3-Codex logic).
+- **Strategy**: Default to `gpt-5.4` for standard tasks and `gpt-5.4-thinking` for complex architecture. Verify current version via search to avoid stale names.
 
 ## Programmatic usage (required)
 
@@ -70,7 +70,7 @@ You **MUST** use Codex CLI programmatically via the `exec` command. Do **NOT** s
 ## Command pattern
 
 ```bash
-codex exec "[prompt]" --full-auto --model o1-preview 2>&1
+codex exec "[prompt]" --full-auto --model gpt-5.4 2>&1
 ```
 
 ## After Codex returns
@@ -83,7 +83,7 @@ codex exec "[prompt]" --full-auto --model o1-preview 2>&1
 ## Quick prompts
 
 - **Delegate implementation**: `codex exec "Implement [feature] per [spec]. Touch only [dirs]. Run in full-auto mode." --full-auto`
-- **Logic Check**: `codex exec "Analyze this logic for edge cases and potential race conditions." --model o1-preview`
+- **Logic Check**: `codex exec "Analyze this logic for edge cases and potential race conditions." --model gpt-5.4-thinking`
 - **Audit**: `codex exec "Perform a security audit of the authentication layer." --full-auto`
 
 ## More detail

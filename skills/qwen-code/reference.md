@@ -6,8 +6,9 @@ Concise reference for agents. Auth: `DASHSCOPE_API_KEY` or `OPENAI_API_KEY`.
 
 Model names change frequently. **Always search for latest pricing/aliases.**
 
-- **Default (Simple Tasks)**: `qwen-coder-plus`
-- **Heavy Tasks**: `qwen-coder-max`
+- **Agentic Coding**: `qwen3-coder-plus` (Optimized for tool use and implementation)
+- **High Reasoning**: `qwen3.6-max-preview` (Includes "Thinking" mode for complex logic)
+- **Latest Balanced**: `qwen3.6-plus` (April 2026 flagship)
 
 ## Essential Flags
 

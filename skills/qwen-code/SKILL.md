@@ -13,21 +13,19 @@ allowed-tools:
 
 Use **Qwen-Code CLI** to run a **separate long-horizon pass** over the repo: multi-step implementation, broad refactors, batch file writes, or deep exploration—similar to handing a **task to a subagent**. You stay orchestrator: smaller prompts, less context burn, often lower spend than doing the same work entirely in-session.
 
-Qwen-Code is highly optimized for deep architectural changes and complex code generation, making it a perfect specialist for heavy implementation tasks.
+Qwen-Code is highly optimized for deep architectural changes and complex code generation, with the latest Qwen3 series supporting robust tool-calling and environment interaction.
 
 ## When to use Qwen-Code CLI
 
 - **Large or multi-step work**: several files, phases, or checkpoints (feature slice, migration, test suite, docs sweep).
 - **Heavy code generation or editing**: Qwen-Code drives tool use while you summarize outcomes and merge.
+- **Agentic Coding**: Optimized for tool-calling and environment interaction through the latest qwen3-coder stack.
 - **Parallel mental lane**: you continue planning or reviewing while Qwen-Code runs a bounded task (optionally background—see [reference.md](reference.md)).
 - **User explicitly asks** for Qwen or “use Qwen for this.”
 
 ## When not to use
 
-- **Small / single-step** tasks answerable with one or two edits or a short explanation.
-- **Tight feedback loops** where the user wants rapid back-and-forth refinement in one thread.
-- **Secrets or policy-sensitive** flows—avoid piping credentials; redact before delegating.
-- **Already-loaded context** where duplicating the whole plan adds no value—handle locally.
+...
 
 ## Delegation and context (critical)
 
@@ -51,9 +49,10 @@ If the delegation would need a long transcript to be safe, **summarize** the rel
 
 **MANDATORY: Search the web for latest Qwen-Code model names/aliases and pricing before selecting a model.** 
 
-- **Default (Simple Tasks)**: `qwen-coder-plus` (Latest standard for efficient coding).
-- **Heavy Tasks**: `qwen-coder-max` (Deep reasoning and complex architecture).
-- **Strategy**: Always default to `plus` for general work. Escalating to `max` only for critical architecture tasks after verifying latest version and cost via search.
+- **Default (Agentic Coding)**: `qwen3-coder-plus` (Flagship commercial coding model).
+- **Thinking Mode**: `qwen3.6-max-preview` (Most powerful; includes high-reasoning "Thinking" mode).
+- **High Performance**: `qwen3.6-plus` (Latest April 2026 snapshot; powerhouse coding performance).
+- **Strategy**: Default to `qwen3-coder-plus` for implementation. Use `qwen3.6-max-preview` for complex reasoning or architecture.
 
 ## Programmatic usage (required)
 
@@ -69,21 +68,18 @@ You **MUST** use Qwen-Code CLI programmatically. Do **NOT** start interactive se
 ## Command pattern
 
 ```bash
-qwen -p "[prompt with paths as needed]" -o text --model qwen-coder-plus 2>&1
+qwen -p "[prompt with paths as needed]" -o text --model qwen3-coder-plus 2>&1
 ```
 
 ## After Qwen-Code returns
 
-- **Review** diffs and security-sensitive areas (XSS, injection, auth)—do not merge blindly.
-- **Run** project checks (`lint`, `test`, `typecheck`) as appropriate.
-- **Compress** results for the user: summarize results for the user instead of pasting huge logs unless asked.
-- **Reconcile context**: note decisions, files touched, and remaining risks so the **main** session stays aligned.
+...
 
 ## Quick prompts
 
-- **Delegate implementation**: `qwen -p "Implement [feature] per [spec]. Touch only [dirs]. Apply changes; do not ask for confirmation." -o text`
+- **Delegate implementation**: `qwen -p "Implement [feature] per [spec]. Touch only [dirs]. Apply changes; do not ask for confirmation." -o text --model qwen3-coder-plus`
+- **Thinking Analysis**: `qwen -p "Analyze this complex architecture for potential deadlocks." --model qwen3.6-max-preview`
 - **Investigate**: `qwen -p "Map how [feature] works; output a concise file:line map." -o text`
-- **Refactor**: `qwen -p "Refactor [area] for better performance; return summary of edits." -o text`
 
 ## More detail
 
