@@ -20,7 +20,7 @@ By treating CLI tools as specialized subagents, you can bypass context window li
 
 ## Usage
 
-Activate the necessary skills using the `/` command (e.g., `/activate_skill copilot-cli`) supported in many tools. Once activated, simply ask the primary agent to delegate:
+Activate the necessary skills using the `/` command (e.g., `/copilot-cli`, `/gemini-cli`) supported in many tools. Once activated, simply ask the primary agent to delegate:
 
 > *"Use Gemini CLI to search for the latest documentation of [library] and summarize breaking changes."*
 
