@@ -26,6 +26,21 @@ Activate the necessary skills using the `/` command (e.g., `/activate_skill copi
 
 The agent will use the skill to construct a programmatic CLI call, execute the task, and return the summary to the main thread.
 
+
+## Delegation Technique
+
+The delegation technique and philosophy used in this project are inspired by the principles outlined in **[Don't Build Multi-Agents](https://cognition.ai/blog/dont-build-multi-agents#applying-the-principles)** by Cognition AI:
+
+We implement a stateless delegation pattern that offloads tactical work to CLI subagents by injecting a comprehensive "shared state" into every atomic command to prevent
+  context fragmentation.
+
+   * **Shared State Handoff**: Inject the original goal, prior architectural decisions, and explicit codebase scope into the prompt to bridge the subagent's lack of session
+     history.
+   * **Contextual Preservation**: Execute high-volume tasks in isolated headless environments to save orchestrator tokens and avoid "split story" failures caused by missing
+     history.
+   * **Result Reconciliation**: Pull new technical assumptions and filesystem changes back into the main thread after every delegation to maintain a single source of truth.
+
+
 ## Roadmap & Support
 
 - [x] **Gemini CLI** (Programmatic)
@@ -36,11 +51,3 @@ The agent will use the skill to construct a programmatic CLI call, execute the t
 - [x] **Kiro CLI** (Programmatic)
 - [ ] **Cursor CLI**
 - [ ] **Antigravity IDE**
-
-## Core Philosophy
-
-The delegation technique and philosophy used in this project are inspired by the principles outlined in **[Don't Build Multi-Agents](https://cognition.ai/blog/dont-build-multi-agents#applying-the-principles)** by Cognition AI.
-
-*   **Context Optimization**: Moves high-volume edits and exploration to an isolated process.
-*   **Cost Efficiency**: Reduces the token burden on the main orchestrator.
-*   **Specialized Execution**: Leverages tool-specific strengths (e.g., Gemini's Google Search).
