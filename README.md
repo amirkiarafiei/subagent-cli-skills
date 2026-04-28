@@ -64,15 +64,16 @@ This methodology is further refined by lessons from **[Superpowers](https://gith
 
 ## 🔌 Support
 
-- [x] **Gemini CLI** (Programmatic)
-- [x] **Copilot CLI** (Programmatic)
-- [x] **Qwen-Code CLI** (Programmatic)
-- [x] **Codex CLI** (Programmatic)
-- [x] **Junie CLI** (Programmatic)
-- [x] **Kiro CLI** (Programmatic)
-- [x] **Cursor CLI** (Programmatic)
-- [x] **OpenHands CLI** (Programmatic)
-- [x] **OpenCode CLI** (Programmatic)
+- [x] **Claude Code** (Programmatic)
+- [x] **Cursor** (Programmatic)
+- [x] **Github Copilot** (Programmatic)
+- [x] **Gemini** (Programmatic)
+- [x] **Codex** (Programmatic)
+- [x] **Junie** (Programmatic)
+- [x] **Kiro** (Programmatic)
+- [x] **OpenHands** (Programmatic)
+- [x] **OpenCode** (Programmatic)
+- [x] **QwenCode** (Programmatic)
 
 ## License
 

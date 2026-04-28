@@ -24,15 +24,19 @@ else
     REPO_RAW_URL="https://raw.githubusercontent.com/amirkiarafiei/subagent-cli-skills/main"
 fi
 
-# Define Tool Paths
+# Define Tool Paths (Verified via official documentation)
 declare -A TOOL_PATHS
 TOOL_PATHS["Claude Code"]="$HOME/.claude/skills"
-TOOL_PATHS["Cursor IDE"]="$HOME/.cursor/skills"
-TOOL_PATHS["Junie CLI"]="$HOME/.junie/skills"
+TOOL_PATHS["Cursor"]="$HOME/.cursor/skills"
+TOOL_PATHS["Antigravity"]="$HOME/.gemini/antigravity/skills"
+TOOL_PATHS["Github Copilot"]="$HOME/.copilot/skills"
+TOOL_PATHS["Gemini"]="$HOME/.gemini/skills"
+TOOL_PATHS["Codex"]="$HOME/.agents/skills"
+TOOL_PATHS["Junie"]="$HOME/.junie/skills"
+TOOL_PATHS["Kiro"]="$HOME/.kiro/skills"
 TOOL_PATHS["OpenHands"]="$HOME/.openhands/skills/installed"
-TOOL_PATHS["OpenCode"]="$HOME/.config/opencode/skill"
-TOOL_PATHS["Antigravity IDE"]="$HOME/.gemini/antigravity/skills"
-TOOL_PATHS["GitHub Copilot CLI"]="$HOME/.copilot/skills"
+TOOL_PATHS["OpenCode"]="$HOME/.config/opencode/skills"
+TOOL_PATHS["QwenCode"]="$HOME/.qwen/skills"
 
 # Function to list available skills
 list_skills() {
@@ -54,10 +58,10 @@ list_skills() {
 # Use /dev/tty for all interactive input to avoid issues with pipes
 {
     # 1. Select Tool
-    echo -e "\n${BLUE}Step 1: Select the AI Agent or IDE you are using:${NC}"
-    tools=("Claude Code" "Cursor IDE" "Junie CLI" "OpenHands" "OpenCode" "Antigravity IDE" "GitHub Copilot CLI" "Custom Path" "Exit")
+    echo -e "\n${BLUE}Step 1: Select the AI Agent or IDE you are using (The orchestrator):${NC}"
+    tools=("Claude Code" "Cursor" "Antigravity" "Github Copilot" "Gemini" "Codex" "Junie" "Kiro" "OpenHands" "OpenCode" "QwenCode" "Custom Path" "Exit")
     
-    PS3="Select a tool [1-9]: "
+    PS3="Select a tool [1-13]: "
     select tool in "${tools[@]}"; do
         case $tool in
             "Exit") exit 0 ;;
@@ -97,7 +101,7 @@ list_skills() {
     done
 
     # 3. Skill Selection Loop
-    echo -e "\n${BLUE}Step 3: Select skills to install (Interactive Loop):${NC}"
+    echo -e "\n${BLUE}Step 3: Select Skills to install (The CLI Subagents):${NC}"
     available_skills=($(list_skills))
 
     while true; do
