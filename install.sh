@@ -56,6 +56,19 @@ list_skills() {
 # 1. Select Tool
 echo -e "\n${BLUE}Step 1: Select the AI Agent or IDE you are using:${NC}"
 tools=("Claude Code" "Cursor IDE" "Junie CLI" "OpenHands" "OpenCode" "Antigravity IDE" "GitHub Copilot CLI" "Custom Path" "Exit")
+
+# Redirect stdin to /dev/tty for select and read to work when piped
+if [ -t 0 ]; then
+    # Not piped, standard stdin
+    INPUT_SRC="/dev/stdin"
+else
+    # Piped, use /dev/tty for interactivity
+    INPUT_SRC="/dev/tty"
+fi
+
+exec 3<&0
+exec < "$INPUT_SRC"
+
 select tool in "${tools[@]}"; do
     case $tool in
         "Exit") exit 0 ;;
@@ -134,5 +147,9 @@ while true; do
         echo -e "${RED}Invalid selection.${NC}"
     fi
 done
+
+# Restore stdin
+exec <&3
+exec 3<&-
 
 echo -e "\n${BLUE}Installation complete. Restart your AI Agent to refresh skills.${NC}"
