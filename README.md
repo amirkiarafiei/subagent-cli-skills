@@ -64,10 +64,11 @@ This methodology is further refined by lessons from **[Superpowers](https://gith
 
 ## 🔌 Support
 
-- [x] **Claude Code** (Programmatic)
-- [x] **Cursor** (Programmatic)
-- [x] **Github Copilot** (Programmatic)
 - [x] **Gemini** (Programmatic)
+- [x] **Copilot** (Programmatic)
+- [x] **Cursor** (Programmatic)
+- [x] **Claude Code** (Programmatic)
+- [x] **Antigravity** (IDE only - can use skills but not act as subagent)
 - [x] **Codex** (Programmatic)
 - [x] **Junie** (Programmatic)
 - [x] **Kiro** (Programmatic)
