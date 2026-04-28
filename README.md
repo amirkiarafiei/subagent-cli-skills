@@ -41,7 +41,7 @@ We implement a stateless delegation pattern that offloads tactical work to CLI s
    * **Result Reconciliation**: Pull new technical assumptions and filesystem changes back into the main thread after every delegation to maintain a single source of truth.
 
 
-## Roadmap & Support
+## Support
 
 - [x] **Gemini CLI** (Programmatic)
 - [x] **Copilot CLI** (Programmatic)
@@ -49,5 +49,6 @@ We implement a stateless delegation pattern that offloads tactical work to CLI s
 - [x] **Codex CLI** (Programmatic)
 - [x] **Junie CLI** (Programmatic)
 - [x] **Kiro CLI** (Programmatic)
-- [ ] **Cursor CLI**
-- [ ] **Antigravity IDE**
+- [x] **Cursor CLI** (Programmatic)
+- [x] **OpenHands CLI** (Programmatic)
+- [x] **OpenCode CLI** (Programmatic)
