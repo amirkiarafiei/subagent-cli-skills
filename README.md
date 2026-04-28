@@ -14,13 +14,32 @@ By treating CLI tools as specialized subagents, you can bypass context window li
 
 ## Installation
 
-1. Identify your agent's skill directory.
-2. Copy the desired skill folder from this repository to that directory.
+### Quick Install (Interactive)
+
+The easiest way to install skills is using our interactive installer. 
+
+**Run via curl:**
+```bash
+curl -sSL https://raw.githubusercontent.com/amirkiarafiei/subagent-cli-skills/main/install.sh | bash
+```
+
+OR
+
+**Run locally (if you cloned the repo):**
+```bash
+chmod +x install.sh
+./install.sh
+```
+
+### Manual Installation
+
+1. Identify your agent's skill directory (e.g., `~/.claude/skills/` or `~/.cursor/skills/`).
+2. Copy the desired skill folder from the `skills/` directory in this repository to that location.
 3. Restart your agent or refresh skills.
 
 ## Usage
 
-Activate the necessary skills using the `/` command (e.g., `/copilot-cli` or `/gemini-cli`) supported in many tools. Once activated, simply ask the primary agent to delegate:
+Activate the necessary skills using the `/` command (e.g., `/copilot-cli` or `/gemini-cli`) supported in many tools. Once activated, your agent itself can decide the right time to delegate to the subagent or you can explicitly ask it to delegate: 
 
 > *"Use Gemini CLI to search for the latest documentation of [library] and summarize breaking changes."*
 
@@ -54,3 +73,8 @@ This methodology is further refined by lessons from **[Superpowers](https://gith
 - [x] **Cursor CLI** (Programmatic)
 - [x] **OpenHands CLI** (Programmatic)
 - [x] **OpenCode CLI** (Programmatic)
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
