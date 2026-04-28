@@ -47,7 +47,7 @@ If the delegation would need a long transcript to be safe, **summarize** the rel
 
 ## Model Selection & Discovery (Mandatory)
 
-**MANDATORY: Search the web for latest Qwen-Code model names/aliases and pricing before selecting a model.** 
+**MANDATORY: Search the web for latest Qwen-Code model names/aliases and pricing before selecting a model.** You should also consult [Artificial Analysis](https://artificialanalysis.ai/) for the most up-to-date benchmarks, pricing, and model performance data. 
 
 - **Default (Agentic Coding)**: `qwen3-coder-plus` (Flagship commercial coding model).
 - **Thinking Mode**: `qwen3.6-max-preview` (Most powerful; includes high-reasoning "Thinking" mode).
@@ -77,9 +77,9 @@ qwen -p "[prompt with paths as needed]" -o text --model qwen3-coder-plus 2>&1
 
 ## Quick prompts
 
-- **Delegate implementation**: `qwen -p "Implement [feature] per [spec]. Touch only [dirs]. Apply changes; do not ask for confirmation." -o text --model qwen3-coder-plus`
-- **Thinking Analysis**: `qwen -p "Analyze this complex architecture for potential deadlocks." --model qwen3.6-max-preview`
-- **Investigate**: `qwen -p "Map how [feature] works; output a concise file:line map." -o text`
+- **Delegate implementation**: `qwen -p "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | OUTPUT: [format]" -o text --model qwen3-coder-plus`
+- **Thinking Analysis**: `qwen -p "GOAL: Analyze complex architecture for potential deadlocks | SCOPE: [paths] | OUTPUT: analysis report" --model qwen3.6-max-preview`
+- **Investigate**: `qwen -p "GOAL: Map how [feature] works | SCOPE: [paths] | OUTPUT: concise file:line map" -o text`
 
 ## More detail
 

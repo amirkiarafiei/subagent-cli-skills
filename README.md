@@ -20,22 +20,23 @@ By treating CLI tools as specialized subagents, you can bypass context window li
 
 ## Usage
 
-Activate the necessary skills using the `/` command (e.g., `/activate_skill copilot-cli`) supported in many tools. Once activated, simply ask the primary agent to delegate:
+Activate the necessary skills using the `/` command (e.g., `/copilot-cli` or `/gemini-cli`) supported in many tools. Once activated, simply ask the primary agent to delegate:
 
 > *"Use Gemini CLI to search for the latest documentation of [library] and summarize breaking changes."*
 
 The agent will use the skill to construct a programmatic CLI call, execute the task, and return the summary to the main thread.
 
-## Roadmap & Support
+## Support
 
 - [x] **Gemini CLI** (Programmatic)
 - [x] **Copilot CLI** (Programmatic)
 - [x] **Qwen-Code CLI** (Programmatic)
 - [x] **Codex CLI** (Programmatic)
-- [ ] **Junie CLI**
+- [x] **Junie CLI** (Programmatic)
 - [x] **Kiro CLI** (Programmatic)
-- [ ] **Cursor CLI**
-- [ ] **Antigravity IDE**
+- [x] **Cursor CLI** (Programmatic)
+- [x] **OpenHands CLI** (Programmatic)
+- [x] **OpenCode CLI** (Programmatic)
 
 ## Core Philosophy
 

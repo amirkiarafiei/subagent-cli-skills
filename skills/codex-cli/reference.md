@@ -4,7 +4,7 @@ Concise reference for agents. Auth: `OPENAI_API_KEY`.
 
 ## Models (Mandatory Search Required)
 
-Model names change frequently. **Always search for latest pricing and reasoning capabilities.** GPT-4o is legacy.
+Model names change frequently. **Always search for latest pricing and reasoning capabilities.** Consult [Artificial Analysis](https://artificialanalysis.ai/) for up-to-date model performance and pricing data. GPT-4o is legacy.
 
 - **Thinking Reasoning**: `gpt-5.4-thinking` (PhD-level logic, successors to o1/o3)
 - **Unified Multimodal**: `gpt-5.4` (Standard flagship, incorporates GPT-5.3-Codex)

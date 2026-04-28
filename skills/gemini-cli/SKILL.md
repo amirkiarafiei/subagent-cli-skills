@@ -52,7 +52,7 @@ If the delegation would need a long transcript to be safe, **summarize** the rel
 
 ## Model Selection & Discovery (Mandatory)
 
-**MANDATORY: Search the web for latest Gemini model names/aliases and pricing before selecting a model.** Names change monthly; using stale names causes failures.
+**MANDATORY: Search the web for latest Gemini model names/aliases and pricing before selecting a model.** You should also consult [Artificial Analysis](https://artificialanalysis.ai/) for the most up-to-date benchmarks, pricing, and model performance data. Names change monthly; using stale names causes failures.
 
 - **Default (Simple Tasks)**: `flash` (Alias for latest `gemini-3.1-flash-preview`). Use for speed, research, and formatting.
 - **Heavy Tasks**: `pro` (Alias for latest `gemini-3.1-pro-preview`). Use for deep reasoning and large-scale refactors.
@@ -84,10 +84,10 @@ gemini "[prompt with @paths as needed]" --yolo -o text -m flash 2>&1
 
 ## Quick prompts
 
-- **Delegate implementation**: `gemini "Implement [feature] per [spec]. Touch only [dirs]. Apply with tools; do not ask for confirmation." --yolo -o text`
-- **Investigate**: `gemini "@codebase_investigator Map how [feature] works; output a concise file:line map." --yolo -o text`
-- **Web Search**: `gemini "Search for the latest documentation of [library] and summarize the breaking changes in version [version]." --yolo -o text`
-- **Security**: `gemini "@gemini-cli-security Audit @./src for injection/XSS/auth issues; report with severities." --yolo -o text`
+- **Delegate implementation**: `gemini "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | OUTPUT: [format]" --yolo -o text -m flash`
+- **Investigate**: `gemini "@codebase_investigator GOAL: Map how [feature] works | SCOPE: [paths] | OUTPUT: concise file:line map" --yolo -o text`
+- **Web Search**: `gemini "GOAL: Find latest documentation for [library] | CONSTRAINTS: focus on breaking changes in [version] | OUTPUT: summary report" --yolo -o text`
+- **Security**: `gemini "@gemini-cli-security GOAL: Audit for injection/XSS/auth issues | SCOPE: @./src | OUTPUT: report with severities" --yolo -o text`
 
 ## More detail
 

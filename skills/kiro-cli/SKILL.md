@@ -50,7 +50,7 @@ If the delegation would need a long transcript to be safe, **summarize** the rel
 
 ## Model Selection & Discovery (Mandatory)
 
-**MANDATORY: Search the web for latest Kiro model names/aliases and pricing before selecting a model.** 
+**MANDATORY: Search the web for latest Kiro model names/aliases and pricing before selecting a model.** You should also consult [Artificial Analysis](https://artificialanalysis.ai/) for the most up-to-date benchmarks, pricing, and model performance data. 
 
 - **Default (Simple Tasks)**: `claude-haiku-4.5` (Inexpensive, fast, ideal for quick command suggestions).
 - **Standard (Implementation)**: `claude-sonnet-4.6` (Balanced daily driver; high intelligence).
@@ -83,9 +83,9 @@ kiro-cli chat --no-interactive "[prompt with @ FILENAME as needed]" --trust-all-
 
 ## Quick prompts
 
-- **Delegate implementation**: `kiro-cli chat --no-interactive "Implement [feature] per [spec]. Touch only [dirs]. Apply changes directly." --trust-all-tools`
-- **Investigate**: `kiro-cli chat --no-interactive "Map how [feature] works; output a concise file:line map." --agent "Codebase Analyst"`
-- **Refactor**: `kiro-cli chat --no-interactive "Refactor [area] for better performance; return summary of edits." --trust-all-tools`
+- **Delegate implementation**: `kiro-cli chat --no-interactive "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | OUTPUT: [format]" --trust-all-tools`
+- **Investigate**: `kiro-cli chat --no-interactive "GOAL: Map how [feature] works | SCOPE: [paths] | OUTPUT: concise file:line map" --agent "Codebase Analyst"`
+- **Refactor**: `kiro-cli chat --no-interactive "GOAL: Refactor [area] for better performance | SCOPE: [paths] | OUTPUT: summary of edits" --trust-all-tools`
 
 ## More detail
 

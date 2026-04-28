@@ -4,7 +4,7 @@ Concise reference for agents. Auth: `DASHSCOPE_API_KEY` or `OPENAI_API_KEY`.
 
 ## Models (Mandatory Search Required)
 
-Model names change frequently. **Always search for latest pricing/aliases.**
+Model names change frequently. **Always search for latest pricing/aliases.** Consult [Artificial Analysis](https://artificialanalysis.ai/) for up-to-date model performance and pricing data.
 
 - **Agentic Coding**: `qwen3-coder-plus` (Optimized for tool use and implementation)
 - **High Reasoning**: `qwen3.6-max-preview` (Includes "Thinking" mode for complex logic)

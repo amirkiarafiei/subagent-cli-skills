@@ -4,7 +4,7 @@ Concise reference for agents. Auth: `KIRO_API_KEY`.
 
 ## Models (Mandatory Search Required)
 
-Model names change frequently. **Always search for latest pricing/aliases.**
+Model names change frequently. **Always search for latest pricing/aliases.** Consult [Artificial Analysis](https://artificialanalysis.ai/) for up-to-date model performance and pricing data.
 
 - **Balanced Daily Driver**: `claude-sonnet-4.6`
 - **Fast & Efficient**: `claude-haiku-4.5`

@@ -4,7 +4,7 @@ Concise reference for agents. Auth: `COPILOT_GITHUB_TOKEN` or `GH_TOKEN`.
 
 ## Models (Mandatory Search Required)
 
-Model names change frequently. **Always search for latest pricing/aliases.**
+Model names change frequently. **Always search for latest pricing/aliases.** Consult [Artificial Analysis](https://artificialanalysis.ai/) for up-to-date model performance and pricing data.
 
 - **Default (Simple Tasks)**: `gpt-5.4-mini`
 - **Heavy Tasks**: `gpt-5.4`

@@ -4,7 +4,7 @@ Concise reference for agents. Auth: `GEMINI_API_KEY` or interactive OAuth.
 
 ## Models (Mandatory Search Required)
 
-Model names change frequently. **Always search for latest pricing/aliases.**
+Model names change frequently. **Always search for latest pricing/aliases.** Consult [Artificial Analysis](https://artificialanalysis.ai/) for up-to-date model performance and pricing data.
 
 - **Default (Simple Tasks)**: `flash` (Alias for `gemini-3.1-flash-preview`)
 - **Heavy Tasks**: `pro` (Alias for `gemini-3.1-pro-preview`)

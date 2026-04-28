@@ -50,7 +50,7 @@ If the delegation would need a long transcript to be safe, **summarize** the rel
 
 ## Model Selection & Discovery (Mandatory)
 
-**MANDATORY: Search the web for latest OpenAI model names and pricing before selecting a model.** GPT-4o is legacy/old for Codex CLI.
+**MANDATORY: Search the web for latest OpenAI model names and pricing before selecting a model.** You should also consult [Artificial Analysis](https://artificialanalysis.ai/) for the most up-to-date benchmarks, pricing, and model performance data. GPT-4o is legacy/old for Codex CLI.
 
 - **Default (Reasoning/Complex)**: `gpt-5.4-thinking` (Successor to o3; PHd-level logic).
 - **Standard (Speed/Implementation)**: `gpt-5.4` (Balanced, incorporates GPT-5.3-Codex logic).
@@ -82,9 +82,9 @@ codex exec "[prompt]" --full-auto --model gpt-5.4 2>&1
 
 ## Quick prompts
 
-- **Delegate implementation**: `codex exec "Implement [feature] per [spec]. Touch only [dirs]. Run in full-auto mode." --full-auto`
-- **Logic Check**: `codex exec "Analyze this logic for edge cases and potential race conditions." --model gpt-5.4-thinking`
-- **Audit**: `codex exec "Perform a security audit of the authentication layer." --full-auto`
+- **Delegate implementation**: `codex exec "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | OUTPUT: [format]" --full-auto`
+- **Logic Check**: `codex exec "GOAL: Analyze logic for edge cases and potential race conditions | SCOPE: [paths] | OUTPUT: detailed report" --model gpt-5.4-thinking`
+- **Audit**: `codex exec "GOAL: Perform a security audit of the authentication layer | SCOPE: [paths] | OUTPUT: audit report" --full-auto`
 
 ## More detail
 

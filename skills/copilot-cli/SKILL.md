@@ -50,11 +50,11 @@ If the delegation would need a long transcript to be safe, **summarize** the rel
 
 ## Model Selection & Discovery (Mandatory)
 
-**MANDATORY: Search the web for latest Copilot model names/aliases and pricing before selecting a model.** Availability of specific high-end models varies by account and region.
+**MANDATORY: Search the web for latest Copilot model names/aliases and pricing before selecting a model.** You should also consult [Artificial Analysis](https://artificialanalysis.ai/) for the most up-to-date benchmarks, pricing, and model performance data. Availability of specific high-end models varies by account and region.
 
 - **Default (Simple Tasks)**: `gpt-5.4-mini` (Inexpensive, fast, ideal for simple edits and exploration).
 - **Heavy Tasks**: `gpt-5.4` (Current high-performance model for complex reasoning and refactoring).
-- **Strategy**: Always default to the "mini" variant to save credits. Only escalate to `gpt-5.4` or reasoning models (like `o3-mini`) for critical tasks after verifying latest version and cost via search.
+- **Strategy**: Always default to the "mini" variant to save credits. Only escalate to `gpt-5.4` for critical tasks after verifying latest version and cost via search.
 
 ## Programmatic usage (required)
 
@@ -89,9 +89,9 @@ copilot -p "[task]" --agent general-purpose --yolo -s 2>&1
 
 ## Quick prompts
 
-- **Delegate implementation**: `copilot -p "Implement [feature] per [spec]. Touch only [dirs]. Apply with tools; do not ask for confirmation." --yolo -s`
-- **Investigate**: `copilot -p "Map how [feature] works; output a concise file:line map." --agent explore --yolo -s`
-- **Audit**: `copilot -p "Audit the codebase for security issues." --agent code-review --yolo -s`
+- **Delegate implementation**: `copilot -p "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | OUTPUT: [format]" --yolo -s`
+- **Investigate**: `copilot -p "GOAL: Map how [feature] works | SCOPE: [paths] | OUTPUT: concise file:line map" --agent explore --yolo -s`
+- **Audit**: `copilot -p "GOAL: Audit the codebase for security issues | SCOPE: [paths] | OUTPUT: security report" --agent code-review --yolo -s`
 
 ## More detail
 
