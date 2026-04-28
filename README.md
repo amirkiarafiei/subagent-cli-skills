@@ -1,4 +1,4 @@
-# Subagent CLI Skills
+# Subagent CLI Skills 🧔🏻👶🏻
 
 A collection of Skills for cross-agent task delegation. Let Claude Code use Gemini CLI as a subagent to reduce your context usage and costs.
 
@@ -12,7 +12,7 @@ Your primary agent can delegate tasks to other agents that support programmatic 
 
 By treating CLI tools as specialized subagents, you can bypass context window limitations and significantly reduce token costs. The primary agent remains the high-level decision maker, while the subagents handle the tactical implementation, research, and codebase exploration.
 
-## Installation
+## 🛠️ Installation
 
 ### Quick Install (Interactive)
 
@@ -62,7 +62,7 @@ We implement a stateless delegation pattern that offloads tactical work to CLI s
 This methodology is further refined by lessons from **[Superpowers](https://github.com/obra/superpowers)** and **[Claude Code](https://github.com/anthropics/claude-code)**, incorporating rigorous verification loops and context hygiene to ensure subagents remain aligned with the primary orchestrator.
 
 
-## Support
+## 🔌 Support
 
 - [x] **Gemini CLI** (Programmatic)
 - [x] **Copilot CLI** (Programmatic)
