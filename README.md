@@ -4,7 +4,7 @@ A collection of Skills for cross-agent task delegation. Let Claude Code use Gemi
 
 ## How It Works
 
-Your primary agent can delegate tasks to other agents that support programmatic usage through the terminal. This offloads context-heavy work, ensuring the main orchestrator stays lean and efficient.
+Your primary agent can delegate tasks to other agents that support programmatic usage through the terminal (headless mode). This offloads context-heavy work, ensuring the main orchestrator stays lean and efficient.
 
 <p align="center">
   <img src="./assets/diagram.png" width="320" alt="Delegation Flow Diagram">
@@ -39,6 +39,8 @@ We implement a stateless delegation pattern that offloads tactical work to CLI s
    * **Contextual Preservation**: Execute high-volume tasks in isolated headless environments to save orchestrator tokens and avoid "split story" failures caused by missing
      history.
    * **Result Reconciliation**: Pull new technical assumptions and filesystem changes back into the main thread after every delegation to maintain a single source of truth.
+
+This methodology is further refined by lessons from **[Superpowers](https://github.com/obra/superpowers)** and **[Claude Code](https://github.com/anthropics/claude-code)**, incorporating rigorous verification loops and context hygiene to ensure subagents remain aligned with the primary orchestrator.
 
 
 ## Support
