@@ -64,12 +64,12 @@ This methodology is further refined by lessons from **[Superpowers](https://gith
 
 ## 🔌 Support
 
-- [x] **Gemini** (Programmatic)
-- [x] **Copilot** (Programmatic)
-- [x] **Cursor** (Programmatic)
 - [x] **Claude Code** (Programmatic)
+- [x] **Cursor** (Programmatic)
 - [x] **Antigravity** (IDE only - can use skills but not act as subagent)
 - [x] **Codex** (Programmatic)
+- [x] **Gemini** (Programmatic)
+- [x] **Copilot** (Programmatic)
 - [x] **Junie** (Programmatic)
 - [x] **Kiro** (Programmatic)
 - [x] **OpenHands** (Programmatic)
@@ -79,4 +79,3 @@ This methodology is further refined by lessons from **[Superpowers](https://gith
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-

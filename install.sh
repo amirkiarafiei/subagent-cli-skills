@@ -44,41 +44,37 @@ fi
 
 # Define Tool Paths (Verified via official documentation)
 declare -A TOOL_PATHS
-TOOL_PATHS["Gemini"]="$HOME/.gemini/skills"
-TOOL_PATHS["Copilot"]="$HOME/.copilot/skills"
-TOOL_PATHS["Cursor"]="$HOME/.cursor/skills"
 TOOL_PATHS["Claude Code"]="$HOME/.claude/skills"
+TOOL_PATHS["Cursor"]="$HOME/.cursor/skills"
 TOOL_PATHS["Antigravity"]="$HOME/.gemini/antigravity/skills"
 TOOL_PATHS["Codex"]="$HOME/.agents/skills"
+TOOL_PATHS["Gemini"]="$HOME/.gemini/skills"
+TOOL_PATHS["Copilot"]="$HOME/.copilot/skills"
 TOOL_PATHS["Junie"]="$HOME/.junie/skills"
 TOOL_PATHS["Kiro"]="$HOME/.kiro/skills"
 TOOL_PATHS["OpenHands"]="$HOME/.openhands/skills/installed"
 TOOL_PATHS["OpenCode"]="$HOME/.config/opencode/skills"
 TOOL_PATHS["QwenCode"]="$HOME/.qwen/skills"
 
-# Function to list available skills
+# Function to list available skills in specific order
 list_skills() {
-    if [ "$MODE" == "local" ]; then
-        ls -d skills/*/ | xargs -n 1 basename
-    else
-        echo "claude-code"
-        echo "codex-cli"
-        echo "copilot-cli"
-        echo "cursor-cli"
-        echo "gemini-cli"
-        echo "junie-cli"
-        echo "kiro-cli"
-        echo "opencode-cli"
-        echo "openhands-cli"
-        echo "qwen-code"
-    fi
+    echo "gemini-cli"
+    echo "copilot-cli"
+    echo "qwen-code"
+    echo "codex-cli"
+    echo "kiro-cli"
+    echo "cursor-cli"
+    echo "junie-cli"
+    echo "openhands-cli"
+    echo "opencode-cli"
+    echo "claude-code"
 }
 
 # Use /dev/tty for all interactive input to avoid issues with pipes
 {
     # 1. Select Tool
     echo -e "\n${BLUE}Step 1: Select the AI Agent or IDE you are using (The Orchestrator):${NC}"
-    tools=("Gemini" "Copilot" "Cursor" "Claude Code" "Antigravity" "Codex" "Junie" "Kiro" "OpenHands" "OpenCode" "QwenCode" "Custom Path" "Exit")
+    tools=("Claude Code" "Cursor" "Antigravity" "Codex" "Gemini" "Copilot" "Junie" "Kiro" "OpenHands" "OpenCode" "QwenCode" "Custom Path" "Exit")
     
     PS3="Select a tool [1-13]: "
     select tool in "${tools[@]}"; do
