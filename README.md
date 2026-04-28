@@ -64,19 +64,21 @@ This methodology is further refined by lessons from **[Superpowers](https://gith
 
 ## 🔌 Support
 
-- [x] **Claude Code** (Both as orchestrator and subagent)
-- [x] **Cursor** (Both as orchestrator and subagent)
+As Orchestrator or Subagent or Both:
+
+- [x] **Claude Code** (Both)
+- [x] **Cursor** (Both)
 - [x] **Antigravity** (Orchestrator only - can use skills but not act as subagent)
-- [x] **Codex** (Both as orchestrator and subagent)
-- [x] **Gemini** (Both as orchestrator and subagent)
-- [x] **Copilot** (Both as orchestrator and subagent)
-- [x] **Junie** (Both as orchestrator and subagent)
-- [x] **Kiro** (Both as orchestrator and subagent)
-- [x] **OpenHands** (Both as orchestrator and subagent)
-- [x] **OpenCode** (Both as orchestrator and subagent)
-- [x] **QwenCode** (Both as orchestrator and subagent)
-- [x] **Mistral Vibe** (Both as orchestrator and subagent)
-- [x] **Kimi Code** (Both as orchestrator and subagent)
+- [x] **Codex** (Both)
+- [x] **Gemini** (Both)
+- [x] **Copilot** (Both)
+- [x] **Junie** (Both)
+- [x] **Kiro** (Both)
+- [x] **OpenHands** (Both)
+- [x] **OpenCode** (Both)
+- [x] **QwenCode** (Both)
+- [x] **Mistral Vibe** (Both)
+- [x] **Kimi Code** (Both)
 
 ## License
 
