@@ -11,6 +11,24 @@ GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
+echo -e "${BLUE}"
+cat << "EOF"
+███████╗██╗   ██╗██████╗  █████╗  ██████╗ ███████╗███╗   ██╗████████╗
+██╔════╝██║   ██║██╔══██╗██╔══██╗██╔════╝ ██╔════╝████╗  ██║╚══██╔══╝
+███████╗██║   ██║██████╔╝███████║██║  ███╗█████╗  ██╔██╗ ██║   ██║   
+╚════██║██║   ██║██╔══██╗██╔══██║██║   ██║██╔══╝  ██║╚██╗██║   ██║   
+███████║╚██████╔╝██████╔╝██║  ██║╚██████╔╝███████╗██║ ╚████║   ██║   
+╚══════╝ ╚═════╝ ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═══╝   ╚═╝   
+                                                                     
+                        ██████╗ ██╗     ██╗                          
+                       ██╔════╝ ██║     ██║                          
+                       ██║      ██║     ██║                          
+                       ██║      ██║     ██║                          
+                       ╚██████╗ ███████╗██║                          
+                        ╚═════╝ ╚══════╝╚═╝                          
+EOF
+echo -e "${NC}"
+
 echo -e "${BLUE}=======================================${NC}"
 echo -e "${BLUE}   Subagent CLI Skills Installer       ${NC}"
 echo -e "${BLUE}=======================================${NC}"
@@ -26,11 +44,11 @@ fi
 
 # Define Tool Paths (Verified via official documentation)
 declare -A TOOL_PATHS
-TOOL_PATHS["Claude Code"]="$HOME/.claude/skills"
-TOOL_PATHS["Cursor"]="$HOME/.cursor/skills"
-TOOL_PATHS["Antigravity"]="$HOME/.gemini/antigravity/skills"
-TOOL_PATHS["Github Copilot"]="$HOME/.copilot/skills"
 TOOL_PATHS["Gemini"]="$HOME/.gemini/skills"
+TOOL_PATHS["Copilot"]="$HOME/.copilot/skills"
+TOOL_PATHS["Cursor"]="$HOME/.cursor/skills"
+TOOL_PATHS["Claude Code"]="$HOME/.claude/skills"
+TOOL_PATHS["Antigravity"]="$HOME/.gemini/antigravity/skills"
 TOOL_PATHS["Codex"]="$HOME/.agents/skills"
 TOOL_PATHS["Junie"]="$HOME/.junie/skills"
 TOOL_PATHS["Kiro"]="$HOME/.kiro/skills"
@@ -43,6 +61,7 @@ list_skills() {
     if [ "$MODE" == "local" ]; then
         ls -d skills/*/ | xargs -n 1 basename
     else
+        echo "claude-code"
         echo "codex-cli"
         echo "copilot-cli"
         echo "cursor-cli"
@@ -58,8 +77,8 @@ list_skills() {
 # Use /dev/tty for all interactive input to avoid issues with pipes
 {
     # 1. Select Tool
-    echo -e "\n${BLUE}Step 1: Select the AI Agent or IDE you are using (The orchestrator):${NC}"
-    tools=("Claude Code" "Cursor" "Antigravity" "Github Copilot" "Gemini" "Codex" "Junie" "Kiro" "OpenHands" "OpenCode" "QwenCode" "Custom Path" "Exit")
+    echo -e "\n${BLUE}Step 1: Select the AI Agent or IDE you are using:${NC}"
+    tools=("Gemini" "Copilot" "Cursor" "Claude Code" "Antigravity" "Codex" "Junie" "Kiro" "OpenHands" "OpenCode" "QwenCode" "Custom Path" "Exit")
     
     PS3="Select a tool [1-13]: "
     select tool in "${tools[@]}"; do
@@ -101,7 +120,7 @@ list_skills() {
     done
 
     # 3. Skill Selection Loop
-    echo -e "\n${BLUE}Step 3: Select Skills to install (The CLI Subagents):${NC}"
+    echo -e "\n${BLUE}Step 3: Select skills to install (Interactive Loop):${NC}"
     available_skills=($(list_skills))
 
     while true; do
