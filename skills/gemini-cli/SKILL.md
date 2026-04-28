@@ -31,6 +31,7 @@ Inside Gemini CLI, **subagents** are specialists. Prefer **`@name` prefix** in t
 - **Tight feedback loops** where the user wants rapid back-and-forth refinement in one thread.
 - **Secrets or policy-sensitive** flows—avoid piping credentials; redact before delegating.
 - **Already-loaded context** where duplicating the whole plan adds no value—handle locally.
+- **Low ROI (Return on Investment)**: If the task is "needle-in-a-haystack" (requires high precision over a single line) or if the time to compose the Handoff Table exceeds the time to simply edit the file locally. Delegation should only be used when the "mental offloading" outweighs the "handoff overhead."
 
 ## Delegation and context (critical)
 
@@ -44,6 +45,7 @@ When composing the **single Gemini prompt**, treat it as passing **enough shared
 | **Decisions already made** | Framework, patterns, naming, auth approach, “use X not Y”—anything that would otherwise be guessed wrong. |
 | **Scope** | Paths, modules, env (@paths), and explicit **out of scope** / do-not-touch areas. |
 | **Constraints** | Performance, a11y, compatibility, review gates, “no new deps,” etc. |
+| **Verification** | Explicit command (e.g. `npm test`, `lint`) the subagent **must** run and pass before returning. |
 | **Expected output** | e.g. “summarize then list files changed,” “report only—no edits,” or “apply edits with minimal diff.” |
 
 **After Gemini returns**, pull **decisions and constraints** back into the main thread (what it assumed, what it changed, open risks). Prefer **sequential** delegations with explicit carry-over over parallel runs that might diverge unless they share the same briefing.
@@ -84,7 +86,7 @@ gemini "[prompt with @paths as needed]" --yolo -o text -m flash 2>&1
 
 ## Quick prompts
 
-- **Delegate implementation**: `gemini "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | OUTPUT: [format]" --yolo -o text -m flash`
+- **Delegate implementation**: `gemini "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" --yolo -o text -m flash`
 - **Investigate**: `gemini "@codebase_investigator GOAL: Map how [feature] works | SCOPE: [paths] | OUTPUT: concise file:line map" --yolo -o text`
 - **Web Search**: `gemini "GOAL: Find latest documentation for [library] | CONSTRAINTS: focus on breaking changes in [version] | OUTPUT: summary report" --yolo -o text`
 - **Security**: `gemini "@gemini-cli-security GOAL: Audit for injection/XSS/auth issues | SCOPE: @./src | OUTPUT: report with severities" --yolo -o text`

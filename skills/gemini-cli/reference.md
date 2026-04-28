@@ -40,4 +40,5 @@ Parse top-level `response` and `stats` (model tokens, tool usage).
 2. **Prior Decisions**: Stack, style, and API choices already made.
 3. **Scope**: Define `@paths` or out-of-scope areas.
 4. **Constraints**: Performance, a11y, or compatibility requirements.
-5. **Desired Shape**: "Summarize results," "Apply diffs," etc.
+5. **Verification**: Explicit command the subagent must pass before returning.
+6. **Desired Shape**: "Summarize results," "Apply diffs," etc.

@@ -37,4 +37,5 @@ Parse the JSON emitted at the end of the session for statistics and machine-read
 2. **Prior Decisions**: Stack, style, and API choices already made.
 3. **Scope**: Define files or directories to work in.
 4. **Constraints**: Performance, a11y, or compatibility requirements.
-5. **Desired Shape**: "Summarize results," "Apply diffs," etc.
+5. **Verification**: Explicit command the subagent must pass before returning.
+6. **Desired Shape**: "Summarize results," "Apply diffs," etc.

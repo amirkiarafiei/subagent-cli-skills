@@ -48,4 +48,5 @@ Specialists run in isolated context. Specify via `--agent <name>`.
 2. **Prior Decisions**: Explicitly mention tech stack, naming, and patterns.
 3. **Scope**: Define `@files` or directories to work in.
 4. **Constraints**: Performance, security, or style requirements.
-5. **Desired Shape**: "Apply changes," "Provide a report," etc.
+5. **Verification**: Explicit command the subagent must pass before returning.
+6. **Desired Shape**: "Apply changes," "Provide a report," etc.

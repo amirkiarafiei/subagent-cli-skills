@@ -58,4 +58,5 @@ Copilot outputs JSONL. Each line is a JSON object representing a turn, tool call
 2. **Prior Decisions**: Explicitly mention tech stack, naming conventions, and patterns.
 3. **Scope**: Define `@files` or directories to work in.
 4. **Constraints**: Mention performance, security, or style requirements.
-5. **Desired Shape**: "Apply changes directly," "Provide a report only," etc.
+5. **Verification**: Explicit command the subagent must pass before returning.
+6. **Desired Shape**: "Apply changes directly," "Provide a report only," etc.

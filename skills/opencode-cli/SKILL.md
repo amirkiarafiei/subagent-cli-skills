@@ -27,6 +27,7 @@ Use **OpenCode CLI** to run a **separate long-horizon pass** over the repo: deep
 - **Tight feedback loops** where the user wants rapid back-and-forth refinement in one thread.
 - **Secrets or policy-sensitive** flows—avoid piping credentials; redact before delegating.
 - **Already-loaded context** where duplicating the whole plan adds no value—handle locally.
+- **Low ROI (Return on Investment)**: If the task is "needle-in-a-haystack" (requires high precision over a single line) or if the time to compose the Handoff Table exceeds the time to simply edit the file locally. Delegation should only be used when the "mental offloading" outweighs the "handoff overhead."
 
 ## Delegation and context (critical)
 
@@ -40,6 +41,7 @@ When composing the **single OpenCode prompt**, treat it as passing **enough shar
 | **Decisions already made** | Framework, patterns, naming, auth approach, “use X not Y”—anything that would otherwise be guessed wrong. |
 | **Scope** | Paths, modules, and explicit **out of scope** / do-not-touch areas. |
 | **Constraints** | Performance, a11y, compatibility, review gates, “no new deps,” etc. |
+| **Verification** | Explicit command (e.g. `npm test`, `lint`) the subagent **must** run and pass before returning. |
 | **Expected output** | e.g. “summarize then list files changed,” “report only—no edits,” or “apply edits with minimal diff.” |
 
 ## Model Selection & Discovery (Mandatory)
@@ -72,6 +74,6 @@ opencode run "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAIN
 
 ## Quick prompts
 
-- **Delegate implementation**: `opencode run "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | OUTPUT: [format]" --dangerously-skip-permissions`
-- **Architectural Analysis**: `opencode run "GOAL: Analyze architecture for [concerns] | SCOPE: [paths] | OUTPUT: architecture report" --model [heavy-model]`
+- **Delegate implementation**: `opencode run "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" --dangerously-skip-permissions`
+- **Architectural Analysis**: `opencode run "GOAL: Analyze architecture for [concerns] | SCOPE: [paths] | VERIFICATION: [check_command] | OUTPUT: architecture report" --model [heavy-model]`
 - **Investigate**: `opencode run "GOAL: Map how [feature] works | SCOPE: [paths] | OUTPUT: concise file:line map"`

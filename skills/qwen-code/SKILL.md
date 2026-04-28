@@ -25,7 +25,11 @@ Qwen-Code is highly optimized for deep architectural changes and complex code ge
 
 ## When not to use
 
-...
+- **Small / single-step** tasks answerable with one or two edits or a short explanation.
+- **Tight feedback loops** where the user wants rapid back-and-forth refinement in one thread.
+- **Secrets or policy-sensitive** flows—avoid piping credentials; redact before delegating.
+- **Already-loaded context** where duplicating the whole plan adds no value—handle locally.
+- **Low ROI (Return on Investment)**: If the task is "needle-in-a-haystack" (requires high precision over a single line) or if the time to compose the Handoff Table exceeds the time to simply edit the file locally. Delegation should only be used when the "mental offloading" outweighs the "handoff overhead."
 
 ## Delegation and context (critical)
 
@@ -39,6 +43,7 @@ When composing the **single Qwen prompt** (using `-p`), treat it as passing **en
 | **Decisions already made** | Framework, patterns, naming, auth approach, “use X not Y”—anything that would otherwise be guessed wrong. |
 | **Scope** | Paths, modules, and explicit **out of scope** / do-not-touch areas. |
 | **Constraints** | Performance, a11y, compatibility, review gates, “no new deps,” etc. |
+| **Verification** | Explicit command (e.g. `npm test`, `lint`) the subagent **must** run and pass before returning. |
 | **Expected output** | e.g. “summarize then list files changed,” “report only—no edits,” or “apply edits with minimal diff.” |
 
 **After Qwen-Code returns**, pull **decisions and constraints** back into the main thread (what it assumed, what it changed, open risks). Prefer **sequential** delegations with explicit carry-over over parallel runs that might diverge unless they share the same briefing.
@@ -77,8 +82,8 @@ qwen -p "[prompt with paths as needed]" -o text --model qwen3-coder-plus 2>&1
 
 ## Quick prompts
 
-- **Delegate implementation**: `qwen -p "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | OUTPUT: [format]" -o text --model qwen3-coder-plus`
-- **Thinking Analysis**: `qwen -p "GOAL: Analyze complex architecture for potential deadlocks | SCOPE: [paths] | OUTPUT: analysis report" --model qwen3.6-max-preview`
+- **Delegate implementation**: `qwen -p "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" -o text --model qwen3-coder-plus`
+- **Thinking Analysis**: `qwen -p "GOAL: Analyze complex architecture for potential deadlocks | SCOPE: [paths] | VERIFICATION: [check_command] | OUTPUT: analysis report" --model qwen3.6-max-preview`
 - **Investigate**: `qwen -p "GOAL: Map how [feature] works | SCOPE: [paths] | OUTPUT: concise file:line map" -o text`
 
 ## More detail
