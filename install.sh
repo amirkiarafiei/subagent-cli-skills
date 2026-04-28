@@ -77,7 +77,7 @@ list_skills() {
 # Use /dev/tty for all interactive input to avoid issues with pipes
 {
     # 1. Select Tool
-    echo -e "\n${BLUE}Step 1: Select the AI Agent or IDE you are using:${NC}"
+    echo -e "\n${BLUE}Step 1: Select the AI Agent or IDE you are using (The Orchestrator):${NC}"
     tools=("Gemini" "Copilot" "Cursor" "Claude Code" "Antigravity" "Codex" "Junie" "Kiro" "OpenHands" "OpenCode" "QwenCode" "Custom Path" "Exit")
     
     PS3="Select a tool [1-13]: "
@@ -120,7 +120,7 @@ list_skills() {
     done
 
     # 3. Skill Selection Loop
-    echo -e "\n${BLUE}Step 3: Select skills to install (Interactive Loop):${NC}"
+    echo -e "\n${BLUE}Step 3: Select Skills to install (The CLI Subagents):${NC}"
     available_skills=($(list_skills))
 
     while true; do
@@ -130,7 +130,7 @@ list_skills() {
         done
         echo -e "$(( ${#available_skills[@]} + 1 ))) Done / Exit"
 
-        read -p "Select a skill by number: " skill_idx
+        read -p "Select a Skill by number: " skill_idx
         
         if [[ "$skill_idx" -eq $(( ${#available_skills[@]} + 1 )) ]]; then
             break
