@@ -1,13 +1,16 @@
 # Gemini CLI — reference
 
+> [!WARNING]
+> **DEPRECATED**: Gemini CLI has been deprecated in favor of **Antigravity CLI** (`agy`). We strongly recommend migrating to `/antigravity-cli` for up-to-date features and performance.
+
 Concise reference for agents. Auth: `GEMINI_API_KEY` or interactive OAuth.
 
 ## Models (Mandatory Search Required)
 
 Model names change frequently. **Always search for latest pricing/aliases.** Consult [Artificial Analysis](https://artificialanalysis.ai/) for up-to-date model performance and pricing data.
 
-- **Default (Simple Tasks)**: `flash` (Alias for `gemini-3.1-flash-preview`)
-- **Heavy Tasks**: `pro` (Alias for `gemini-3.1-pro-preview`)
+- **Default (Simple Tasks)**: `gemini-3.5-flash` (or alias `flash` pointing to `gemini-3.5-flash`)
+- **Heavy Tasks**: `pro` (Alias for `gemini-3.1-pro-preview` or `gemini-3.5-pro` when available)
 
 ## Subagents
 

@@ -9,8 +9,8 @@ The core philosophy is based on **[Cognition-style delegation](https://cognition
 When creating a new skill (e.g., `tool-cli`), ensure the following components are addressed in your `SKILL.md` and `reference.md`:
 
 ### 0. Agent vs. IDE Compatibility
-- [ ] **Verify CLI Support**: Only tools with a programmatic CLI/headless mode can be used as **subagents** (e.g., Gemini, Codex, Kiro).
-- [ ] **IDE-only Tools**: Tools that are IDE-only (e.g., Antigravity) can still **learn and use** these skills to delegate *to* other subagents, but they cannot be targets of delegation themselves.
+- [ ] **Verify CLI Support**: Only tools with a programmatic CLI/headless mode can be used as **subagents** (e.g., Antigravity, Gemini, Codex, Kiro).
+- [ ] **IDE-only or Orchestrator Tools**: Orchestrators (e.g., Claude Code, Antigravity 2.0) can **learn and use** these skills to delegate *to* other subagents, while programmatic CLIs (like Antigravity CLI `agy` using `.agents/skills/`) can act as subagents themselves.
 
 ### 1. Mandatory Programmatic Constraints
 - [ ] **Force Non-Interactive Mode**: Use flags (like `-p`, `--prompt`, or `--headless`) to ensure the tool never hangs waiting for user input.

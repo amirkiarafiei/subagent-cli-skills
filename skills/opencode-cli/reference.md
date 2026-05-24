@@ -10,7 +10,8 @@ Model names change frequently. **Always search for latest pricing/aliases.** Con
 |-------------------|----------|
 | `gpt-5.2`         | OpenAI   |
 | `claude-sonnet-4.5`| Anthropic|
-| `gemini-3-pro`    | Google   |
+| `gemini-3.5-flash` | Google   |
+| `gemini-3.5-pro`   | Google   |
 
 ## Essential Flags
 

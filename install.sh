@@ -46,7 +46,7 @@ fi
 declare -A TOOL_PATHS
 TOOL_PATHS["Claude Code"]="$HOME/.claude/skills"
 TOOL_PATHS["Cursor"]="$HOME/.cursor/skills"
-TOOL_PATHS["Antigravity"]="$HOME/.gemini/antigravity/skills"
+TOOL_PATHS["Antigravity"]="$HOME/.gemini/antigravity-cli/skills"
 TOOL_PATHS["Codex"]="$HOME/.agents/skills"
 TOOL_PATHS["Gemini"]="$HOME/.gemini/skills"
 TOOL_PATHS["Copilot"]="$HOME/.copilot/skills"
@@ -60,6 +60,7 @@ TOOL_PATHS["Kimi Code"]="$HOME/.kimi/skills"
 
 # Function to list available skills in specific order
 list_skills() {
+    echo "antigravity-cli"
     echo "gemini-cli"
     echo "copilot-cli"
     echo "qwen-code"

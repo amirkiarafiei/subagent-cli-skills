@@ -1,6 +1,6 @@
 # Subagent CLI Skills 🧔🏻👶🏻
 
-A collection of Skills for cross-agent task delegation. Let Claude Code use Gemini CLI as a subagent to reduce your context usage and costs.
+A collection of Skills for cross-agent task delegation. Let your orchestrator (like Claude Code or Antigravity) use Antigravity/Gemini CLI as a subagent to reduce your context usage and costs.
 
 ## How It Works
 
@@ -39,9 +39,9 @@ chmod +x install.sh
 
 ## Usage
 
-Activate the necessary skills using the `/` command (e.g., `/copilot-cli` or `/gemini-cli`) supported in many tools. Once activated, your agent itself can decide the right time to delegate to the subagent or you can explicitly ask it to delegate: 
+Activate the necessary skills using the `/` command (e.g., `/copilot-cli` or `/antigravity-cli` or `/gemini-cli`) supported in many tools. Once activated, your agent itself can decide the right time to delegate to the subagent or you can explicitly ask it to delegate: 
 
-> *"Use Gemini CLI to search for the latest documentation of [library] and summarize breaking changes."*
+> *"Use Antigravity CLI to search for the latest documentation of [library] and summarize breaking changes."*
 
 The agent will use the skill to construct a programmatic CLI call, execute the task, and return the summary to the main thread.
 
@@ -68,9 +68,9 @@ As Orchestrator or Subagent or Both:
 
 - [x] **Claude Code** (Both)
 - [x] **Cursor** (Both)
-- [x] **Antigravity** (Orchestrator only - can use skills but not act as subagent)
+- [x] **Antigravity** (Both - can use skills and act as a subagent via Antigravity CLI `agy`)
 - [x] **Codex** (Both)
-- [x] **Gemini** (Both)
+- [x] **Gemini** (Both - Deprecated but supported)
 - [x] **Copilot** (Both)
 - [x] **Junie** (Both)
 - [x] **Kiro** (Both)
