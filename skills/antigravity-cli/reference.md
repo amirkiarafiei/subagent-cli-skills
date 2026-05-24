@@ -7,7 +7,7 @@ Concise reference for agents. Auth: Silent keyring sign-in (local), Google Sign-
 Model names change frequently. **Always search for latest pricing/aliases.** Consult [Artificial Analysis](https://artificialanalysis.ai/) for up-to-date model performance and pricing data.
 
 - **Default (Simple Tasks)**: `gemini-3.5-flash`
-- **Heavy Tasks**: `pro` or `gemini-3.5-pro`
+- **Heavy Tasks**: `pro` or `gemini-3.1-pro`
 
 ## Subagents
 

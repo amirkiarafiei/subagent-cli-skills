@@ -10,7 +10,7 @@ Concise reference for agents. Auth: `GEMINI_API_KEY` or interactive OAuth.
 Model names change frequently. **Always search for latest pricing/aliases.** Consult [Artificial Analysis](https://artificialanalysis.ai/) for up-to-date model performance and pricing data.
 
 - **Default (Simple Tasks)**: `gemini-3.5-flash` (or alias `flash` pointing to `gemini-3.5-flash`)
-- **Heavy Tasks**: `pro` (Alias for `gemini-3.1-pro-preview` or `gemini-3.5-pro` when available)
+- **Heavy Tasks**: `pro` (Alias for `gemini-3.1-pro-preview` or `gemini-3.1-pro`)
 
 ## Subagents
 

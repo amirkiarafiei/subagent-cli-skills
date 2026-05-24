@@ -12,7 +12,7 @@ Model names change frequently. **Always search for latest pricing/aliases.** Con
 | `opus`   | Anthropic| Latest Claude Opus model. |
 | `gpt`    | OpenAI   | Latest GPT model. |
 | `gemini-3.5-flash`| Google| Latest Gemini 3.5 Flash model. |
-| `gemini-3.5-pro`  | Google| Latest Gemini 3.5 Pro model. |
+| `gemini-3.1-pro`  | Google| Latest Gemini 3.1 Pro model. |
 | `grok`   | xAI      | Latest Grok model. |
 
 ## Essential Flags

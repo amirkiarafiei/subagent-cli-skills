@@ -57,7 +57,7 @@ If the delegation would need a long transcript to be safe, **summarize** the rel
 **MANDATORY: Search the web for latest Gemini model names/aliases and pricing before selecting a model.** You should also consult [Artificial Analysis](https://artificialanalysis.ai/) for the most up-to-date benchmarks, pricing, and model performance data. Names change frequently.
 
 - **Default (Simple Tasks)**: `gemini-3.5-flash` (Use for speed, research, and formatting).
-- **Heavy Tasks**: `pro` / `gemini-3.5-pro` (Use for deep reasoning and large-scale refactors).
+- **Heavy Tasks**: `pro` / `gemini-3.1-pro` (Use for deep reasoning and large-scale refactors).
 - **Strategy**: Always default to `gemini-3.5-flash` to minimize costs. Only escalate to pro versions for critical architecture tasks after verifying latest version and cost via search.
 
 ## Programmatic usage (required)
