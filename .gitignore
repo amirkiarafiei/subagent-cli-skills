@@ -6,6 +6,7 @@ Desktop.ini
 # Editor / IDE
 .vscode/
 .idea/
+.qoder/
 *.swp
 *.swo
 *~
