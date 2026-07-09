@@ -81,44 +81,52 @@ list_skills() {
 {
     # 1. Select Tool
     echo -e "\n${BLUE}Step 1: Select the AI Agent or IDE you are using (The Orchestrator):${NC}"
-    tools=("Claude Code" "Cursor" "Antigravity" "Codex" "Gemini" "Copilot" "Junie" "Kiro" "OpenHands" "OpenCode" "QwenCode" "Mistral Vibe" "Kimi Code" "Qoder CLI" "Custom Path" "Exit")
+    tools=("Claude Code" "Cursor" "Antigravity" "Codex" "Gemini" "Copilot" "Junie" "Kiro" "OpenHands" "OpenCode" "QwenCode" "Mistral Vibe" "Kimi Code" "Qoder CLI" "Custom Path")
     
-    PS3="Select a tool [1-16]: "
-    select tool in "${tools[@]}"; do
-        case $tool in
-            "Exit") exit 0 ;;
-            "Custom Path")
+    while true; do
+        echo ""
+        echo -e "  [0] ${RED}Exit${NC}"
+        for i in "${!tools[@]}"; do
+            echo -e "  [$((i+1))] ${tools[$i]}"
+        done
+        read -p "Select a tool [0-${#tools[@]}]: " tool_choice
+
+        if [[ "$tool_choice" == "0" ]]; then
+            exit 0
+        fi
+
+        if [[ "$tool_choice" -ge 1 && "$tool_choice" -le ${#tools[@]} ]] 2>/dev/null; then
+            tool="${tools[$((tool_choice-1))]}"
+            if [[ "$tool" == "Custom Path" ]]; then
                 read -p "Enter custom path: " TARGET_BASE_PATH
                 break
-                ;;
-            *)
-                if [ -n "$tool" ]; then
-                    TARGET_BASE_PATH="${TOOL_PATHS[$tool]}"
-                    echo -e "Target directory: ${GREEN}$TARGET_BASE_PATH${NC}"
-                    break
-                else
-                    echo "Invalid selection."
-                fi
-                ;;
-        esac
+            else
+                TARGET_BASE_PATH="${TOOL_PATHS[$tool]}"
+                echo -e "Target directory: ${GREEN}$TARGET_BASE_PATH${NC}"
+                break
+            fi
+        else
+            echo -e "${RED}Invalid selection.${NC}"
+        fi
     done
 
     # 2. Global vs Project Path
     echo -e "\n${BLUE}Step 2: Install location:${NC}"
-    options=("Global Path ($TARGET_BASE_PATH)" "Project Path (./.skills/)" "Custom Subdirectory")
-    PS3="Select location [1-3]: "
-    select opt in "${options[@]}"; do
-        case $opt in
-            "Global Path"*) break ;;
-            "Project Path"*)
-                TARGET_BASE_PATH="./.skills"
-                break
-                ;;
-            "Custom Subdirectory")
-                read -p "Enter relative path (e.g. ./.claude/skills): " TARGET_BASE_PATH
-                break
-                ;;
-            *) echo "Invalid selection." ;;
+
+    while true; do
+        echo ""
+        echo -e "  [0] ${RED}Exit${NC}"
+        echo -e "  [1] Global Path ($TARGET_BASE_PATH)"
+        echo -e "  [2] Project Path (./.skills/)"
+        echo -e "  [3] Custom Subdirectory"
+        read -p "Select location [0-3]: " loc_choice
+
+        case $loc_choice in
+            0) exit 0 ;;
+            1) break ;;
+            2) TARGET_BASE_PATH="./.skills"; break ;;
+            3) read -p "Enter relative path (e.g. ./.claude/skills): " TARGET_BASE_PATH; break ;;
+            *) echo -e "${RED}Invalid selection.${NC}" ;;
         esac
     done
 
@@ -128,18 +136,18 @@ list_skills() {
 
     while true; do
         echo -e "\nAvailable Skills:"
+        echo -e "  [0] ${RED}Done / Exit${NC}"
         for i in "${!available_skills[@]}"; do
-            echo -e "$((i+1))) ${available_skills[$i]}"
+            echo -e "  [$((i+1))] ${available_skills[$i]}"
         done
-        echo -e "$(( ${#available_skills[@]} + 1 ))) Done / Exit"
 
         read -p "Select a Skill by number: " skill_idx
-        
-        if [[ "$skill_idx" -eq $(( ${#available_skills[@]} + 1 )) ]]; then
+
+        if [[ "$skill_idx" == "0" ]]; then
             break
         fi
 
-        if [[ "$skill_idx" -gt 0 && "$skill_idx" -le ${#available_skills[@]} ]]; then
+        if [[ "$skill_idx" -ge 1 && "$skill_idx" -le ${#available_skills[@]} ]] 2>/dev/null; then
             SELECTED_SKILL=${available_skills[$((skill_idx-1))]}
             TARGET_DIR="$TARGET_BASE_PATH/$SELECTED_SKILL"
             
