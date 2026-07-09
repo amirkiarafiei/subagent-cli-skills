@@ -57,6 +57,7 @@ TOOL_PATHS["OpenCode"]="$HOME/.config/opencode/skills"
 TOOL_PATHS["QwenCode"]="$HOME/.qwen/skills"
 TOOL_PATHS["Mistral Vibe"]="$HOME/.vibe/skills"
 TOOL_PATHS["Kimi Code"]="$HOME/.kimi/skills"
+TOOL_PATHS["Qoder CLI"]="$HOME/.qoder/skills"
 
 # Function to list available skills in specific order
 list_skills() {
@@ -73,15 +74,16 @@ list_skills() {
     echo "claude-code"
     echo "mistral-vibe"
     echo "kimi-code"
+    echo "qoder-cli"
 }
 
 # Use /dev/tty for all interactive input to avoid issues with pipes
 {
     # 1. Select Tool
     echo -e "\n${BLUE}Step 1: Select the AI Agent or IDE you are using (The Orchestrator):${NC}"
-    tools=("Claude Code" "Cursor" "Antigravity" "Codex" "Gemini" "Copilot" "Junie" "Kiro" "OpenHands" "OpenCode" "QwenCode" "Mistral Vibe" "Kimi Code" "Custom Path" "Exit")
+    tools=("Claude Code" "Cursor" "Antigravity" "Codex" "Gemini" "Copilot" "Junie" "Kiro" "OpenHands" "OpenCode" "QwenCode" "Mistral Vibe" "Kimi Code" "Qoder CLI" "Custom Path" "Exit")
     
-    PS3="Select a tool [1-15]: "
+    PS3="Select a tool [1-16]: "
     select tool in "${tools[@]}"; do
         case $tool in
             "Exit") exit 0 ;;

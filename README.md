@@ -79,6 +79,7 @@ As Orchestrator or Subagent or Both:
 - [x] **QwenCode** (Both)
 - [x] **Mistral Vibe** (Both)
 - [x] **Kimi Code** (Both)
+- [x] **Qoder CLI** (Both)
 
 ## License
 
