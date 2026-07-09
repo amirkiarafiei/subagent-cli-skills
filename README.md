@@ -80,6 +80,7 @@ As Orchestrator or Subagent or Both:
 - [x] **Mistral Vibe** (Both)
 - [x] **Kimi Code** (Both)
 - [x] **Qoder CLI** (Both)
+- [x] **Hermes Agent** (Both)
 
 ## License
 

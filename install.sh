@@ -58,6 +58,7 @@ TOOL_PATHS["QwenCode"]="$HOME/.qwen/skills"
 TOOL_PATHS["Mistral Vibe"]="$HOME/.vibe/skills"
 TOOL_PATHS["Kimi Code"]="$HOME/.kimi/skills"
 TOOL_PATHS["Qoder CLI"]="$HOME/.qoder/skills"
+TOOL_PATHS["Hermes Agent"]="$HOME/.hermes/skills"
 
 # Function to list available skills in specific order
 list_skills() {
@@ -75,13 +76,14 @@ list_skills() {
     echo "mistral-vibe"
     echo "kimi-code"
     echo "qoder-cli"
+    echo "hermes-agent"
 }
 
 # Use /dev/tty for all interactive input to avoid issues with pipes
 {
     # 1. Select Tool
     echo -e "\n${BLUE}Step 1: Select the AI Agent or IDE you are using (The Orchestrator):${NC}"
-    tools=("Claude Code" "Cursor" "Antigravity" "Codex" "Gemini" "Copilot" "Junie" "Kiro" "OpenHands" "OpenCode" "QwenCode" "Mistral Vibe" "Kimi Code" "Qoder CLI" "Custom Path")
+    tools=("Claude Code" "Cursor" "Antigravity" "Codex" "Gemini" "Copilot" "Junie" "Kiro" "OpenHands" "OpenCode" "QwenCode" "Mistral Vibe" "Kimi Code" "Qoder CLI" "Hermes Agent" "Custom Path")
     
     while true; do
         echo ""
