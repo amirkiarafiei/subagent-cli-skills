@@ -1,5 +1,5 @@
 # Subagent CLI Skills 🧔🏻👶🏻
-Let your Claude Code prompt Codex, Copilto and Gemini simultaneously!
+Let your Claude Code prompt Codex, Copilot and Gemini simultaneously!
 
 A collection of Skills for cross-agent task delegation. Let your orchestrator (like Claude Code or Antigravity) use Antigravity/Gemini CLI as a subagent to reduce your context usage and costs.
 
