@@ -55,14 +55,27 @@ You **MUST** use OpenCode CLI programmatically. Do **NOT** start interactive ses
 | Requirement | Flag |
 |-------------|------|
 | **Non-interactive** | `run "[prompt]"` |
-| **Auto-approval** | `--dangerously-skip-permissions` |
+| **Auto-approval** | `--auto` (auto-approves permissions not explicitly denied) |
 | **Model Selection** | `-m` or `--model [provider/model]` |
+| **Agent Selection** | `--agent build` (edits) or `--agent plan` (read-only analysis) |
 | **Output Format** | `--format [default|json]` |
+| **Reasoning Effort** | `--variant [high|max|minimal]` (provider-specific) |
+
+There is **no** `--dangerously-skip-permissions` flag. OpenCode's CLI silently ignores
+unknown flags, so passing it fails open rather than erroring — the run proceeds with
+permissions unchanged and blocks on anything set to `ask` (e.g. `doom_loop`,
+`external_directory`). Use `--auto`.
 
 ## Command pattern
 
 ```bash
-opencode run "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | OUTPUT: [format]" --dangerously-skip-permissions --model [model] 2>&1
+opencode run "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" --auto --model [model] 2>&1
+```
+
+Read-only pass (no edits — use the `plan` agent rather than trusting prompt wording):
+
+```bash
+opencode run "GOAL: [analysis task] | SCOPE: [paths] | OUTPUT: report only" --agent plan 2>&1
 ```
 
 ## After OpenCode returns
@@ -74,6 +87,11 @@ opencode run "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAIN
 
 ## Quick prompts
 
-- **Delegate implementation**: `opencode run "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" --dangerously-skip-permissions`
-- **Architectural Analysis**: `opencode run "GOAL: Analyze architecture for [concerns] | SCOPE: [paths] | VERIFICATION: [check_command] | OUTPUT: architecture report" --model [heavy-model]`
-- **Investigate**: `opencode run "GOAL: Map how [feature] works | SCOPE: [paths] | OUTPUT: concise file:line map"`
+- **Delegate implementation**: `opencode run "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" --auto`
+- **Architectural Analysis**: `opencode run "GOAL: Analyze architecture for [concerns] | SCOPE: [paths] | VERIFICATION: [check_command] | OUTPUT: architecture report" --agent plan --model [heavy-model]`
+- **Investigate**: `opencode run "GOAL: Map how [feature] works | SCOPE: [paths] | OUTPUT: concise file:line map" --agent plan`
+
+## More detail
+
+- Delegation checklist (short): [reference.md](reference.md#delegation-checklist)
+- Flags, agents, models, auth: [reference.md](reference.md)
