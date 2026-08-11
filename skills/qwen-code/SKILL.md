@@ -54,10 +54,11 @@ If the delegation would need a long transcript to be safe, **summarize** the rel
 
 **MANDATORY: Search the web for latest Qwen-Code model names/aliases and pricing before selecting a model.** You should also consult [Artificial Analysis](https://artificialanalysis.ai/) for the most up-to-date benchmarks, pricing, and model performance data. 
 
-- **Default (Agentic Coding)**: `qwen3-coder-plus` (Flagship commercial coding model).
-- **Thinking Mode**: `qwen3.6-max-preview` (Most powerful; includes high-reasoning "Thinking" mode).
-- **High Performance**: `qwen3.6-plus` (Latest April 2026 snapshot; powerhouse coding performance).
-- **Strategy**: Default to `qwen3-coder-plus` for implementation. Use `qwen3.6-max-preview` for complex reasoning or architecture.
+- **Default (Agentic Coding)**: `qwen3-coder-plus` (flagship commercial coding model).
+- **Fast / Cheap**: `qwen3-coder-flash` (simple delegations, tight loops).
+- **Thinking / Max Reasoning**: `qwen3.8-max` (most powerful; high-reasoning "Thinking" mode).
+- **High Performance Balanced**: `qwen3.7-plus` (latest general flagship).
+- **Strategy**: Default to `qwen3-coder-plus` for implementation. Escalate to `qwen3.8-max` for complex reasoning or architecture. The `3.6` line (`qwen3.6-max-preview`, `qwen3.6-plus`) still resolves but is superseded — verify current names via search.
 
 ## Programmatic usage (required)
 
@@ -83,7 +84,7 @@ qwen -p "[prompt with paths as needed]" -o text --model qwen3-coder-plus 2>&1
 ## Quick prompts
 
 - **Delegate implementation**: `qwen -p "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" -o text --model qwen3-coder-plus`
-- **Thinking Analysis**: `qwen -p "GOAL: Analyze complex architecture for potential deadlocks | SCOPE: [paths] | VERIFICATION: [check_command] | OUTPUT: analysis report" --model qwen3.6-max-preview`
+- **Thinking Analysis**: `qwen -p "GOAL: Analyze complex architecture for potential deadlocks | SCOPE: [paths] | VERIFICATION: [check_command] | OUTPUT: analysis report" --model qwen3.8-max`
 - **Investigate**: `qwen -p "GOAL: Map how [feature] works | SCOPE: [paths] | OUTPUT: concise file:line map" -o text`
 
 ## More detail

@@ -6,10 +6,20 @@ Concise reference for agents. Auth: `KIRO_API_KEY`.
 
 Model names change frequently. **Always search for latest pricing/aliases.** Consult [Artificial Analysis](https://artificialanalysis.ai/) for up-to-date model performance and pricing data.
 
-- **Balanced Daily Driver**: `claude-sonnet-4.6`
-- **Fast & Efficient**: `claude-haiku-4.5`
-- **Max Reasoning**: `claude-opus-4.7`
-- **OpenAI Integration**: `gpt-5.4`
+Kiro bills in **credit multipliers**, so model choice maps directly to spend.
+
+| Model | Tier | Notes |
+|-------|------|-------|
+| `claude-sonnet-5` | Balanced daily driver | 1M context, 1.3x credits. Most agentic Sonnet yet. |
+| `claude-haiku-4.5` | Fast & efficient | Cheapest — quick suggestions, simple edits. |
+| `claude-opus-5` | Max reasoning | 1M context, 2.2x credits. Hardest long-horizon agentic work. |
+| `gpt-5.6-sol` / `gpt-5.6-terra` / `gpt-5.6-luna` | OpenAI tiers | Added Jul 2026 — flagship / balanced / fast. |
+| `glm-5` | Open-weight | Sparse MoE alternative. |
+| `minimax-m2.5` | Open-weight | Lower-cost option. |
+
+> Sonnet 5 / Opus 5 are **experimental preview** in the Kiro CLI and gated to Pro, Pro+, Pro Max,
+> and Power tiers. Older `claude-sonnet-4.6`, `claude-opus-4.7`, and `claude-opus-4.8` remain
+> selectable. Verify against `kiro-cli` model selection for your plan before pinning.
 
 ## Subagents ([built-in])
 

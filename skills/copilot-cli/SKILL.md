@@ -54,9 +54,11 @@ If the delegation would need a long transcript to be safe, **summarize** the rel
 
 **MANDATORY: Search the web for latest Copilot model names/aliases and pricing before selecting a model.** You should also consult [Artificial Analysis](https://artificialanalysis.ai/) for the most up-to-date benchmarks, pricing, and model performance data. Availability of specific high-end models varies by account and region.
 
-- **Default (Simple Tasks)**: `gpt-5.4-mini` (Inexpensive, fast, ideal for simple edits and exploration).
-- **Heavy Tasks**: `gpt-5.4` (Current high-performance model for complex reasoning and refactoring).
-- **Strategy**: Always default to the "mini" variant to save credits. Only escalate to `gpt-5.4` for critical tasks after verifying latest version and cost via search.
+- **Default (Simple Tasks)**: `gpt-5.6-luna` (inexpensive, fast, ideal for simple edits and exploration).
+- **Standard (Implementation)**: `gpt-5.6-terra` or `claude-sonnet-5`.
+- **Heavy Tasks**: `gpt-5.6-sol` or `claude-opus-5` (complex reasoning and refactoring).
+- **Strategy**: Always default to the cheap tier to save credits. Escalate only for critical tasks after verifying latest version and cost via search. Prefer raising `--effort` over switching to a bigger model — Copilot offers no o-series/"thinking" models.
+- **Deadline**: `gpt-5.4` / `gpt-5.4-mini` **retire 2026-08-31** — do not pin them.
 
 ## Programmatic usage (required)
 
@@ -73,7 +75,7 @@ You **MUST** use Copilot CLI programmatically. Do **NOT** start interactive sess
 ## Command pattern
 
 ```bash
-copilot -p "[prompt with @ FILENAME as needed]" --yolo -s --model gpt-5.4-mini 2>&1
+copilot -p "[prompt with @ FILENAME as needed]" --yolo -s --model gpt-5.6-luna 2>&1
 ```
 
 With specific agent:

@@ -11,8 +11,8 @@ Model names change frequently. **Always search for latest pricing/aliases.** Con
 | `sonnet` | Anthropic| Latest Claude Sonnet model. |
 | `opus`   | Anthropic| Latest Claude Opus model. |
 | `gpt`    | OpenAI   | Latest GPT model. |
-| `gemini-3.5-flash`| Google| Latest Gemini 3.5 Flash model. |
-| `gemini-3.1-pro`  | Google| Latest Gemini 3.1 Pro model. |
+| `gemini-3.6-flash`| Google| Latest Gemini Flash model (default since Jul 2026). |
+| `gemini-3.1-pro`  | Google| Latest Gemini **Pro** model — the Pro line is frozen at 3.1; no 3.5/3.6 Pro exists. |
 | `grok`   | xAI      | Latest Grok model. |
 
 ## Essential Flags

@@ -47,6 +47,11 @@ When composing the **single Mistral Vibe prompt**, treat it as passing **enough 
 
 **MANDATORY: Search the web for latest Mistral model names and pricing before selecting a model.** You should also consult [Artificial Analysis](https://artificialanalysis.ai/) for the most up-to-date benchmarks, pricing, and model performance data.
 
+- **Default (Coding)**: `devstral-latest` (flagship Devstral 2, 123B, 256K context — Vibe's default).
+- **Fast / Cheap**: `devstral-small-2507` (Devstral Small 2, 24B; runs locally on a 24GB GPU).
+- **Reproducible**: pin a dated snapshot such as `devstral-2512` instead of an alias.
+- **Strategy**: Default to `devstral-latest` for implementation. Note that `devstral-2` and `devstral-small-2` are marketing names, **not** valid API IDs — use the aliases or dated snapshots.
+
 ## Programmatic usage (required)
 
 You **MUST** use Mistral Vibe CLI programmatically. Do **NOT** start interactive sessions.
@@ -74,5 +79,5 @@ vibe --prompt "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAI
 ## Quick prompts
 
 - **Delegate implementation**: `vibe --prompt "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]"`
-- **Investigate**: `vibe --prompt "GOAL: Map how [feature] works | SCOPE: [paths] | OUTPUT: concise file:line map" --model devstral-small-2`
-- **Plan**: `vibe --prompt "GOAL: Design architecture for [feature] | SCOPE: [paths] | OUTPUT: architecture plan" --model devstral-2`
+- **Investigate**: `vibe --prompt "GOAL: Map how [feature] works | SCOPE: [paths] | OUTPUT: concise file:line map" --model devstral-small-2507`
+- **Plan**: `vibe --prompt "GOAL: Design architecture for [feature] | SCOPE: [paths] | OUTPUT: architecture plan" --model devstral-latest`

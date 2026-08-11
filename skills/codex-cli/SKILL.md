@@ -54,9 +54,11 @@ If the delegation would need a long transcript to be safe, **summarize** the rel
 
 **MANDATORY: Search the web for latest OpenAI model names and pricing before selecting a model.** You should also consult [Artificial Analysis](https://artificialanalysis.ai/) for the most up-to-date benchmarks, pricing, and model performance data. GPT-4o is legacy/old for Codex CLI.
 
-- **Default (Reasoning/Complex)**: `gpt-5.4-thinking` (Successor to o3; PHd-level logic).
-- **Standard (Speed/Implementation)**: `gpt-5.4` (Balanced, incorporates GPT-5.3-Codex logic).
-- **Strategy**: Default to `gpt-5.4` for standard tasks and `gpt-5.4-thinking` for complex architecture. Verify current version via search to avoid stale names.
+- **Heavy (Reasoning/Architecture)**: `gpt-5.6-sol` (flagship; also the CLI default).
+- **Standard (Speed/Implementation)**: `gpt-5.6-terra` (balanced everyday workhorse).
+- **Fast / Cheap**: `gpt-5.6-luna` (high-volume, simple delegations).
+- **Strategy**: Default to `gpt-5.6-terra` for standard tasks; escalate to `gpt-5.6-sol` for complex architecture. Raise **reasoning effort** (`-c model_reasoning_effort="high"`) rather than hunting for a "thinking" model — there is no `gpt-5.4-thinking`. Verify current names via search to avoid stale ones.
+- **Deadline**: `gpt-5.4` / `gpt-5.4-mini` **retire from Codex on 2026-08-31** — do not pin them.
 
 ## Programmatic usage (required)
 
@@ -72,7 +74,7 @@ You **MUST** use Codex CLI programmatically via the `exec` command. Do **NOT** s
 ## Command pattern
 
 ```bash
-codex exec "[prompt]" --full-auto --model gpt-5.4 2>&1
+codex exec "[prompt]" --full-auto --model gpt-5.6-terra 2>&1
 ```
 
 ## After Codex returns
@@ -85,7 +87,7 @@ codex exec "[prompt]" --full-auto --model gpt-5.4 2>&1
 ## Quick prompts
 
 - **Delegate implementation**: `codex exec "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" --full-auto`
-- **Logic Check**: `codex exec "GOAL: Analyze logic for edge cases and potential race conditions | SCOPE: [paths] | VERIFICATION: [check_command] | OUTPUT: detailed report" --model gpt-5.4-thinking`
+- **Logic Check**: `codex exec "GOAL: Analyze logic for edge cases and potential race conditions | SCOPE: [paths] | VERIFICATION: [check_command] | OUTPUT: detailed report" --model gpt-5.6-sol -c model_reasoning_effort="high"`
 - **Audit**: `codex exec "GOAL: Perform a security audit of the authentication layer | SCOPE: [paths] | OUTPUT: audit report" --full-auto`
 
 ## More detail

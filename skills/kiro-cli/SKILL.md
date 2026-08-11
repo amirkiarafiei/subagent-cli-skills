@@ -13,7 +13,7 @@ allowed-tools:
 
 Use **Kiro CLI** to run a **separate long-horizon pass** over the repo: multi-step implementation, broad refactors, batch file writes, or deep exploration—similar to handing a **task to a subagent**. You stay orchestrator: smaller prompts, less context burn, often lower spend than doing the same work entirely in-session.
 
-Kiro CLI (formerly Amazon Q Developer CLI) is powered by the latest frontier models (Claude 4.x, GPT-5.x) and is highly optimized for deep codebase intelligence and agentic coding.
+Kiro CLI (formerly Amazon Q Developer CLI) is powered by the latest frontier models (Claude Sonnet 5 / Opus 5, GPT-5.6) and is highly optimized for deep codebase intelligence and agentic coding.
 
 ## When to use Kiro CLI
 
@@ -54,10 +54,11 @@ If the delegation would need a long transcript to be safe, **summarize** the rel
 
 **MANDATORY: Search the web for latest Kiro model names/aliases and pricing before selecting a model.** You should also consult [Artificial Analysis](https://artificialanalysis.ai/) for the most up-to-date benchmarks, pricing, and model performance data. 
 
-- **Default (Simple Tasks)**: `claude-haiku-4.5` (Inexpensive, fast, ideal for quick command suggestions).
-- **Standard (Implementation)**: `claude-sonnet-4.6` (Balanced daily driver; high intelligence).
-- **Heavy Tasks**: `claude-opus-4.7` or `gpt-5.4` (PhD-level logic for complex architecture).
-- **Strategy**: Always default to Sonnet/Haiku to minimize costs. Escalating to Opus/GPT-5 only for critical architecture tasks after verifying latest version and cost via search.
+- **Default (Simple Tasks)**: `claude-haiku-4.5` (inexpensive, fast, ideal for quick command suggestions).
+- **Standard (Implementation)**: `claude-sonnet-5` (balanced daily driver, 1M context, 1.3x credits).
+- **Heavy Tasks**: `claude-opus-5` (2.2x credits) or `gpt-5.6-sol` for complex architecture.
+- **Strategy**: Always default to Haiku/Sonnet to minimize credit burn. Escalate to Opus/GPT-5.6 only for critical architecture tasks after verifying latest version and cost via search. Kiro prices by **credit multiplier**, so an Opus delegation costs ~1.7x a Sonnet one for the same tokens.
+- **Availability**: Sonnet 5 / Opus 5 are experimental preview in the CLI and gated to Pro tiers and above.
 
 ## Programmatic usage (required)
 
@@ -73,7 +74,7 @@ You **MUST** use Kiro CLI programmatically. Do **NOT** start interactive session
 ## Command pattern
 
 ```bash
-kiro-cli chat --no-interactive "[prompt with @ FILENAME as needed]" --trust-all-tools --model claude-sonnet-4.6 2>&1
+kiro-cli chat --no-interactive "[prompt with @ FILENAME as needed]" --trust-all-tools --model claude-sonnet-5 2>&1
 ```
 
 ## After Kiro returns

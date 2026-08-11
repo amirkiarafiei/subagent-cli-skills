@@ -12,11 +12,26 @@ Hermes uses a provider-based model system. Models are specified as `provider/mod
 |----------|-------------|-------|
 | Nous Portal | `nous/model-name` | 300+ models, one subscription (`hermes setup --portal`) |
 | OpenRouter | `openrouter/provider/model` | Aggregator, broadest selection |
-| Anthropic | `anthropic/claude-sonnet-4` | Direct Anthropic API |
-| OpenAI | `openai/gpt-5.4` | Direct OpenAI API |
+| Anthropic | `anthropic/claude-sonnet-5` | Direct Anthropic API (also `claude-opus-5`, `claude-haiku-4-5`) |
+| OpenAI | `openai/gpt-5.6-sol` | Direct OpenAI API (also `-terra` balanced, `-luna` fast) |
+| Google | `google/gemini-3.6-flash` | Also `gemini-3.1-pro` (Pro line frozen at 3.1) |
 | Ollama | `ollama/model-name` | Local or cloud (Ollama Cloud) |
 
-Use `hermes model` for the interactive provider+model picker. Use `hermes config show | grep '^model\.'` and `hermes status` to inspect current configuration.
+Current frontier picks by tier, assuming the provider is authenticated:
+
+| Tier | Examples |
+|------|----------|
+| Fast / cheap | `openai/gpt-5.6-luna`, `google/gemini-3.6-flash`, `anthropic/claude-haiku-4-5`, `deepseek/deepseek-v4-flash` |
+| Balanced | `openai/gpt-5.6-terra`, `anthropic/claude-sonnet-5` |
+| Heavy reasoning | `openai/gpt-5.6-sol`, `anthropic/claude-opus-5`, `google/gemini-3.1-pro` |
+| Open weight | `moonshotai/kimi-k2.7-code`, `zai/glm-5.2`, `minimax/minimax-m3`, `deepseek/deepseek-v4-pro` |
+
+Hermes provider keys are `nous`, `openrouter`, `anthropic`, `openai`, `google`, `xai`, `mistral`,
+`deepseek`, `moonshotai`, `minimax`, `groq`, `zai`, `ollama`. Note **`zai`** (not `zhipuai`) for
+the GLM family. Run `hermes model --refresh` to re-fetch every provider's live `/v1/models` list
+rather than guessing an ID.
+
+Use `hermes model` for the interactive provider+model picker, and `hermes config show` / `hermes status` to inspect current configuration. Note that `config show` prints a formatted box, **not** `key=value` lines — grepping it for `^model\.` returns nothing.
 
 ## Built-in Tools
 
@@ -61,15 +76,19 @@ Use `-s skill-name` to preload a skill at launch (e.g., `-s plan`). All installe
 | `-Q`, `--quiet` | **Suppress banner, spinner, tool previews — always use for programmatic delegation.** Only outputs final response + session_id. |
 | `--yolo` | Skip permission checks (auto-approve all tools). |
 | `-s skill-name` | Preload a skill for the session. Repeatable or comma-separated. |
-| `--model "provider/model"` or `-m` | Specify model (e.g., `anthropic/claude-sonnet-4`). |
+| `--model "provider/model"` or `-m` | Specify model (e.g., `anthropic/claude-sonnet-5`). |
 | `--provider name` | Force a specific provider. |
 | `--toolsets "list"` or `-t` | Enable tool bundles (e.g., `file,terminal,web,skills`). |
 | `-w`, `--worktree` | Start in an isolated git worktree (auto-cleanup). |
 | `-c`, `--continue` | Resume the most recent session. |
 | `-r`, `--resume <id>` | Resume a specific session by ID or title. |
 | `--verbose` or `-v` | Enable debug/verbose output. |
+| `--max-turns N` | **Cap tool-calling iterations per turn (default 90).** Use it to bound a delegated run so a stuck subagent cannot loop indefinitely. |
+| `--checkpoints` | Snapshot files before destructive operations (`/rollback` restores). Cheap safety net for delegations that write. |
 | `--ignore-user-config` | Bypass `~/.hermes/config.yaml` (isolated CI-like run). |
-| `--ignore-rules` | Skip `AGENTS.md`, `SOUL.md`, memory injection. |
+| `--ignore-rules` | Skip `AGENTS.md`, `SOUL.md`, `.cursorrules`, memory, and preloaded skills. |
+| `--safe-mode` | Disable **all** customization — config, rules, plugins, MCP servers (implies the two flags above). Use to isolate whether a failure is your setup or Hermes. |
+| `--source tool` | Tag the session as third-party so it stays out of the user's session lists. |
 | `--accept-hooks` | Auto-approve shell hooks without TTY prompt. |
 
 ## Toolsets
@@ -85,14 +104,31 @@ Use `-s skill-name` to preload a skill at launch (e.g., `-s plan`). All installe
 | `memory` | memory | Persistent memory |
 | `code_execution` | execute_code | Python scripting with tool access |
 | `vision` | vision_analyze | Image analysis |
+| `todo` | todo tools | Task planning |
+| `session_search` | session search | Search prior session history |
+| `clarify` | clarifying questions | Ask the caller for missing detail |
+| `cronjob` | cron tools | Scheduled jobs |
+| `image_gen` | image generation | Create images |
+| `tts` | text-to-speech | Audio output |
+| `video` / `video_gen` | video analysis / generation | Disabled by default |
+| `x_search` | X (Twitter) search | Disabled by default |
+| `context_engine` | context engine | Disabled by default |
+| `computer_use` | computer use | GUI control (macOS/Windows/Linux) |
 | `coding` | composite (file+terminal+web+skills+browser+todo+memory+delegation+code_execution) | Full coding bundle |
+
+Run `hermes tools list` to see which toolsets are enabled for your install — several ship disabled
+(`video`, `video_gen`, `x_search`, `context_engine`, `homeassistant`, `spotify`, `yuanbao`). Note
+that `coding` is a valid composite but does **not** appear in `hermes tools list` output.
 
 ## Configuration
 
 - `~/.hermes/config.yaml`: Main configuration file (model, provider, toolsets, skills, etc.).
-- `~/.hermes/skills/`: Skills directory. Each skill is a subfolder with `SKILL.md`.
+- `~/.hermes/skills/`: Skills directory, grouped by **category** — each skill lives at
+  `<category>/<skill>/SKILL.md` (e.g. `software-development/plan/SKILL.md`), not as a flat
+  subfolder. `-s <name>` still resolves by bare skill name, so the nesting does not affect usage.
 - `~/.hermes/state.db`: SQLite session database (history, metadata).
-- `~/.hermes/plans/`: Plan files created by the `plan` skill.
+- `<workspace>/.hermes/plans/`: Plan files created by the `plan` skill — written **relative to the
+  active workspace**, not under `~/.hermes/`.
 
 ## Delegation Checklist
 

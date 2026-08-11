@@ -56,9 +56,9 @@ If the delegation would need a long transcript to be safe, **summarize** the rel
 
 **MANDATORY: Search the web for latest Gemini model names/aliases and pricing before selecting a model.** You should also consult [Artificial Analysis](https://artificialanalysis.ai/) for the most up-to-date benchmarks, pricing, and model performance data. Names change frequently.
 
-- **Default (Simple Tasks)**: `gemini-3.5-flash` (Use for speed, research, and formatting).
+- **Default (Simple Tasks)**: `gemini-3.6-flash` (Use for speed, research, and formatting).
 - **Heavy Tasks**: `pro` / `gemini-3.1-pro` (Use for deep reasoning and large-scale refactors).
-- **Strategy**: Always default to `gemini-3.5-flash` to minimize costs. Only escalate to pro versions for critical architecture tasks after verifying latest version and cost via search.
+- **Strategy**: Always default to `gemini-3.6-flash` to minimize costs. Only escalate to pro versions for critical architecture tasks after verifying latest version and cost via search.
 
 ## Programmatic usage (required)
 
@@ -66,15 +66,18 @@ You **MUST** use Antigravity CLI programmatically. Do **NOT** start interactive 
 
 | Requirement | Flag / Option |
 |-------------|---------------|
+| **Non-interactive** | `--bare` (disables the TUI — **required**, see below) |
 | **Auto-approval** | `--dangerously-skip-permissions` or `--yolo` |
 | **Silent output** | `-o text` (for clean response) |
 | **Model Selection** | `--model [model_name/alias]` |
-| **No Startup Delay**| `--bare` |
+
+A bare `agy "prompt"` starts an **interactive session**. Without `--bare` a delegated call opens
+the TUI and hangs instead of running and exiting, so every programmatic invocation must pass it.
 
 ## Command pattern
 
 ```bash
-agy "[prompt with @paths as needed]" --dangerously-skip-permissions -o text --model gemini-3.5-flash 2>&1
+agy --bare "[prompt with @paths as needed]" --dangerously-skip-permissions -o text --model gemini-3.6-flash 2>&1
 ```
 
 ## After Antigravity returns
@@ -86,10 +89,10 @@ agy "[prompt with @paths as needed]" --dangerously-skip-permissions -o text --mo
 
 ## Quick prompts
 
-- **Delegate implementation**: `agy "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" --dangerously-skip-permissions -o text --model gemini-3.5-flash`
-- **Investigate**: `agy "@codebase_investigator GOAL: Map how [feature] works | SCOPE: [paths] | OUTPUT: concise file:line map" --dangerously-skip-permissions -o text`
-- **Web Search**: `agy "GOAL: Find latest documentation for [library] | CONSTRAINTS: focus on breaking changes in [version] | OUTPUT: summary report" --dangerously-skip-permissions -o text`
-- **Security**: `agy "@gemini-cli-security GOAL: Audit for injection/XSS/auth issues | SCOPE: @./src | OUTPUT: report with severities" --dangerously-skip-permissions -o text`
+- **Delegate implementation**: `agy --bare "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" --dangerously-skip-permissions -o text --model gemini-3.6-flash`
+- **Investigate**: `agy --bare "@codebase_investigator GOAL: Map how [feature] works | SCOPE: [paths] | OUTPUT: concise file:line map" --dangerously-skip-permissions -o text`
+- **Web Search**: `agy --bare "GOAL: Find latest documentation for [library] | CONSTRAINTS: focus on breaking changes in [version] | OUTPUT: summary report" --dangerously-skip-permissions -o text`
+- **Security**: `agy --bare "@gemini-cli-security GOAL: Audit for injection/XSS/auth issues | SCOPE: @./src | OUTPUT: report with severities" --dangerously-skip-permissions -o text`
 
 ## More detail
 

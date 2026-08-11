@@ -61,12 +61,12 @@ Since model availability depends on the user's configured providers, use the fol
 
 1. **Search the web first**: Look for the latest recommended models compatible with the user's provider (e.g., Claude Sonnet, GPT, Gemini, DeepSeek, Qwen, etc.).
 2. **Fallback**: Consult [Artificial Analysis](https://artificialanalysis.ai/) for up-to-date benchmarks, pricing, and model performance data.
-3. **Provider-aware selection**: Format models as `provider/model-name` (e.g., `anthropic/claude-sonnet-4`, `openrouter/deepseek-v4`, `ollama/llama-4`).
+3. **Provider-aware selection**: Format models as `provider/model-name` (e.g., `anthropic/claude-sonnet-5`, `openai/gpt-5.6-sol`, `openrouter/moonshotai/kimi-k2.7-code`, `ollama/model-name`).
 
 General recommendations (subject to change—always verify):
 
-- **Fast / Simple Tasks**: Flash or mini-tier models via the configured provider (low cost, fast).
-- **Heavy / Complex Tasks**: Frontier models like Claude Opus, GPT, Gemini Pro, or DeepSeek via the configured provider (deep reasoning).
+- **Fast / Simple Tasks**: `google/gemini-3.6-flash`, `openai/gpt-5.6-luna`, `anthropic/claude-haiku-4-5`, or `deepseek/deepseek-v4-flash` (low cost, fast).
+- **Heavy / Complex Tasks**: `anthropic/claude-opus-5`, `openai/gpt-5.6-sol`, or `google/gemini-3.1-pro` (deep reasoning). Open-weight frontier: `zai/glm-5.2`, `minimax/minimax-m3`, `moonshotai/kimi-k2.7-code`.
 - **Strategy**: Default to fast/cheap models for simple delegations. Escalate to frontier models for critical architecture and reasoning tasks. Always verify the latest model names, aliases, and costs via web search.
 
 ## Programmatic usage (required)
@@ -95,7 +95,7 @@ hermes chat -q "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRA
 With specific model:
 
 ```bash
-hermes chat -q "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" --yolo -Q --model "anthropic/claude-sonnet-4" --toolsets "file,terminal,web,skills" 2>&1
+hermes chat -q "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" --yolo -Q --model "anthropic/claude-sonnet-5" --toolsets "file,terminal,web,skills" 2>&1
 ```
 
 In isolated worktree (parallel agent sessions):

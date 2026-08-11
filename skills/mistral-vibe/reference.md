@@ -8,8 +8,16 @@ Model names change frequently. **Always search for latest pricing/aliases.** Con
 
 | Recommended Model | Description |
 |-------------------|-------------|
-| `devstral-2`      | Flagship coding model. |
-| `devstral-small-2`| Fast and efficient coding model. |
+| `devstral-latest` | Alias for the current flagship Devstral coding model (Devstral 2, 123B, 256K context). Vibe's default. |
+| `devstral-2512`   | Pinned snapshot of the flagship — use for reproducible delegations. |
+| `devstral-medium-latest` | Mid-tier coding model. |
+| `devstral-small-2507` | Small/fast tier (Devstral Small 2, 24B) — locally deployable. |
+| `labs-devstral-small-2512` | Newest small-tier snapshot (labs channel). |
+| `mistral-medium-latest` | General (non-coding) model; `mistral-medium-2604` is the current snapshot. |
+
+> **Naming trap:** "Devstral 2" and "Devstral Small 2" are *marketing* names, not API IDs.
+> `devstral-2` and `devstral-small-2` are **not** valid model IDs — use the `-latest` aliases or a
+> dated snapshot (`YYMM`, e.g. `2512` = Dec 2025).
 
 ## Essential Flags
 

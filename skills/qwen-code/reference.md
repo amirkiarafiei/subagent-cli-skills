@@ -6,9 +6,16 @@ Concise reference for agents. Auth: `DASHSCOPE_API_KEY` or `OPENAI_API_KEY`.
 
 Model names change frequently. **Always search for latest pricing/aliases.** Consult [Artificial Analysis](https://artificialanalysis.ai/) for up-to-date model performance and pricing data.
 
-- **Agentic Coding**: `qwen3-coder-plus` (Optimized for tool use and implementation)
-- **High Reasoning**: `qwen3.6-max-preview` (Includes "Thinking" mode for complex logic)
-- **Latest Balanced**: `qwen3.6-plus` (April 2026 flagship)
+| Model | Use |
+|-------|-----|
+| `qwen3-coder-plus` | Agentic coding — optimized for tool use and implementation |
+| `qwen3-coder-flash` | Fast/cheap coding tier for simple delegations |
+| `qwen3.8-max` | Highest reasoning — complex architecture and long-horizon logic |
+| `qwen3.7-plus` | Latest balanced flagship |
+| `qwen3.6-flash` | General fast tier |
+
+Older `qwen3.6-max-preview` and `qwen3.6-plus` still resolve but are superseded by the 3.7/3.8
+line. Prefer the `-coder-` variants for implementation work and the `max` line for reasoning.
 
 ## Essential Flags
 

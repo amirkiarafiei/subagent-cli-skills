@@ -48,6 +48,11 @@ When composing the **single Kimi Code prompt**, treat it as passing **enough sha
 
 **MANDATORY: Search the web for latest Kimi model names and pricing before selecting a model.** You should also consult [Artificial Analysis](https://artificialanalysis.ai/) for the most up-to-date benchmarks, pricing, and model performance data.
 
+- **Default (Agentic Coding)**: `kimi-k2.7-code` (long-context coding, precise instruction following).
+- **Fast / Cheap**: `kimi-k2.7-code-highspeed` (simple edits, tight loops).
+- **Heavy / General**: `kimi-k3` (newest frontier model) or `kimi-k2-thinking` for extended reasoning.
+- **Strategy**: Default to `kimi-k2.7-code` for implementation delegations. Avoid the moving `kimi-latest` alias — pin an explicit model so a delegation is reproducible.
+
 ## Programmatic usage (required)
 
 You **MUST** use Kimi Code CLI programmatically. Do **NOT** start interactive sessions.

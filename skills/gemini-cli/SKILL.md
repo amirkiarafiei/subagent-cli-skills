@@ -59,9 +59,9 @@ If the delegation would need a long transcript to be safe, **summarize** the rel
 
 **MANDATORY: Search the web for latest Gemini model names/aliases and pricing before selecting a model.** You should also consult [Artificial Analysis](https://artificialanalysis.ai/) for the most up-to-date benchmarks, pricing, and model performance data. Names change monthly; using stale names causes failures.
 
-- **Default (Simple Tasks)**: `gemini-3.5-flash` (Use for speed, research, and formatting).
+- **Default (Simple Tasks)**: `gemini-3.6-flash` (Use for speed, research, and formatting).
 - **Heavy Tasks**: `pro` (Alias for latest `gemini-3.1-pro-preview` or `gemini-3.1-pro`). Use for deep reasoning and large-scale refactors.
-- **Strategy**: Always default to `gemini-3.5-flash` to minimize costs. Only escalate to `pro` for critical architecture tasks after verifying latest version and cost via search.
+- **Strategy**: Always default to `gemini-3.6-flash` to minimize costs. Only escalate to `pro` for critical architecture tasks after verifying latest version and cost via search.
 
 ## Programmatic usage (required)
 
@@ -77,7 +77,7 @@ You **MUST** use Gemini CLI programmatically. Do **NOT** start interactive sessi
 ## Command pattern
 
 ```bash
-gemini "[prompt with @paths as needed]" --yolo -o text -m gemini-3.5-flash 2>&1
+gemini "[prompt with @paths as needed]" --yolo -o text -m gemini-3.6-flash 2>&1
 ```
 
 ## After Gemini returns
@@ -89,7 +89,7 @@ gemini "[prompt with @paths as needed]" --yolo -o text -m gemini-3.5-flash 2>&1
 
 ## Quick prompts
 
-- **Delegate implementation**: `gemini "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" --yolo -o text -m gemini-3.5-flash`
+- **Delegate implementation**: `gemini "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" --yolo -o text -m gemini-3.6-flash`
 - **Investigate**: `gemini "@codebase_investigator GOAL: Map how [feature] works | SCOPE: [paths] | OUTPUT: concise file:line map" --yolo -o text`
 - **Web Search**: `gemini "GOAL: Find latest documentation for [library] | CONSTRAINTS: focus on breaking changes in [version] | OUTPUT: summary report" --yolo -o text`
 - **Security**: `gemini "@gemini-cli-security GOAL: Audit for injection/XSS/auth issues | SCOPE: @./src | OUTPUT: report with severities" --yolo -o text`

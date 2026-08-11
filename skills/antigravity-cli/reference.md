@@ -6,8 +6,10 @@ Concise reference for agents. Auth: Silent keyring sign-in (local), Google Sign-
 
 Model names change frequently. **Always search for latest pricing/aliases.** Consult [Artificial Analysis](https://artificialanalysis.ai/) for up-to-date model performance and pricing data.
 
-- **Default (Simple Tasks)**: `gemini-3.5-flash`
+- **Default (Simple Tasks)**: `gemini-3.6-flash`
 - **Heavy Tasks**: `pro` or `gemini-3.1-pro`
+
+> **Pro-line caveat:** the Gemini **Pro** line is frozen at `gemini-3.1-pro` (Feb 2026). There is no `gemini-3.5-pro` or `gemini-3.6-pro` — do not guess one. Only the Flash line advanced to `gemini-3.6-flash` (default since Jul 21, 2026).
 
 ## Subagents
 

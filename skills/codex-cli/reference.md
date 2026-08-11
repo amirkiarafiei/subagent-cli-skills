@@ -4,11 +4,26 @@ Concise reference for agents. Auth: `OPENAI_API_KEY`.
 
 ## Models (Mandatory Search Required)
 
-Model names change frequently. **Always search for latest pricing and reasoning capabilities.** Consult [Artificial Analysis](https://artificialanalysis.ai/) for up-to-date model performance and pricing data. GPT-4o is legacy.
+Model names change frequently. **Always search for latest pricing and reasoning capabilities.** Consult [Artificial Analysis](https://artificialanalysis.ai/) for up-to-date model performance and pricing data. GPT-4o and the o1/o3 series are legacy.
 
-- **Thinking Reasoning**: `gpt-5.4-thinking` (PhD-level logic, successors to o1/o3)
-- **Unified Multimodal**: `gpt-5.4` (Standard flagship, incorporates GPT-5.3-Codex)
-- **High-Speed Reasoning**: `gpt-5.4-mini` (Successor to 4o-mini/o1-mini)
+The GPT-5.6 family is three tiers, not a single model:
+
+| Model | Tier | Use |
+|-------|------|-----|
+| `gpt-5.6-sol` | Flagship | Complex reasoning, architecture. **CLI default** (medium reasoning). |
+| `gpt-5.6-terra` | Balanced | Everyday implementation workhorse. |
+| `gpt-5.6-luna` | Fast / cheap | High-volume, responsive tasks. |
+| `gpt-5.5` | Previous frontier | Fallback if 5.6 is unavailable. |
+| `gpt-5.3-codex-spark` | Research preview | Text-only, ChatGPT Pro only. |
+
+> **Retiring `gpt-5.4` and `gpt-5.4-mini` retire from Codex on August 31, 2026.** Replace with
+> `gpt-5.6-terra` and `gpt-5.6-luna` respectively. `gpt-5.2` and `gpt-5.3-codex` are already
+> deprecated for ChatGPT sign-in. There is no `gpt-5.4-thinking` — reasoning is a separate
+> setting, not a model suffix.
+
+**Reasoning effort** is configured independently of the model: Low, Medium (default), High,
+Extra High, Max. Set via `-c model_reasoning_effort="high"`. "Ultra" mode fans out to subagents
+for parallel work on complex tasks.
 
 ## Essential Flags
 
