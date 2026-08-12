@@ -72,6 +72,19 @@ openhands --headless -t "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] 
 - **Compress** results for the user: summarize results for the user instead of pasting huge logs unless asked.
 - **Reconcile context**: note decisions, files touched, and remaining risks so the **main** session stays aligned.
 
+## If the call fails or hangs
+
+Headless runs fail quietly more often than they fail loudly:
+
+- **Wrap the call in an external timeout.** A headless CLI can stall before its own timeout arms.
+- **Exit 0 is not success.** If stdout is empty, treat the run as failed and read stderr — a tool
+  permission the CLI could not prompt for, and a prompt that never arrived, both look like success.
+- **Never carry a flag habit across CLIs.** The same short flag means different things in different
+  tools — in OpenCode `-p` is `--password`, so passing a prompt to it silently empties the message and
+  hangs the run forever. Confirm every flag against `openhands --help`.
+- **An unrecognized-flag error means this skill is stale, not that the task is impossible.** Run
+  `openhands --help`, proceed with the flags that exist, and tell the user which line here needs updating.
+
 ## Quick prompts
 
 - **Delegate implementation**: `openhands --headless -t "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]"`

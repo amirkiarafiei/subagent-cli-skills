@@ -12,7 +12,7 @@ We love your input! We want to make contributing to this project as easy and tra
 1. **Fork the repo** and create your branch from `main`.
 2. **Add your skill** in the `skills/` directory following the `HOW_TO.md` guide.
 3. **Update the installer**: If adding a new tool, update `install.sh` with the correct paths.
-4. **Test your changes**: Ensure the `SKILL.md` and `reference.md` follow the Handoff Table format.
+4. **Test your changes**: Ensure the `SKILL.md` and `reference.md` follow the Handoff Table format, and **verify every flag and model name against the installed binary** (`tool --help`, `tool models`)—not against vendor docs. Run the smoke test in `HOW_TO.md` before opening the PR.
 5. **Submit a Pull Request**.
 
 ## Style Guide

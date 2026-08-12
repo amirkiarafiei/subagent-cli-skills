@@ -66,6 +66,13 @@ unknown flags, so passing it fails open rather than erroring — the run proceed
 permissions unchanged and blocks on anything set to `ask` (e.g. `doom_loop`,
 `external_directory`). Use `--auto`.
 
+> **`-p` is `--password`, not the prompt.** The prompt is a **positional** argument. Writing
+> `opencode run -p "GOAL: ..."` (the habit from `claude -p` / `copilot -p` / `qwen -p`) feeds your
+> prompt to basic-auth and leaves the message **empty** — and an empty message makes the process
+> **wait on stdin forever**: no session is created, no output is produced, and it never exits.
+> The same happens whenever `"$(cat prompt.txt)"` resolves to an empty string. Always pass the
+> prompt positionally, and never let an unquoted or missing file become the message.
+
 ## Command pattern
 
 ```bash
@@ -77,6 +84,27 @@ Read-only pass (no edits — use the `plan` agent rather than trusting prompt wo
 ```bash
 opencode run "GOAL: [analysis task] | SCOPE: [paths] | OUTPUT: report only" --agent plan 2>&1
 ```
+
+## If the call fails or hangs
+
+Headless runs fail quietly more often than they fail loudly. Treat these as defaults, not ceremony:
+
+- **Wrap the call in an external timeout.** A headless CLI can stall before its own timeout arms.
+- **Exit 0 is not success.** If stdout is empty, treat the run as failed and read stderr — the usual
+  cause is a tool permission the CLI could not prompt for, or a prompt that never arrived.
+- **A hang with no output is almost always an empty message, not a slow model.** Add `--print-logs`:
+  a healthy run logs `init` then `created id=ses_...` within ~100ms. If you see `init` and then only
+  `cleanup prune=7.days` about 60s later, no session was ever created and the prompt never got sent —
+  check the prompt argument, not the model. That `cleanup` line is a routine 60s startup timer present
+  in **every** run, including successful ones; it is the last line before silence in a hang only
+  because nothing else is logging. It is not the cause.
+- **Unknown flags are silently ignored**, so a wrong flag fails open instead of erroring. Verify flags
+  against `opencode run --help` — it is the only authority — and if this skill names a flag that no
+  longer exists, proceed with what does and tell the user which line needs updating.
+- **Separate a broken environment from a broken prompt** before debugging the prompt: re-run with a
+  trivial prompt and minimal flags (e.g. `Reply with exactly: ALIVE`).
+- **Need progress on a long run?** Prefer `--format json` or `--print-logs` over guessing — silence
+  and progress look identical otherwise.
 
 ## After OpenCode returns
 
