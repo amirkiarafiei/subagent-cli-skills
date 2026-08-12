@@ -15,9 +15,18 @@ By treating CLI tools as specialized subagents, you can bypass context window li
 
 ## 🛠️ Installation
 
+### Ask your agent to install (Agentic)
+
+Paste this into Claude Code, Cursor, Antigravity, Codex, or any agent that can read a URL:
+
+```
+Read https://raw.githubusercontent.com/amirkiarafiei/subagent-cli-skills/main/AGENTIC_INSTALLATION.md and follow the instructions to install the Subagent CLI Skills.
+```
+See [AGENTIC_INSTALLATION.md](AGENTIC_INSTALLATION.md) for exactly what it will do.
+
 ### Quick Install (Interactive)
 
-The easiest way to install skills is using our interactive installer. 
+The easiest way to install skills using the interactive installer. 
 
 **Run via curl:**
 ```bash

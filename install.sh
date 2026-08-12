@@ -69,8 +69,10 @@ fi
 # Box-drawing only when the locale can render it.
 if printf '%s' "${LC_ALL:-${LC_CTYPE:-${LANG:-}}}" | grep -qi 'utf-*8'; then
   LINE="─"; ON="◉"; OFF="○"; CHK="▣"; BOX="□"; ARROW="›"; TICK="✓"; CROSS="✗"
+  TL="╭"; TR="╮"; BL="╰"; BR="╯"; VT="│"
 else
   LINE="-"; ON="(*)"; OFF="( )"; CHK="[x]"; BOX="[ ]"; ARROW=">"; TICK="+"; CROSS="x"
+  TL="+"; TR="+"; BL="+"; BR="+"; VT="|"
 fi
 
 term_cols() { local c; c=$(tput cols 2>/dev/null) || c=80; [ "$c" -gt 0 ] 2>/dev/null || c=80; printf '%s' "$c"; }
@@ -162,6 +164,38 @@ read_key() {
 # Re-draws in place: move up N lines, clearing each.
 rewind() { local n=$1; [ "$n" -gt 0 ] && printf '\033[%dA\033[J' "$n"; }
 
+# draw_button <label> <focused 0|1> <enabled 0|1> — a framed, 3-line button.
+# Bold and boxed even when unfocused, so it reads as a button at a glance.
+BTN_W=34
+draw_button() {
+  local label=$1 focused=$2 enabled=$3
+  local len pad l r bar color content i=0
+  len=${#label}
+  if [ "$len" -gt "$BTN_W" ]; then label=${label:0:$BTN_W}; len=$BTN_W; fi
+  pad=$(( (BTN_W - len) / 2 ))
+  l=$(printf '%*s' "$pad" '')
+  r=$(printf '%*s' $(( BTN_W - len - pad )) '')
+  content="${l}${label}${r}"
+  bar=""; while [ "$i" -lt "$BTN_W" ]; do bar="${bar}${LINE}"; i=$((i + 1)); done
+
+  if [ "$focused" -eq 1 ]; then
+    if [ "$enabled" -eq 1 ]; then color="$GRN$B"; else color="$YEL$B"; fi
+  elif [ "$enabled" -eq 1 ]; then
+    color="$B"
+  else
+    color="$GRY"
+  fi
+
+  printf '   %s%s%s%s%s\n' "$color" "$TL" "$bar" "$TR" "$R"
+  if [ "$focused" -eq 1 ]; then
+    printf ' %s %s%s%s%s%s%s%s\n' \
+      "$ARROW" "$color" "$VT" "$REV" "$content" "$R$color" "$VT" "$R"
+  else
+    printf '   %s%s%s%s%s\n' "$color" "$VT" "$content" "$VT" "$R"
+  fi
+  printf '   %s%s%s%s%s\n' "$color" "$BL" "$bar" "$BR" "$R"
+}
+
 # ---------------------------------------------------------------- menus ----
 
 # menu_single "Title" idx_default name... -> sets MENU_CHOICE (index) or -1 to cancel
@@ -235,7 +269,7 @@ menu_multi() {
   }
 
   rows=$(term_rows)
-  win=$((rows - 14)); [ "$win" -lt 4 ] && win=4; [ "$win" -gt "$n" ] && win="$n"
+  win=$((rows - 16)); [ "$win" -lt 4 ] && win=4; [ "$win" -gt "$n" ] && win="$n"
 
   hide_cursor
   while :; do
@@ -276,23 +310,23 @@ menu_multi() {
 
     # --- Install button, pinned at the very bottom of the list ---
     printf '\n'; drawn=$((drawn + 1))
-    if [ "$cur" -eq "$n" ]; then
-      if [ "$count" -gt 0 ]; then
-        printf ' %s %s  Install %d skill(s)  %s\n' "$ARROW" "$REV$GRN$B" "$count" "$R"
+    if [ "$count" -gt 0 ]; then
+      if [ "$cur" -eq "$n" ]; then
+        draw_button "Install $count skill(s)" 1 1
       else
-        printf ' %s %s  Install — select at least one skill  %s\n' "$ARROW" "$REV$DIM" "$R"
+        draw_button "Install $count skill(s)" 0 1
       fi
     else
-      if [ "$count" -gt 0 ]; then
-        printf '   %s  Install %d skill(s)  %s\n' "$GRY" "$count" "$R"
+      if [ "$cur" -eq "$n" ]; then
+        draw_button "Select at least one skill" 1 0
       else
-        printf '   %s  Install  %s\n' "$GRY" "$R"
+        draw_button "Install" 0 0
       fi
     fi
-    drawn=$((drawn + 1))
+    drawn=$((drawn + 3))
 
     printf '\n'; drawn=$((drawn + 1))
-    printf '   %s↑/↓ move · enter, space or ←/→ toggle · a all · n none%s\n' \
+    printf '   %s↑/↓ move · enter or ←/→ toggle · a all · n none%s\n' \
       "$DIM" "$R"; drawn=$((drawn + 1))
     printf '   %spast the last skill is the Install button · q cancel%s\n' \
       "$DIM" "$R"; drawn=$((drawn + 1))
@@ -307,7 +341,7 @@ menu_multi() {
       end)      cur=$n ;;
       a | A)    mark_all 1 ;;
       n | N)    mark_all 0 ;;
-      space | left | right | h | l)
+      left | right | h | l)
         [ "$cur" -lt "$n" ] && mark_toggle "$cur" ;;
       enter)
         if [ "$cur" -lt "$n" ]; then
@@ -372,7 +406,8 @@ Subagent CLI Skills installer
   ./install.sh              interactive install
   ./install.sh -h|--help    this message
 
-Interactive keys: ↑/↓ move · space toggle · a all · n none · enter confirm · q cancel
+Interactive keys: ↑/↓ move · enter or ←/→ toggle · a all · n none · q cancel
+Arrow past the last skill to reach the Install button, then press enter.
 EOF
 }
 
