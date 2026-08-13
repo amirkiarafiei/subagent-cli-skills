@@ -28,10 +28,13 @@ not `claude-sonnet-4.5`) and **dot-separated for OpenAI/Google** (`gpt-5.4`, `ge
 
 | Agent | Kind | Use |
 |-------|------|-----|
-| `build` | primary | Default. Full edit + tool access. |
-| `plan` | primary | Read-only analysis — the correct choice for "report only, no edits". |
+| `build` | primary | **Default — use this for delegation.** Full edit + tool access. |
+| `plan` | primary | **Do not use for delegation.** It plans *changes*; asked a question it stops to request permission for its own probes, which headless mode cannot grant — a wasted round-trip and an empty answer. Ask for "report only, no edits" in the prompt instead. |
 | `explore` | subagent | Codebase search / discovery. |
 | `general` | subagent | General-purpose delegated subtask. |
+
+`compaction`, `summary` and `title` also appear in `opencode agent list`; those are internal and not
+meant to be selected with `--agent`.
 
 `opencode agent create` scaffolds a custom agent with its own instructions and permissions.
 
@@ -42,7 +45,9 @@ not `claude-sonnet-4.5`) and **dot-separated for OpenAI/Google** (`gpt-5.4`, `ge
 | `run` | Execute prompt and exit (non-interactive). |
 | `--auto` | Auto-approve permissions not explicitly denied (YOLO). **The real flag — `--dangerously-skip-permissions` does not exist and is silently ignored.** |
 | `-m`, `--model` | Specify the model to use (format: `provider/model`). |
-| `--agent` | Agent to run as (`build`, `plan`, …). Use `plan` for read-only passes. |
+| `--agent` | Agent to run as. Leave unset (`build`) for delegation; never `plan`. |
+| `--print-logs` | Print logs to stderr. Often the only output you get — see the hang notes in SKILL.md. |
+| `--pure` | Run without external plugins. |
 | `--variant` | Provider-specific reasoning effort (e.g. `high`, `max`, `minimal`). |
 | `--format` | Output format: `default` or `json` (raw JSON events — parse this for programmatic use). |
 | `-f`, `--file` | Attach file(s) to the message. Repeatable. |

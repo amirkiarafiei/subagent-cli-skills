@@ -46,7 +46,10 @@ When composing the **single OpenCode prompt**, treat it as passing **enough shar
 
 ## Model Selection & Discovery (Mandatory)
 
-**MANDATORY: Search the web for latest OpenCode model names and pricing before selecting a model.** You should also consult [Artificial Analysis](https://artificialanalysis.ai/) for the most up-to-date benchmarks, pricing, and model performance data.
+**Run `opencode models` for the exact `provider/model` strings this install accepts** — it is the only
+authority, and it reflects the providers the user is actually authenticated against. Use the web (or
+[Artificial Analysis](https://artificialanalysis.ai/)) for pricing and benchmarks only; it returns
+marketing names, not the strings the CLI takes. Omit `--model` to use the configured default.
 
 ## Programmatic usage (required)
 
@@ -57,9 +60,17 @@ You **MUST** use OpenCode CLI programmatically. Do **NOT** start interactive ses
 | **Non-interactive** | `run "[prompt]"` |
 | **Auto-approval** | `--auto` (auto-approves permissions not explicitly denied) |
 | **Model Selection** | `-m` or `--model [provider/model]` |
-| **Agent Selection** | `--agent build` (edits) or `--agent plan` (read-only analysis) |
+| **Agent Selection** | `--agent build` (the default; leave it alone unless you have a reason) |
 | **Output Format** | `--format [default|json]` |
 | **Reasoning Effort** | `--variant [high|max|minimal]` (provider-specific) |
+| **Logs to stderr** | `--print-logs` (see the hang section — often the only output you get) |
+
+> **Never use `--agent plan` for delegation.** OpenCode's `plan` agent exists to *plan changes*, not to
+> answer questions: asked to investigate, it stops and requests permission to run its probes instead of
+> running them, which in headless mode is a wasted round-trip and an empty answer. Read-only is not the
+> point — say "report only, no edits" in the prompt and pass `--auto` from the start. `opencode agent list`
+> is the authority on what agents exist here (`build`, `plan`, `explore`, `general`, plus internal
+> `compaction`/`summary`/`title`); do not import mode names from other CLIs.
 
 There is **no** `--dangerously-skip-permissions` flag. OpenCode's CLI silently ignores
 unknown flags, so passing it fails open rather than erroring — the run proceeds with
@@ -76,28 +87,79 @@ permissions unchanged and blocks on anything set to `ask` (e.g. `doom_loop`,
 ## Command pattern
 
 ```bash
-opencode run "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" --auto --model [model] 2>&1
+opencode run "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" --auto --model [model] --print-logs 2>&1
 ```
 
-Read-only pass (no edits — use the `plan` agent rather than trusting prompt wording):
+Report-only pass — ask for it in the prompt and still pass `--auto`, so the run never stalls on a
+permission it cannot obtain:
 
 ```bash
-opencode run "GOAL: [analysis task] | SCOPE: [paths] | OUTPUT: report only" --agent plan 2>&1
+opencode run "GOAL: [analysis task] | SCOPE: [paths] | CONSTRAINTS: do not edit any file | OUTPUT: report only" --auto --print-logs 2>&1
 ```
+
+### Don't let it hang your session — watch it, don't guess a duration
+
+OpenCode can finish a task and then fail to exit, so a plain blocking call can hold your session open on
+a job that is already done. A fixed timeout is a poor answer to that: too short and it destroys
+completed work (the answer sits in a block-buffered stdout that dies with the process), too long and you
+sit an hour on a run that stalled in the first ten seconds.
+
+**If your harness can run a command in the background — most can — do that and judge from the log:**
+
+```bash
+opencode run "[prompt]" --auto --print-logs > /tmp/oc-run.log 2>&1 &
+```
+
+Merge both streams into one file so the answer and the logs land together, then read that file
+periodically and decide from what it shows:
+
+| Log state | Meaning | Do |
+|---|---|---|
+| no `created id=ses_...` yet, only `init` | never really started | give it ~a minute, then kill and check the prompt argument |
+| new lines still arriving | alive and working | keep waiting, **for as long as the task needs** |
+| `disposing instance` | work finished | take the answer from the log, kill the process |
+| no new line for several minutes | stalled | kill it, report, retry once |
+
+**Judge silence, not elapsed time.** A real delegation may legitimately run for an hour, and there is no
+duration that separates "still thinking" from "hung". Log activity does: a working run keeps emitting
+tool and step lines, while a stalled one goes quiet within seconds and stays quiet. How long to tolerate
+silence is your call — a run compiling or executing a long test suite earns more patience than one that
+went quiet mid-sentence.
+
+**Only if you cannot background a command:** fall back to one blocking call wrapped in `timeout`, and
+pick the number yourself from the size of the job. There is no correct default to copy — make it
+comfortably larger than the work could plausibly need, and treat it purely as a backstop.
 
 ## If the call fails or hangs
 
 Headless runs fail quietly more often than they fail loudly. Treat these as defaults, not ceremony:
 
-- **Wrap the call in an external timeout.** A headless CLI can stall before its own timeout arms.
 - **Exit 0 is not success.** If stdout is empty, treat the run as failed and read stderr — the usual
   cause is a tool permission the CLI could not prompt for, or a prompt that never arrived.
-- **A hang with no output is almost always an empty message, not a slow model.** Add `--print-logs`:
-  a healthy run logs `init` then `created id=ses_...` within ~100ms. If you see `init` and then only
-  `cleanup prune=7.days` about 60s later, no session was ever created and the prompt never got sent —
-  check the prompt argument, not the model. That `cleanup` line is a routine 60s startup timer present
-  in **every** run, including successful ones; it is the last line before silence in a hang only
-  because nothing else is logging. It is not the cause.
+- **Never leave a blocking call unbounded.** OpenCode can finish the work and then fail to exit, so an
+  unwatched call holds your session forever on a job that is already done. Background it and watch the
+  log (see the Command pattern section) rather than picking a duration out of the air.
+- **Add `--print-logs` and read stderr.** The answer goes to stdout, which is block-buffered when it is
+  not a terminal: if the process is killed before it flushes, **stdout is lost and you get zero bytes**
+  while stderr still has the whole story. Two distinct signatures, and `--print-logs` is what tells
+  them apart:
+
+  | Logs show | Meaning |
+  |---|---|
+  | `init`, then only `cleanup prune=7.days` ~60s later, no `created id=ses_...` | No session was created — the **prompt never arrived**. Check the prompt argument, not the model. |
+  | `created id=ses_...`, `exiting loop`, `disposing instance` — then no exit | The work **finished**; the process is hanging on shutdown. The answer was produced. Take it from stderr and let the timeout reap the process. |
+
+  The `cleanup prune=7.days` line is a routine 60-second startup timer present in **every** run,
+  successful ones included. It is the last line before silence in a hang only because nothing else is
+  logging — it is never the cause.
+- **Pipe versus file redirection is not the variable.** A `> file` run and a `| pipe` run hang
+  identically (measured both ways, plus inside a real terminal, plus with `--pure`, plus with stdin
+  closed, plus with no stale process holding the database). Do not rearrange redirection; wrap in
+  `timeout` and read stderr.
+- **Beware recipes built from a handful of runs.** When this stalls, *where* it stalls varies between
+  otherwise identical invocations — sometimes before the session is created, sometimes after the answer
+  has already been produced. A few trials in one shape can therefore look like a firm rule and not
+  replicate. Re-test before believing any "always do X" recipe, this file's included.
 - **Unknown flags are silently ignored**, so a wrong flag fails open instead of erroring. Verify flags
   against `opencode run --help` — it is the only authority — and if this skill names a flag that no
   longer exists, proceed with what does and tell the user which line needs updating.
@@ -116,8 +178,8 @@ Headless runs fail quietly more often than they fail loudly. Treat these as defa
 ## Quick prompts
 
 - **Delegate implementation**: `opencode run "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" --auto`
-- **Architectural Analysis**: `opencode run "GOAL: Analyze architecture for [concerns] | SCOPE: [paths] | VERIFICATION: [check_command] | OUTPUT: architecture report" --agent plan --model [heavy-model]`
-- **Investigate**: `opencode run "GOAL: Map how [feature] works | SCOPE: [paths] | OUTPUT: concise file:line map" --agent plan`
+- **Architectural Analysis**: `opencode run "GOAL: Analyze architecture for [concerns] | SCOPE: [paths] | CONSTRAINTS: do not edit any file | OUTPUT: architecture report" --auto --model [heavy-model] --print-logs > /tmp/oc-run.log 2>&1 &` then watch the log
+- **Investigate**: `opencode run "GOAL: Map how [feature] works | SCOPE: [paths] | CONSTRAINTS: do not edit any file | OUTPUT: concise file:line map" --auto --print-logs > /tmp/oc-run.log 2>&1 &` then watch the log
 
 ## More detail
 
