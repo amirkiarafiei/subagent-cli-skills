@@ -28,7 +28,7 @@ You need three answers before you touch the filesystem. Ask for all three in **o
 This probe is read-only and instant. Run it *before* asking, so your question comes pre-filled instead of making the user recite a list:
 
 ```bash
-for b in agy gemini copilot qwen codex kiro-cli junie openhands opencode claude vibe kimi qodercli hermes; do
+for b in agy gemini copilot qwen codex kiro-cli junie openhands opencode claude vibe kimi qodercli hermes grok devin pi omp; do
   command -v "$b" >/dev/null 2>&1 && echo "found: $b"
 done
 ```
@@ -51,6 +51,10 @@ Map what you found using this table — these are the tools the user could hand 
 | `kimi` | `kimi-code` | Kimi Code |
 | `qodercli` | `qoder-cli` | Qoder |
 | `hermes` | `hermes-agent` | Hermes Agent |
+| `grok` | `grok-cli` | xAI Grok |
+| `devin` | `devin-cli` | Devin |
+| `pi` | `pi-cli` | Pi |
+| `omp` | `oh-my-pi` | Oh My Pi |
 
 Two things to bear in mind when forming your suggestion:
 
@@ -63,9 +67,9 @@ Use plain words. Do **not** say "orchestrator", "subagent", "headless", "scope",
 
 > I can set this up. Three quick questions:
 >
-> **1. Which assistant should get these skills?** I'm Claude Code, so I'd add them to myself unless you meant a different one — Cursor, Codex, Gemini, Copilot, Antigravity, Kiro, OpenHands, OpenCode, Qwen, Junie, Mistral Vibe, Kimi, Qoder and Hermes are all supported.
+> **1. Which assistant should get these skills?** I'm Claude Code, so I'd add them to myself unless you meant a different one — Cursor, Codex, Gemini, Copilot, Antigravity, Kiro, OpenHands, OpenCode, Qwen, Junie, Mistral Vibe, Kimi, Qoder, Hermes, Grok, Devin, Pi and Oh My Pi are all supported.
 >
-> **2. Which other AI tools should I be able to hand work off to?** These skills let me pass heavy jobs — big searches, long refactors, research — to another AI tool running in the background, so the work stays out of our conversation. Looking at your machine, you already have **Antigravity, GitHub Copilot and OpenCode** installed, so I'd suggest those three. Want all three, just some, or something else from the full list of 15?
+> **2. Which other AI tools should I be able to hand work off to?** These skills let me pass heavy jobs — big searches, long refactors, research — to another AI tool running in the background, so the work stays out of our conversation. Looking at your machine, you already have **Antigravity, GitHub Copilot and OpenCode** installed, so I'd suggest those three. Want all three, just some, or something else from the full list of 19?
 >
 > **3. Everywhere, or just this project?** *Everywhere* saves them in your home folder so they work in every project. *Just this project* keeps them inside this folder only.
 >
@@ -75,7 +79,7 @@ Then **stop and wait for the reply.**
 
 - If the user already answered part of this in their original request, don't re-ask that part.
 - If they say "you decide" or "just do it", go with your suggested defaults: yourself as the assistant, every detected tool, saved everywhere — and say plainly that's what you picked.
-- If the probe found **nothing**, say so and ask which tools they use or plan to install, rather than guessing or installing all 15.
+- If the probe found **nothing**, say so and ask which tools they use or plan to install, rather than guessing or installing all 19.
 - If they name tools that aren't installed yet, install those skills anyway and mention which commands are missing so they know to install them later.
 
 ---
@@ -103,8 +107,18 @@ Two decisions from Step 1 determine the path.
 | Kimi Code | `~/.kimi/skills/` |
 | Qoder | `~/.qoder/skills/` |
 | Hermes Agent | `~/.hermes/skills/` |
+| Grok | `~/.grok/skills/` |
+| Pi | `~/.pi/agent/skills/` |
+| Oh My Pi | `~/.omp/agent/skills/` |
+| Devin | *no global directory exists* — see the note below |
 
 **If they chose *just this project*,** use `./.skills/` in the repository you are working in.
+
+**Devin is the exception.** Its docs define no global skills directory — it discovers skills inside
+repositories. Install Devin's skills into `.agents/skills/<skill-name>/SKILL.md` at the repo root
+(Devin's own recommended location). Pi and Oh My Pi also read a repo-level `.agents/skills`, so one
+install there can cover more than Devin. Note this is the *repo-root* path — distinct from the global
+`~/.agents/skills/` that Codex and Grok read.
 
 If their assistant isn't on the list, ask where it loads skills from rather than guessing.
 

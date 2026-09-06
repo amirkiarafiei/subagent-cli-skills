@@ -19,7 +19,8 @@ REPO_RAW_URL="https://raw.githubusercontent.com/amirkiarafiei/subagent-cli-skill
 TOOL_NAMES=(
   "Claude Code" "Cursor" "Antigravity" "Codex" "Gemini" "Copilot"
   "Junie" "Kiro" "OpenHands" "OpenCode" "QwenCode" "Mistral Vibe"
-  "Kimi Code" "Qoder CLI" "Hermes Agent" "Custom path…"
+  "Kimi Code" "Qoder CLI" "Hermes Agent" "Grok" "Pi" "Oh My Pi"
+  "Custom path…"
 )
 TOOL_DIRS=(
   "$HOME/.claude/skills"
@@ -37,6 +38,9 @@ TOOL_DIRS=(
   "$HOME/.kimi/skills"
   "$HOME/.qoder/skills"
   "$HOME/.hermes/skills"
+  "$HOME/.grok/skills"
+  "$HOME/.pi/agent/skills"
+  "$HOME/.omp/agent/skills"
   ""
 )
 
@@ -45,6 +49,7 @@ SKILL_NAMES=(
   "antigravity-cli" "gemini-cli" "copilot-cli" "qwen-code" "codex-cli"
   "kiro-cli" "cursor-cli" "junie-cli" "openhands-cli" "opencode-cli"
   "claude-code" "mistral-vibe" "kimi-code" "qoder-cli" "hermes-agent"
+  "grok-cli" "devin-cli" "pi-cli" "oh-my-pi"
 )
 SKILL_HINTS=(
   "agy · Google Antigravity" "gemini · deprecated, still supported"
@@ -52,7 +57,8 @@ SKILL_HINTS=(
   "kiro-cli · AWS Kiro" "agent · Cursor" "junie · JetBrains Junie"
   "openhands · OpenHands" "opencode · OpenCode" "claude · Claude Code"
   "vibe · Mistral Vibe" "kimi · Kimi Code" "qodercli · Qoder"
-  "hermes · Hermes Agent"
+  "hermes · Hermes Agent" "grok · xAI Grok" "devin · Devin"
+  "pi · Pi" "omp · Oh My Pi"
 )
 
 # ------------------------------------------------------- capabilities ------

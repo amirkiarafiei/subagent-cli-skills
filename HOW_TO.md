@@ -52,7 +52,7 @@ Run `tool --help` and `tool <subcommand> --help` **first**, and take every flag 
 
 ### 5. Headless Permissions and Failure Modes
 - [ ] **Name what happens when the tool cannot prompt**: headless mode has nobody to ask, so tools get denied, and the denial is usually **silent**. Document whether a denied run exits non-zero or exits 0 with empty output.
-- [ ] **Include the shared "If the call fails or hangs" section** (copy it from any existing skill, substituting the binary name). All 15 skills carry it; new ones should too.
+- [ ] **Include the shared "If the call fails or hangs" section** (copy it from any existing skill, substituting the binary name). All 19 skills carry it; new ones should too.
 
 ### 6. Reference File (`reference.md`)
 - [ ] **Essential Flags**: A concise table, verified against `--help`.
@@ -60,6 +60,28 @@ Run `tool --help` and `tool <subcommand> --help` **first**, and take every flag 
 - [ ] **Subagent/Agent List**: Only if the CLI's own listing command returns them. If it returns nothing, **omit the section**—do not populate it from docs or guesswork.
 - [ ] **Authentication**: Which env vars or login command the tool needs.
 - [ ] **Verification stamp**: note the version and date you verified against, e.g. `Verified against agy v1.1.12 on 2026-08-12`. A visibly old stamp is useful; a silently wrong flag is not.
+
+## The one sanctioned exception: "Documented, not verified"
+
+Rule Zero says docs are never authority. Occasionally you must ship a skill for a CLI you cannot
+install — no licence, no account, wrong platform. That is allowed **only** if the skill says so out
+loud, so a reader never mistakes doc-sourced text for verified text:
+
+- [ ] A banner at the top of **both** `SKILL.md` and `reference.md`:
+      `> **Documented, not verified.** Written from <vendor> docs on YYYY-MM-DD and not checked against
+      an installed binary.`
+- [ ] A first-run instruction in the same banner: run `<cli> --help`, use what actually exists on a
+      mismatch, and report which line is wrong.
+- [ ] Say **"NOT DOCUMENTED"** wherever the vendor docs are silent. Never fill a gap with a flag
+      borrowed from a sibling skill — that is how `--agent plan` reached the opencode skill.
+- [ ] Mark any command line you assembled yourself as composed from individual flags, rather than
+      implying it was quoted from a vendor example.
+- [ ] Disclose disagreements *within* a vendor's own docs instead of silently picking one side.
+- [ ] The banner comes off only when someone verifies against a real binary and replaces it with a
+      normal verification stamp.
+
+A skill carrying this banner is honest. A doc-sourced skill without it is the failure this guide
+exists to prevent.
 
 ## Prove it works before opening a PR
 

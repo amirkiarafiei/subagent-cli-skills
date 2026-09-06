@@ -91,6 +91,10 @@ As Orchestrator or Subagent or Both:
 - [x] **Kimi Code** (Both)
 - [x] **Qoder CLI** (Both)
 - [x] **Hermes Agent** (Both)
+- [x] **Grok** (Both - xAI Grok CLI `grok`)
+- [x] **Devin** (Both - skills are repo-local, see AGENTIC_INSTALLATION.md)
+- [x] **Pi** (Both - `pi`)
+- [x] **Oh My Pi** (Both - `omp`)
 
 ## License
 
