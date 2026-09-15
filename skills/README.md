@@ -10,24 +10,31 @@ keeps a small context and a low cost.
 
 ## Usage examples
 
-Type the slash command first. Then write the task.
+Name the tool in your request. Your agent then activates the correct skill. You can also type the
+slash command yourself. You can name a model for each tool.
 
-**1. Send a documentation task to one agent**
+**1. Review a feature with two agents and two models**
+
+```
+Ask Codex with GPT-Astra and Hermes with GLM-5.3 to review this feature using their subagent cli skills
+```
+
+**2. Get the latest documentation**
 
 ```
 /antigravity-cli Read the latest docs for the Stripe API. List the breaking changes.
 ```
 
-**2. Send a code review to two agents**
-
-```
-/codex-cli /opencode-cli Review the changes in src/auth/. Report each bug with a file name and a line number.
-```
-
 **3. Build two features at the same time**
 
 ```
-/codex-cli /opencode-cli Build the login form in src/auth/ with Codex. Build the signup form in src/signup/ with OpenCode. Run npm test after each build.
+Build the login form in src/auth/ with Codex. Build the signup form in src/signup/ with OpenCode.
+```
+
+**4. Get fresh ideas on a plan from three agents**
+
+```
+Ask Pi and Grok and Devin to review the implementation plan to get fresh ideas.
 ```
 
 ## Available skills
