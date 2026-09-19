@@ -116,63 +116,72 @@ loudly.
 
 - **Binary:** `copilot`
 - **Prompt form:** **flag.** The prompt is the value of `-p` / `--prompt`, e.g.
-  `copilot -p "prompt text"`. A bare `copilot` with no `-p` opens the interactive interface and
-  never returns.
+  `copilot -p "prompt text"` — "execute a prompt in non-interactive mode; the CLI runs the prompt
+  and exits when done." A bare `copilot` with no `-p` opens the interactive interface and never
+  returns. Piped stdin also works: `echo "Fix this bug" | copilot -p`.
 
 ### Headless and output flags
 
 | Need | Flag |
 |---|---|
-| Run once and exit | `-p`, `--prompt` |
-| Output only the agent's response, no decorations/stats | `-s`, `--silent` |
-| JSONL, one object per turn/tool-call/response | `--output-format json` |
+| Run once and exit | `-p`, `--prompt <PROMPT>` |
+| Output only the agent's response, no decorations/stats | `-s` |
+| Output format | `--output-format=text` or `json` (JSONL, one object per line) |
+| Attach a file to the initial prompt | `--attachment <path>` (images or native documents) |
 | Export the session transcript to Markdown | `--share [path]` |
 
 ### Approvals and permissions
 
-- **`--yolo`** — auto-approve all tools, paths, and URLs.
-- **`--allow-all-tools`** — documented as **required for headless** runs; without it a headless run
-  can hang waiting for tool approval it has no way to grant. Pass both together for delegation.
-- `--autopilot` lets the agent run multiple cycles without prompting between them.
-
-Outside of `--yolo`/`--allow-all-tools`, what happens to an unanswered approval is **not
-documented** in this skill's sources — treat it as a stall and always pass both flags headless.
+- **`--allow-all`** (alias **`--yolo`**) — grants all permissions (tools and URL fetches).
+- **`--allow-all-tools`** — narrower: allows every *tool* to run without per-call confirmation, but
+  does not by itself grant URL access.
+- **`--allow-tool=<TOOL>`**, **`--allow-url=<URL>`** — grant only specific tools/URLs; the official
+  docs recommend this narrower form over `--allow-all` outside a sandbox.
+- **`--deny-tool=<TOOL>`**, **`--deny-url=<URL>`** — explicit denials.
+- **What happens with nobody to answer:** not explicitly documented for the case where a call falls
+  outside every allow flag in headless mode. Do not rely on a graceful denial — pass `--allow-all`
+  (or the precise `--allow-tool`/`--allow-url` set the task needs) before running headless so the
+  question never comes up.
 
 ### Models and how to list them
 
-No CLI subcommand to list models is documented here. Copilot is a **multi-provider gateway** —
-OpenAI, Anthropic, Google, xAI, and Moonshot-branded models all ship through the same `--model
-<identifier>` flag, with availability varying by plan, org policy, and region. Reasoning effort is
-a separate flag, `--effort low|medium|high|xhigh` — prefer raising effort over switching to a
-bigger model where possible; Copilot offers no separate "thinking"/o-series model line.
+No CLI subcommand or flag to print the model catalog is documented. The official docs say: "to see
+the model strings for all available models, run the `/model` command in an interactive Copilot CLI
+session" — there is no headless-only way to list them. Copilot is a **multi-provider gateway**, so
+availability varies by plan, org policy, and region. Select with `--model=<identifier>`; pick a
+custom agent with `--agent=<AGENT>`.
 
-If the user names a model or effort level, use it. Otherwise search the web for current
-identifiers/aliases and consult [Artificial Analysis](https://artificialanalysis.ai/) for
-capability and price comparisons — default to the cheapest tier and escalate only for tasks that
-need it.
+If the user names a model, use it. Otherwise start an interactive session once to run `/model` and
+capture the current identifiers, and check [Artificial Analysis](https://artificialanalysis.ai/) for
+capability and price comparisons — default to the cheapest suitable tier.
 
 ### Command pattern
 
 ```bash
 copilot -p "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths, @ FILENAME as needed] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" \
-  --yolo --allow-all-tools -s --model <identifier> 2>&1
+  --allow-all -s --model=<identifier> 2>&1
 ```
 
-With a specific built-in agent (`explore`, `general-purpose`, `task`, `research`, `code-review`):
+With a specific custom agent:
 
 ```bash
-copilot -p "[task]" --agent general-purpose --yolo --allow-all-tools -s 2>&1
+copilot -p "[task]" --agent=<agent-name> --allow-all -s 2>&1
 ```
 
 ### Prompt examples
 
-- **Implement:** `copilot -p "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" --yolo --allow-all-tools -s`
-- **Investigate:** `copilot -p "GOAL: Map how [feature] works | SCOPE: [paths] | CONSTRAINTS: report only, no edits | OUTPUT: concise file:line map" --agent explore --yolo --allow-all-tools -s`
-- **Audit:** `copilot -p "GOAL: Audit the codebase for security issues | SCOPE: [paths] | CONSTRAINTS: report only, no edits | OUTPUT: security report" --agent code-review --yolo --allow-all-tools -s`
+- **Implement:** `copilot -p "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" --allow-all -s`
+- **Investigate:** `copilot -p "GOAL: Map how [feature] works | SCOPE: [paths] | CONSTRAINTS: report only, no edits | OUTPUT: concise file:line map" --allow-tool=read --allow-tool=grep -s`
+- **Audit:** `copilot -p "GOAL: Audit the codebase for security issues | SCOPE: [paths] | CONSTRAINTS: report only, no edits | OUTPUT: security report" --allow-all -s`
 
 ### Docs and reference
 
-- Flags, JSON output, agents, autopilot, env vars, delegation checklist: [reference.md](reference.md)
-- No vendor documentation URL is recorded in this skill's own sources.
-- **Not verified against an installed binary** — the source files carry no version/date stamp.
-  Confirm every flag with `copilot --help` before relying on this card.
+- Flags, JSON output, delegation checklist: [reference.md](reference.md)
+- Vendor documentation:
+  <https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-programmatic-reference>
+  and <https://docs.github.com/copilot/concepts/agents/about-copilot-cli>
+- **Checked against the official GitHub documentation on 2026-09-19. Not run against an installed
+  binary — confirm with `copilot --help` before trusting a flag.** Note: the previous version of
+  this card used `--yolo` and `--allow-all-tools` together as if they were both required; the
+  official docs treat `--allow-all` (aliased `--yolo`) as the single broad grant, with
+  `--allow-all-tools` as a narrower tools-only variant.

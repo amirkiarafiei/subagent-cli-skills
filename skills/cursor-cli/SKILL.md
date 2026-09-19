@@ -115,54 +115,61 @@ loudly.
 ### Binary and prompt form
 
 - **Binary:** `agent`
-- **Prompt form:** **positional.** `-p` / `--print` is a mode flag that makes the CLI print
-  responses to the console instead of opening the interactive UI — it does not itself carry the
-  prompt text. The prompt is the plain string given alongside it, e.g. `agent -p "prompt text"`. A
-  bare `agent "prompt"` with no `-p` opens the interactive interface and never returns.
+- **Prompt form:** **positional.** `-p` / `--print` is a mode flag ("print responses to console for
+  scripts or non-interactive use") — it does not carry the prompt text itself. The prompt is the
+  plain string given alongside it, e.g. `agent -p --force "prompt text"`. A bare `agent "prompt"`
+  with no `-p` opens the interactive interface and never returns.
 
 ### Headless and output flags
 
 | Need | Flag |
 |---|---|
 | Run once and exit | `-p`, `--print` |
-| Output format | `--output-format` — `text` (default), `json`, or `stream-json` |
-| Agent mode | `--mode agent\|plan\|ask` (default `agent`) |
+| Output format | `--output-format text` (default), `json`, or `stream-json` |
+| Stream partial output deltas | `--stream-partial-output` |
 | Workspace directory | `--workspace <path>` |
+| Skip the interactive folder-trust prompt (headless only) | `--trust` |
 
 ### Approvals and permissions
 
-- **`--yolo`** (short `-f`, alias for `--force`) — auto-approve all commands.
-- `--mode plan` and `--mode ask` exist but are not auto-approving delegation modes — do not use them
-  headless (see the global rule above: plan mode returns a plan for itself and stalls waiting for
-  approval).
-
-What happens to an unanswered approval outside `--yolo` is **not documented** in this skill's
-sources — treat it as a stall and always pass `--yolo` for headless delegation.
+- **`-f`, `--force`** (alias **`--yolo`**) — "force allow commands unless explicitly denied."
+- **`--approve-mcps`** — automatically approve all MCP servers.
+- **`--sandbox <enabled\|disabled>`** — sandbox the run.
+- **What happens with nobody to answer:** confirmed from the official headless docs — **without
+  `--force`/`--yolo`, changes are only proposed, not applied.** It is not a stall and not an error:
+  in `-p` mode, Cursor still writes its response, but file edits and other actions requiring
+  confirmation are silently skipped rather than made. For a delegation that must actually change
+  files, `--force`/`--yolo` is mandatory; for a report-only run, the default (no `--force`) already
+  behaves as "no edits."
 
 ### Models and how to list them
 
-Run **`agent models`** to list the models this install accepts. Select with `--model <identifier>`.
+Run **`agent models`** (subcommand) or pass **`--list-models`** to list the models this install
+accepts. Select with `--model <model>`. New installs default to automatic model routing.
 
 If the user names a model, use it. Otherwise run `agent models` first, and consult
-[Artificial Analysis](https://artificialanalysis.ai/) for capability and price comparisons — model
-names and aliases change often enough that a pinned one can go stale.
+[Artificial Analysis](https://artificialanalysis.ai/) for capability and price comparisons.
 
 ### Command pattern
 
 ```bash
-agent -p "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" \
-  --yolo --model <identifier> 2>&1
+agent -p --force "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" \
+  --model <identifier> --trust 2>&1
 ```
 
 ### Prompt examples
 
-- **Implement:** `agent -p "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" --yolo`
-- **Investigate:** `agent -p "GOAL: Map how [feature] works | SCOPE: [paths] | CONSTRAINTS: report only, no edits | OUTPUT: concise file:line map" --yolo`
-- **Review:** `agent -p "GOAL: Review [scope] for [concerns] | CONSTRAINTS: report only, no edits | OUTPUT: findings with severity" --yolo`
+- **Implement:** `agent -p --force "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]"`
+- **Investigate (no edits needed):** `agent -p "GOAL: Map how [feature] works | SCOPE: [paths] | OUTPUT: concise file:line map"` — omitting `--force` already means nothing gets written.
+- **Review:** `agent -p "GOAL: Review [scope] for [concerns] | OUTPUT: findings with severity"`
 
 ### Docs and reference
 
 - Flags, delegation checklist: [reference.md](reference.md)
-- No vendor documentation URL is recorded in this skill's own sources.
-- **Not verified against an installed binary** — the source files carry no version/date stamp.
-  Confirm every flag with `agent --help` before relying on this card.
+- Vendor documentation: <https://cursor.com/docs/cli/headless> and
+  <https://cursor.com/docs/cli/reference/parameters>
+- **Checked against the official Cursor documentation on 2026-09-19. Not run against an installed
+  binary — confirm with `agent --help` before trusting a flag.** Note: the previous version of this
+  card documented `--mode agent|plan|ask`; the official reference only lists `--mode <plan|ask>` (no
+  explicit `agent` value — that's simply the unnamed default) plus a `--plan` shorthand for
+  `--mode=plan`.

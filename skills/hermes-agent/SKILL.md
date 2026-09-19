@@ -115,49 +115,59 @@ loudly.
 ### Binary and prompt form
 
 - **Binary:** `hermes`
-- **Prompt form:** **flag.** The prompt is the argument of `-q` on the `chat` subcommand:
-  `hermes chat -q "prompt"`. Always add `-Q` (quiet) alongside it for programmatic use — it suppresses
-  the banner, spinner, and tool previews so stdout carries only the final response and a session id.
+- **Prompt form:** **flag.** `hermes chat -q "prompt"` (alias `--query`) seeds the session with the
+  prompt as its first turn. For a minimal, purely non-interactive one-shot run there is also **`hermes
+  -z "prompt"`**, which prints only the final text to stdout and nothing else, with defined exit codes
+  (`0` completed, `2` failed/partial, `130` interrupted). Add `-Q`/`--quiet` alongside `chat -q` for
+  programmatic use — it suppresses the banner, spinner, and tool previews.
 
 ### Headless and output flags
 
 | Need | Flag |
 |---|---|
-| Run once and exit | `chat -q "prompt"` (single-query mode) |
-| Quiet, script-safe output | `-Q`, `--quiet` — suppresses banner/spinner/tool previews |
+| One-shot query, seeds first turn | `chat -q "prompt"` / `--query` |
+| Minimal one-shot, final text only, defined exit codes | `-z "prompt"` |
+| Quiet, script-safe output | `-Q`, `--quiet` |
 | Verbose/debug output | `--verbose`, `-v` |
-| Turn cap | `--max-turns N` (default 90) — bounds a stuck delegation |
-| Tag session as third-party | `--source tool` — keeps it out of the user's own session list |
+| Turn cap | `--max-turns N` (one official source states a default of 500; treat any other stated default as unverified) |
+| Tag session as third-party | `--source tool` (keeps it out of the user's own session list; documented default is `cli`) |
 
-No dedicated `--output-format json` flag is documented for Hermes; `-Q` plus the final response is the
+No dedicated `--output-format json` flag is documented; `-Q`/`-z` plus the final response is the
 machine-readable surface.
 
 ### Approvals and permissions
 
-`--yolo` skips permission checks and auto-approves all tools; the env var `HERMES_YOLO_MODE=true` does
-the same and also disables prompts. `--accept-hooks` auto-approves shell hooks without a TTY prompt.
-No narrower per-tool allow-rule flag is documented (permission granularity in this CLI comes from
-`--toolsets`, which enables or omits whole tool bundles, not individual approvals). What happens if a
-prompt is needed and `--yolo`/`--accept-hooks` were not passed is **NOT DOCUMENTED** — treat empty
-stdout with a clean exit code as a stalled or silently-denied run, per the general CLI failure guidance,
-and read stderr.
+`--yolo` bypasses dangerous-command approval, but does **not** override a hardline blocklist of
+catastrophic commands (e.g. `rm -rf /`, fork bombs). The env var `HERMES_YOLO_MODE` is documented as
+being set internally by `--yolo`; the exact accepted value string (e.g. `true`) is not spelled out —
+prefer the `--yolo` flag itself over setting the env var by hand. `--accept-hooks` is narrower than it
+sounds: it only auto-approves shell **hooks** (event/command pairs), persisting each approval to
+`~/.hermes/shell-hooks-allowlist.json` — it is not general tool approval. No per-tool allow-rule flag is
+documented; the only tool-level scoping is `--toolsets` (enabling whole bundles).
 
-`--checkpoints` snapshots files before destructive operations (`/rollback` restores them) — a cheap
-safety net for a delegation that writes, independent of the approval flag.
+The real gate for headless runs is **`approvals.mode`** in `~/.hermes/config.yaml` (`smart` = default,
+auxiliary-LLM risk assessment; `manual` = always prompt; `off` = disabled), plus three separate
+headless-context keys that each **default to `deny`**: `single_query_mode` (governs `-q`/one-shot),
+`cron_mode` (scheduled jobs), and `unattended_mode` (webhook/API sessions). **With the default `deny`, a
+dangerous command is not executed: the tool call returns an error to the agent** (which is instructed
+not to blindly retry/rephrase) rather than stalling indefinitely or silently exiting 0. Set the relevant
+mode to `approve` to auto-approve in that context. Unapproved shell hooks specifically are documented as
+"skipped rather than silently approved" — a different subsystem from the `approvals.mode` gate.
 
 ### Models and how to list them
 
-Models are specified as `provider/model-name` (e.g. `anthropic/<identifier>`, `openrouter/<provider>/<model>`,
-`ollama/<model-name>`). Run **`hermes model --refresh`** to re-fetch each authenticated provider's live
-`/v1/models` list rather than guessing an ID, or `hermes model` for the interactive provider+model
-picker. `hermes config show` / `hermes status` show current configuration, but `config show` prints a
-formatted box, not `key=value` lines — grepping it for a field name returns nothing.
+Models are specified as `provider/model-name`. Run **`hermes model`** for the interactive provider+model
+picker (also the place to add new providers/API keys/OAuth — in-session `/model` only switches among
+already-configured models). A `--refresh` flag on `hermes model` is **not confirmed** in the docs
+checked. `hermes config show` and `hermes status [--all] [--deep]` show current configuration.
 
-Provider keys are `nous`, `openrouter`, `anthropic`, `openai`, `google`, `xai`, `mistral`, `deepseek`,
-`moonshotai`, `minimax`, `groq`, `zai`, `ollama` (note `zai`, not `zhipuai`). Model availability depends
-entirely on which providers the user has authenticated — search the web or check
-[Artificial Analysis](https://artificialanalysis.ai/) for current pricing and benchmarks, then confirm
-the exact ID against `hermes model --refresh` before pinning it in a delegation.
+Documented provider keys: `openai-api`, `gemini`, `zai` (not `zhipuai`), `deepseek`, `kimi-coding` /
+`kimi-coding-cn`, `minimax` / `minimax-cn`, `nous`, `openrouter`, `xai`, `ollama-cloud`, plus many more
+(e.g. `novita`, `bedrock`, `azure-foundry`, `alibaba`). `mistral` and `groq` were **not** found as
+first-class provider IDs — they may only be reachable via a generic OpenAI-compatible custom endpoint.
+Model availability depends entirely on which providers the user has authenticated — search the web or
+check [Artificial Analysis](https://artificialanalysis.ai/) for current pricing and benchmarks, then
+confirm the exact ID via `hermes model` before pinning it in a delegation.
 
 ### Command pattern
 
@@ -175,7 +185,8 @@ hermes chat -q "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRA
 ### Docs and reference
 
 - Delegation checklist and full flag/tool/toolset/model tables: [reference.md](reference.md)
-- Vendor documentation: no single canonical URL captured in source; auth via `hermes setup` /
-  `hermes setup --portal` / `hermes model`
-- Flags taken from this repo's existing skill and reference docs; no installed-binary verification
-  stamp is recorded in the source. Confirm against `hermes --help` before relying on this in production.
+- Vendor documentation: <https://hermes-agent.nousresearch.com/docs/>
+- **Checked against the official Nous Research documentation on 2026-09-19. Not run against an installed
+  binary — confirm with `hermes --help` before trusting a flag.** This is a smaller, actively maintained
+  open-source project; several precise details (exact `HERMES_YOLO_MODE` value, `--max-turns` default,
+  whether skills surface as slash commands) could not be pinned to a single authoritative sentence.

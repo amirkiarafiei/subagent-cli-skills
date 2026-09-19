@@ -1,72 +1,66 @@
-# GitHub Copilot CLI — reference
+> **Checked against the official GitHub documentation on 2026-09-19. Not run against an installed binary — confirm with `copilot --help` before trusting a flag.**
 
-Concise reference for agents. Auth: `COPILOT_GITHUB_TOKEN` or `GH_TOKEN`.
+## Authentication
 
-## Models (Mandatory Search Required)
+`GH_TOKEN` or `GITHUB_TOKEN` (personal access token), set as an environment variable before running
+`copilot` non-interactively.
 
-Model names change frequently. **Always search for latest pricing/aliases.** Consult [Artificial Analysis](https://artificialanalysis.ai/) for up-to-date model performance and pricing data.
+## Models
 
-Copilot is a **multi-provider gateway** — OpenAI, Anthropic, Google, xAI, and Moonshot models all
-ship through the same `--model` flag. Availability varies by plan, org policy, and region.
+No CLI subcommand or flag to print the model catalog is documented. Copilot is a **multi-provider
+gateway** — several providers' models ship through the same `--model=<identifier>` flag —
+availability varies by plan, org policy, and region. The official docs say the only way to see the
+model strings for all available models is to run **`/model`** in an interactive session; there is no
+documented headless-only listing. Search the web / [Artificial Analysis](https://artificialanalysis.ai/)
+for current identifiers and pricing before picking one.
 
-| Model | Tier / Use |
-|-------|-----------|
-| `gpt-5.6-luna` | Fast, cheap — default for simple edits and exploration |
-| `gpt-5.6-terra` | Balanced everyday implementation |
-| `gpt-5.6-sol` | OpenAI flagship — complex reasoning, refactors |
-| `claude-sonnet-5` | Anthropic workhorse, strong agentic coding |
-| `claude-opus-5` | Anthropic flagship — hardest long-horizon tasks |
-| `claude-haiku-4.5` | Anthropic fast/cheap tier |
-| `gemini-3.6-flash` | Google fast tier, 1M context |
-| `gemini-3.1-pro-preview` | Google Pro (line frozen at 3.1) |
-| `grok-4.5` | xAI |
-| `kimi-k2.7-code` / `kimi-k3` | Moonshot open-weight coding models |
-
-> **Retiring** `gpt-5.4` and `gpt-5.4-mini` retire 2026-08-31 → use `gpt-5.6-terra` / `gpt-5.6-luna`.
-> `o3-mini` and the o-series are **not** offered by Copilot — reasoning is set via `--effort`, not
-> a separate model.
-
-## Agents ([built-in])
-
-Specialists run in isolated context. Specify via `--agent <name>`.
-
-| Name | Role |
-|------|------|
-| `explore` | Codebase Q&A, architectural research, "how does X work?" |
-| `general-purpose` | Default chat agent for broad tasks and edits. |
-| `task` | Specialized for command execution and scripting tasks. |
-| `research` | Deep research using GitHub and web sources. |
-| `code-review` | Runs a code review pass over recent changes or specific files. |
-
-## Programmatic Flags
+## Essential Flags
 
 | Flag | Purpose |
 |------|---------|
-| `-p`, `--prompt` | Execute prompt and exit (Non-interactive). |
-| `-s`, `--silent` | Output ONLY agent response (no decorations/stats). |
-| `--yolo` | Auto-approve all tools, paths, and URLs. |
-| `--allow-all-tools` | Specifically allow tool execution (required for headless). |
-| `--model` | Select AI model (e.g., `gpt-5.6-luna`). |
-| `--effort` | Reasoning effort: `low`, `medium`, `high`, `xhigh`. |
-| `--output-format json` | Output JSONL (one JSON object per line). |
-| `--autopilot` | Allow agent to perform multiple cycles without prompting. |
-| `--share [path]` | Export session transcript to Markdown file. |
+| `-p`, `--prompt <PROMPT>` | Execute a prompt in non-interactive mode; exits when done. Prompt is this flag's value. |
+| `-s` | Suppress stats/decoration; output only the agent's response. |
+| `--output-format=text\|json` | `json` is JSONL — one object per turn/tool-call/response. |
+| `--attachment <path>` | Attach a file (image or native document) to the initial prompt (`-p`/`--prompt` mode only). |
+| `--model=<identifier>` | Choose the AI model. |
+| `--agent=<name>` | Specify a custom agent to use for the session. |
+| `--add-dir <path>` | Add a directory to agent context; rejects non-directory/inaccessible paths and aborts startup. |
+| `--share [path]` | Export the session transcript to Markdown. |
 
-## Context Handling
+## Approvals and permissions
 
-- **Direct File Mention**: Use `@ FILENAME` in your prompt to force inclusion.
-- **Project Instructions**: `copilot init` creates `.github/copilot-instructions.md`.
-- **Exclusions**: Uses `.gitignore` and `.copilotignore`.
+| Flag | Grants |
+|---|---|
+| `--allow-all` (alias `--yolo`) | All permissions — tools and URL fetches. |
+| `--allow-all-tools` | Every tool, without per-call confirmation (narrower than `--allow-all`: does not itself grant URL access). |
+| `--allow-tool=<TOOL>` | One specific tool (comma-separated list for several). |
+| `--allow-url=<URL>` | One specific URL/domain. |
+| `--deny-tool=<TOOL>`, `--deny-url=<URL>` | Explicit denials. |
 
-## JSON Output (`--output-format json`)
+The official docs recommend minimal grants (`--allow-tool`/`--allow-url`) over `--allow-all` outside
+a sandboxed environment. **Unanswered approval, documented behavior:** not explicitly documented for
+a call that falls outside every allow flag in headless mode — do not rely on a graceful denial; pass
+`--allow-all` (or the precise tool/URL grants the task needs) before running headless.
 
-Copilot outputs JSONL. Each line is a JSON object representing a turn, tool call, or response.
+## Subcommands
 
-## Environment Variables
+Primarily invoked as `copilot -p "..."` with flags; slash commands (`/model`, `/agent`, `/mcp`,
+etc.) are interactive-session only and not part of the non-interactive flag surface.
 
-- `COPILOT_GITHUB_TOKEN`: Authentication token.
-- `COPILOT_SUBAGENT_MAX_DEPTH`: Max recursion depth (default 6).
-- `COPILOT_SUBAGENT_MAX_CONCURRENT`: Max parallel subagents (default 32).
+## Configuration and paths
+
+- `.github/copilot-instructions.md` — created by `copilot init`; project instructions.
+- `.gitignore` and `.copilotignore` — path exclusions.
+- Custom model providers: `COPILOT_PROVIDER_BASE_URL`, `COPILOT_PROVIDER_TYPE`,
+  `COPILOT_PROVIDER_API_KEY`, `COPILOT_MODEL` environment variables.
+- `COPILOT_SUBAGENT_MAX_DEPTH` (default 6) and `COPILOT_SUBAGENT_MAX_CONCURRENT` (default 32) —
+  recursion/parallelism limits for custom agents.
+
+## Documentation
+
+- Official docs: <https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-programmatic-reference>,
+  <https://docs.github.com/copilot/concepts/agents/about-copilot-cli>
+- Vendor card in this skill: [SKILL.md](SKILL.md)
 
 ## Delegation Checklist
 

@@ -115,61 +115,69 @@ loudly.
 ### Binary and prompt form
 
 - **Binary:** `codex`
-- **Prompt form:** **positional**, under the `exec` subcommand. `codex exec "prompt"` runs
-  non-interactively; the prompt string is a plain argument to `exec`, not a flag's value. Stdin
-  handoff also works: `cat instructions.txt | codex exec -`. A bare `codex` with no `exec` opens the
-  interactive TUI and never returns.
+- **Prompt form:** **positional**, under the `exec` subcommand (alias `codex e`). `codex exec
+  "prompt"` runs non-interactively and exits when the task completes; the prompt string is a plain
+  argument to `exec`, not a flag's value. A bare `codex "prompt"` (no `exec`) opens the interactive
+  TUI and never returns. Stdin handoff also works: `cat instructions.txt | codex exec -`.
 
 ### Headless and output flags
 
 | Need | Flag |
 |---|---|
-| Run once and exit | `exec "prompt"` |
-| Run without saving rollout files (cleaner CI/CD) | `--ephemeral` |
-| Live web browsing/search | `--search` |
-| Load a config profile | `--profile`, `-p` |
-
-No dedicated `--output-format` flag is documented in this skill's sources.
+| Run once and exit | `exec "prompt"` (alias `e`) |
+| NDJSON event stream instead of formatted text | `--json` |
+| Write the final assistant message to a file | `--output-last-message`, `-o <path>` |
+| Layer a config profile | `--profile`, `-p <name>` |
+| Skip loading the standard config file | `--ignore-user-config` |
 
 ### Approvals and permissions
 
-- **`--full-auto`** (or `-a full-auto`) — fully autonomous; auto-approves all actions. Use this for
-  headless delegation.
-- **`--approval-mode auto-edit`** — auto-patches files but still asks before shell commands. Do not
-  use this headless: with nobody to answer, a shell-command step has no documented fallback in
-  these sources, so treat it as a stall risk and prefer `--full-auto` instead.
-
-What happens to an unanswered approval outside `--full-auto` is **not documented** here — avoid the
-situation by always passing `--full-auto`.
+- **Sandbox policy** — `--sandbox`, `-s <read-only\|workspace-write\|danger-full-access>` — bounds
+  what model-generated shell commands can touch.
+- **Approval policy** — `--ask-for-approval`, `-a <value>` — the CLI's own docs page highlights
+  `on-request` and `never`; the source additionally defines `on-failure` and `untrusted` as accepted
+  values. `--ask-for-approval never` suppresses prompts but does **not** by itself grant network
+  access — that's a separate `sandbox_workspace_write.network_access` config setting.
+- **Full bypass** — **`--dangerously-bypass-approvals-and-sandbox`** (alias **`--yolo`**) — sets the
+  sandbox to `danger-full-access` and the approval policy to `never` together. This is the flag to
+  use for unattended delegation; only run it in an already-hardened environment (container/VM/CI).
+- **`codex exec` defaults to `AskForApproval::Never`** even without any flag — headless mode does
+  not wait for approval by default.
+- **What happens with nobody to answer:** the official docs state plainly that when an approval is
+  needed but unavailable in non-interactive mode, **"Codex exits with an error."** It does not stall.
 
 ### Models and how to list them
 
-No CLI subcommand to list models is documented here. Codex accepts an OpenAI-style dotted
-identifier with a tier suffix, selected via `--model`/`-m <identifier>`. **Reasoning effort is a
-separate setting, not part of the model name** — set it with `-c model_reasoning_effort="<low|medium|high|...>"`
-rather than hunting for a "thinking" variant. An "ultra" style effort level is documented as fanning
-out to sub-agents for parallel work on complex tasks.
+No dedicated `exec`-time flag to print the model catalog is confirmed; the docs reference `codex
+debug models` for inspecting available models, but this is not documented in the same depth as the
+`--model` flag itself, so verify it against the installed binary. Select the model for a run with
+`--model`, `-m <identifier>`; reasoning effort/tier is a config-level concern, not part of the model
+string. Interactively, `/model` lets you change the model and effort mid-session.
 
-If the user names a model or effort level, use it. Otherwise search the web for current identifiers
-and consult [Artificial Analysis](https://artificialanalysis.ai/) for capability and price
-comparisons — Codex model names and retirement dates change often, and a stale pin fails outright.
+If the user names a model, use it. Otherwise check `codex debug models` (or the docs below) and
+[Artificial Analysis](https://artificialanalysis.ai/) for current identifiers and pricing before
+picking one — Codex model names and retirements change often enough that a pinned one can fail
+outright.
 
 ### Command pattern
 
 ```bash
 codex exec "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" \
-  --full-auto --model <identifier> 2>&1
+  --dangerously-bypass-approvals-and-sandbox --model <identifier> 2>&1
 ```
 
 ### Prompt examples
 
-- **Implement:** `codex exec "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" --full-auto`
-- **Logic check:** `codex exec "GOAL: Analyze logic for edge cases and race conditions | SCOPE: [paths] | VERIFICATION: [check_command] | OUTPUT: detailed report" --model <identifier> -c model_reasoning_effort="high"`
-- **Audit:** `codex exec "GOAL: Security audit of the authentication layer | SCOPE: [paths] | CONSTRAINTS: report only, no edits | OUTPUT: audit report" --full-auto`
+- **Implement:** `codex exec "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" --yolo`
+- **Logic check:** `codex exec "GOAL: Analyze logic for edge cases and race conditions | SCOPE: [paths] | VERIFICATION: [check_command] | OUTPUT: detailed report" --model <identifier> --sandbox read-only --ask-for-approval never`
+- **Audit:** `codex exec "GOAL: Security audit of the authentication layer | SCOPE: [paths] | CONSTRAINTS: report only, no edits | OUTPUT: audit report" --sandbox read-only --ask-for-approval never`
 
 ### Docs and reference
 
-- Flags, models, profiles, delegation checklist: [reference.md](reference.md)
-- No vendor documentation URL is recorded in this skill's own sources.
-- **Not verified against an installed binary** — the source files carry no version/date stamp.
-  Confirm every flag with `codex --help` before relying on this card.
+- Flags, sandbox/approval values, delegation checklist: [reference.md](reference.md)
+- Vendor documentation: <https://developers.openai.com/codex/cli> and
+  <https://developers.openai.com/codex/cli/reference>
+- **Checked against the official OpenAI documentation on 2026-09-19. Not run against an installed
+  binary — confirm with `codex --help` before trusting a flag.** Note: the previous version of this
+  card recommended a `--full-auto` flag; the current docs no longer document that name — the bypass
+  flag is `--dangerously-bypass-approvals-and-sandbox` (alias `--yolo`).

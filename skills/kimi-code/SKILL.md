@@ -112,61 +112,84 @@ loudly.
 
 ## Vendor card
 
+> **Version note:** Moonshot AI ships a full rewrite, **Kimi Code CLI** (TypeScript), which is replacing
+> the legacy Python **Kimi CLI** (frozen since v1.44.0, 2026-05-13). Both use the `kimi` binary and the
+> new one auto-migrates config/sessions from the old one, but flag semantics changed. This card documents
+> **current Kimi Code CLI**. If your install still reports itself as the legacy `kimi-cli`, several flags
+> below (`--yolo`, `--auto`) will not exist — run `kimi --help` to check which generation you have.
+
 ### Binary and prompt form
 
 - **Binary:** `kimi`
-- **Prompt form:** **flag.** The prompt is the argument of `--prompt` (alias `-p`). `--print` runs in
-  non-interactive print mode and implicitly enables `--afk` (away-from-keyboard: tools auto-approved,
-  interactive questions auto-dismissed) — pass both `--prompt` and `--print` together for a headless run.
+- **Prompt form:** **flag.** `-p`, `--prompt "prompt"` runs a single prompt non-interactively and
+  streams output to stdout; it does not open the TUI.
 
 ### Headless and output flags
 
 | Need | Flag |
 |---|---|
-| Non-interactive prompt | `--prompt`, `-p "prompt"` |
-| Run once and exit, auto-approve prompts | `--print` (implies `--afk`) |
-| Output format | `--output-format text` (default) or `--output-format stream-json` |
-| Final-answer-only output | `--final-message-only` |
-| Ralph loop iteration cap | `--max-ralph-iterations <N>` |
+| Run once and exit | `-p`, `--prompt "prompt"` |
+| Output format | `--output-format text\|stream-json` (text default; only usable with `--prompt`) |
+| Specify a model for the launch | `-m`, `--model <alias>` |
+
+`--prompt` cannot be combined with `--yolo`, `--auto`, or `--plan` (see Approvals, below) — headless mode
+runs under its own implicit permission policy regardless. A `--final-message-only` flag and a
+`--max-ralph-iterations` flag are documented for the **legacy** Kimi CLI only; neither was found anywhere
+in current Kimi Code CLI's docs (the closest legacy equivalent, Ralph-loop iteration count, appears only
+as a `max_ralph_iterations` field under `[loop_control]` in `config.toml`, not as a current CLI flag).
+Treat both as **NOT DOCUMENTED for the current CLI.**
 
 ### Approvals and permissions
 
-`--yolo` (alias `-y`) auto-approves all operations — the blanket flag. `--print` is a distinct,
-narrower path: it auto-approves tools and auto-dismisses interactive questions (via the implicit
-`--afk`) without being the same thing as `--yolo`; use `--print` when you specifically want non-interactive
-execution and `--yolo` when you want every operation approved regardless of mode. **Do not use `--plan`**
-— it starts a read-only planning mode, which per this project's rule is never the right mode for a
-headless subagent; if you want no edits, say "report only, no edits" in the prompt instead. What happens
-if neither `--yolo` nor `--print`/`--afk` is set and a tool needs approval is **NOT DOCUMENTED** — treat
-empty output with a clean exit as a stalled or silently-denied run.
+Current Kimi Code CLI's approval model:
+
+- **`--yolo`, `-y`** — "Ask When Needed" mode: routine edits and commands run automatically; risky
+  actions, questions, and plans still ask.
+- **`--auto`** — "Never Ask" mode: nothing interrupts you; everything runs and is decided automatically.
+  This is the current blanket auto-approve-everything flag (no short form documented).
+- `--yolo` and `--auto` are mutually exclusive.
+- **Never use `--plan`** — read-only exploration/planning mode, unsuitable for headless delegation per
+  this project's policy.
+
+**Headless behavior is resolved and simpler than it looks:** `--prompt` cannot be combined with
+`--yolo`, `--auto`, or `--plan` at all, because **non-interactive (`-p`) mode always runs under an
+implicit `auto` permission policy** — "no human approval is requested; regular tool calls are handled
+under the `auto` permission policy, while static deny rules remain in effect." So a `-p` run never stalls
+waiting for approval and never silently no-ops: routine tool calls simply execute, and only explicit
+config-level deny rules still block a call. What happens to an `AskUserQuestion`-style interactive
+question specifically inside `-p` mode is **NOT DOCUMENTED** for the current CLI (the legacy CLI
+explicitly auto-dismissed these under `--afk`; no equivalent statement was found for the current one).
 
 ### Models and how to list them
 
-No CLI subcommand for listing models is documented for Kimi Code. Selection is `--model`, `-m
-[model_name]`. The recorded names in source are a coding-flagship long-context model (the default
-recommendation for delegation), a faster/cheaper same-generation variant for simple edits and tight
-loops, a newest general-purpose frontier model, and an extended-reasoning variant (plus a `-turbo` form)
-for complex logic; older generations remain selectable. Avoid any moving "latest" alias and pin an
-explicit identifier instead, so a delegation stays reproducible. Always search the web and
-check [Artificial Analysis](https://artificialanalysis.ai/) for current names and pricing before
-picking one, since these change frequently.
+Selection is `-m`/`--model <alias>`; omit it to use `default_model` from `config.toml`. There is **no
+`kimi models` subcommand.** Model and provider management goes through **`kimi provider`** (the
+non-interactive shell equivalent of the TUI's `/provider` command) — e.g. `kimi provider catalog list`
+to browse/filter the model catalog (fetched from models.dev for third-party providers). An interactive
+`/model list` picker also exists inside the TUI, but is not a separate CLI subcommand. A moving "latest"
+moving alias is **not documented** — do not assume it exists or warn against it as fact.
+
+If the user names a model, use it. Otherwise ask `kimi provider catalog list` first. For capability and
+price comparisons, check [Artificial Analysis](https://artificialanalysis.ai/) and the vendor's own
+documentation.
 
 ### Command pattern
 
 ```bash
 kimi --prompt "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" \
-  --yolo --model <identifier> --print --output-format stream-json 2>&1
+  --model <alias> --output-format stream-json 2>&1
 ```
 
 ### Prompt examples
 
-- **Implement:** `kimi --prompt "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | VERIFICATION: [test_command] | OUTPUT: [format]" --yolo --print`
-- **Investigate (report only):** `kimi --prompt "GOAL: Map how [feature] works | SCOPE: [paths] | CONSTRAINTS: do not edit any file | OUTPUT: concise file:line map" --yolo --print`
-- **Ralph loop:** `kimi --prompt "GOAL: [task] | VERIFICATION: [test]" --max-ralph-iterations 5 --yolo --print`
+- **Implement:** `kimi --prompt "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | VERIFICATION: [test_command] | OUTPUT: [format]" --model <alias>`
+- **Investigate (report only):** `kimi --prompt "GOAL: Map how [feature] works | SCOPE: [paths] | CONSTRAINTS: do not edit any file | OUTPUT: concise file:line map" --model <alias>`
+- **Interactive-only escalation (not for headless):** `--yolo` and `--auto` only matter outside `--prompt` mode; a `-p` delegation is already running under `auto` permissions by default.
 
 ### Docs and reference
 
-- Delegation checklist and model table: [reference.md](reference.md)
-- Vendor documentation: no canonical URL captured in source; auth via `KIMI_API_KEY` or `kimi login`
-- Flags taken from this repo's existing skill and reference docs; no installed-binary verification
-  stamp is recorded in the source. Confirm against `kimi --help` before relying on this in production.
+- Flags, models, skills, subcommands: [reference.md](reference.md)
+- Vendor documentation: <https://moonshotai.github.io/kimi-code/en/reference/kimi-command.html>
+- **Checked against the official Moonshot AI documentation on 2026-09-19. Not run against an installed
+  binary — confirm with `kimi --help` before trusting a flag**, and confirm which generation (legacy
+  `kimi-cli` vs current `kimi-code`) is actually installed.

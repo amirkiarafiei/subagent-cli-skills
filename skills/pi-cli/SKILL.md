@@ -116,9 +116,8 @@ loudly.
 
 - **Binary:** `pi`
 - **Prompt form:** **positional**, gated by a boolean flag. `-p`/`--print` ("print response and exit")
-  takes no value of its own — the prompt is a separate positional argument: `pi -p "text"`,
-  `pi --mode json "Your prompt"`. Attachments use `@file` (`pi @README.md "prompt"`,
-  `pi -p @screenshot.png "What's in this image?"`).
+  takes no value itself — the prompt is a separate positional argument: `pi -p "text"`,
+  `pi --mode json "Your prompt"`. Attachments use `@file` (`pi @README.md "prompt"`).
 
 ### Headless and output flags
 
@@ -131,26 +130,28 @@ loudly.
 
 ### Approvals and permissions
 
-**Pi has no per-tool-call permission system, so there is no approve-all flag to name and none to
-invent.** Its own docs are explicit: Pi "does not include a built-in sandbox," and built-in tools "can
-read files, write files, edit files, and run shell commands with the permissions of the pi process."
+**Verified: Pi has no per-tool-call permission system, so there is no approve-all flag to name and
+none to invent.** Its own docs state Pi "is a local coding agent. It runs with the permissions of the
+user account that starts it," "does not include a built-in sandbox," and built-in tools "can read
+files, write files, edit files, and run shell commands with the permissions of the pi process."
 
-`-a`/`--approve` and `-na`/`--no-approve` are **not** tool approval — they control whether
-project-local files (`.pi/settings.json`, project resources, extensions, project skills) are *loaded*
-for this run. Non-interactive modes (`-p`, `--mode json`, `--mode rpc`) never show a trust prompt;
-without a saved decision, untrusted project resources are simply ignored. Since there is no permission
-gate, there is no "stall vs. reject" question for tool calls — a delegated run acts with your full user
-permissions immediately. Scope risk with `--tools <list>` / `--no-tools` instead of looking for a
-bypass flag. Pi's docs recommend running untrusted work in a container, VM, or other sandbox you provide
-yourself.
+`-a`/`--approve` and `-na`/`--no-approve` are **not** tool approval — they override **project trust**
+for one run: whether `.pi/settings.json`, project resources, and extensions are *loaded*. The
+`defaultProjectTrust` setting (`ask` default, `always`, or `never`) governs the fallback when no saved
+decision exists, and non-interactive modes (`-p`, `--mode json`, `--mode rpc`) never show a trust
+prompt — they just apply that fallback. Since there is no tool-call gate at all, there is no
+"stall vs. reject" question for delegated actions: a run acts with your full user permissions
+immediately. Scope risk with `--tools <list>` / `--no-tools` instead of looking for a bypass flag that
+doesn't exist. Pi's own docs recommend running untrusted work in a container, VM, or other sandbox you
+provide yourself.
 
 ### Models and how to list them
 
 Run **`pi --list-models [search]`** for the model strings this install accepts. Select with
 `--model <provider/id>`, optionally suffixed `:<thinking>`, alongside `--provider <name>` (e.g.
-`anthropic`, `openai`, `google`). Concrete IDs are NOT DOCUMENTED beyond that pattern — ask the binary.
-`--thinking <level>` accepts `off`, `minimal`, `low`, `medium`, `high`, `xhigh`, `max`. Use the web for
-pricing and benchmarks only.
+`anthropic`, `openai`, `google`). Concrete IDs are not pinned in the docs beyond that pattern — ask the
+binary. `--thinking <level>` accepts `off`, `minimal`, `low`, `medium`, `high`, `xhigh`, `max`. Use the
+web for pricing and benchmarks only.
 
 ### Command pattern
 
@@ -167,6 +168,6 @@ pi -p "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [co
 ### Docs and reference
 
 - Flags, JSON events, trust model, skills, auth: [reference.md](reference.md)
-- Vendor documentation: pi.dev
-- **Documented, not verified.** Written from Pi's published docs on 2026-09-06 and not checked against
-  an installed binary. Run `pi --help` before trusting any flag here.
+- Vendor documentation: <https://pi.dev/docs/latest/usage> and <https://pi.dev/docs/latest/settings>
+- **Checked against the official Pi documentation on 2026-09-19. Not run against an installed binary —
+  confirm with `pi --help` before trusting a flag.**

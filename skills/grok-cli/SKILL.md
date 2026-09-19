@@ -115,41 +115,40 @@ loudly.
 ### Binary and prompt form
 
 - **Binary:** `grok`
-- **Prompt form:** **flag.** The prompt is the argument of `-p`, `--single <PROMPT>`.
-  A bare `grok "prompt"` is not the documented headless form — do not rely on it.
+- **Prompt form:** **flag.** The prompt is the value of `-p`, `--single <PROMPT>`.
 
 ### Headless and output flags
 
 | Need | Flag |
 |---|---|
 | Run once and exit | `-p`, `--single <PROMPT>` |
-| Plain text | `--output-format plain` (the default) |
-| One JSON object on completion | `--output-format json` |
-| Newline-delimited event stream | `--output-format streaming-json` |
+| Output format | `--output-format plain\|json\|streaming-json` (examples in the docs use `plain`; it is not explicitly stated as the default) |
 | Turn cap | `--max-turns <N>` |
 | Run inline, not fullscreen | `--no-alt-screen` |
 | Skip background update checks | `--no-auto-update` (recommended for scripts) |
 
-No quiet/silent flag and no exit-code table are documented. Judge success by output, not status.
-
 ### Approvals and permissions
 
-No vendor-documented behavior states what happens on a denied/unanswered tool prompt specifically for
-Grok; treat it the same as any headless CLI — assume it stalls or returns empty output with a success
-exit code, and read stderr before trusting stdout. Grant access before the run:
+`--always-approve` "skips ordinary permission prompts so tools run without waiting for a click" —
+documented deny rules, hooks, and some shell `ask` rules still apply on top of it. **`--yolo` is not a
+current flag or alias** — it exists only as a legacy `yolo = true` key in `config.toml`, superseded by
+`permission_mode` / `--always-approve`; do not pass `--yolo` on the command line. Narrower options:
+`--allow <RULE>` / `--deny <RULE>` (work in both interactive and headless sessions), and `--sandbox
+<PROFILE>` (documented as a flag; its profile values are not documented).
 
-1. **`--allow <RULE>`** / **`--deny <RULE>`** — narrower, scoped permission rules. Prefer these when the
-   run can be scoped.
-2. **`--sandbox <PROFILE>`** — run under a sandbox profile.
-3. **`--always-approve`** (alias `--yolo`) — approves everything. Blunt; use only when the task genuinely
-   needs full write access and cannot be scoped.
+**What happens when a tool needs approval and nothing can answer:** the call fails immediately and the
+failure is reported back to the model in-band (e.g. "Auto mode blocked this action…"), so the model can
+try another approach or give up — it does **not** hang and does **not** exit 0 with silent empty output.
+A `dontAsk` permission mode does the same silently, denying anything without an explicit allow rule and
+never surfacing a prompt at all. Separately, a recent update means non-interactive sessions no longer
+fail when the agent asks for user input or plan approval — those specific requests are now auto-resolved
+rather than causing a hard failure; tool-permission blocks still fail-and-report as above.
 
 ### Models and how to list them
 
-Run **`grok models`** for the model IDs this install accepts — the docs describe `-m`, `--model <MODEL>`
-as taking a "Model ID" but do not enumerate valid strings, so there is nothing to copy from this file.
-`--effort <LEVEL>` sets reasoning effort; the accepted levels are **NOT DOCUMENTED** — check `grok --help`
-before passing it. Omit `--model` to use the configured default.
+Run **`grok models`** for the model IDs this install accepts. Selection is `-m`, `--model <MODEL>`.
+`--effort <LEVEL>` sets reasoning effort; the accepted level values are not documented — check `grok
+--help`. Omit `--model` to use the configured default.
 
 If the user names a model or an effort level, use it. Otherwise ask the binary first. For capability
 and price comparisons, check [Artificial Analysis](https://artificialanalysis.ai/) and the vendor's own
@@ -170,8 +169,7 @@ grok -p "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [
 
 ### Docs and reference
 
-- Flags, output formats, sessions, skills, auth: [reference.md](reference.md)
-- Vendor documentation: xAI's published Grok CLI docs (no single canonical URL captured in source)
-- **Documented, not verified.** Written from xAI's published CLI docs on 2026-09-06 and not checked
-  against an installed binary. Run `grok --help` before trusting any flag here; on a mismatch use what
-  the binary actually offers and report which line in this file is wrong.
+- Flags, models, permissions, skills, paths: [reference.md](reference.md)
+- Vendor documentation: <https://docs.x.ai/build/cli/reference> and <https://docs.x.ai/build/cli/headless-scripting>
+- **Checked against the official xAI documentation on 2026-09-19. Not run against an installed binary —
+  confirm with `grok --help` before trusting a flag.**

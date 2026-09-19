@@ -112,47 +112,58 @@ loudly.
 
 ## Vendor card
 
+> **Note:** AWS has moved Kiro CLI's authoritative docs to kiro.dev/docs; `docs.aws.amazon.com` now
+> mostly hosts a migration notice pointing there (the Amazon Q Developer CLI → Kiro CLI rename took
+> effect 2025-11-17).
+
 ### Binary and prompt form
 
 - **Binary:** `kiro-cli`
 - **Prompt form:** **positional**, on the `chat --no-interactive` subcommand: `kiro-cli chat
-  --no-interactive "prompt"`. Reference a file directly in the prompt with `@ FILENAME`.
+  --no-interactive "prompt"`. Reference a file directly with **`@path`** — no space after the `@`
+  (e.g. `@src/auth.rs`, `@./relative/path`, `@"path with spaces.txt"`, `@dir/` for a directory tree).
+  Tab-completion is supported; the content is expanded inline before sending, not fetched via a tool call.
 
 ### Headless and output flags
 
 | Need | Flag |
 |---|---|
 | Run once and exit | `chat --no-interactive "prompt"` |
-| Fail fast if MCP servers don't connect | `--require-mcp-startup` |
+| List available models | `chat --list-models` (supports `--format json`) |
+| Fail if MCP servers don't come up | `--require-mcp-startup` — exits with code 3 if MCP servers don't start or report status within a 30-second window; without the flag, startup problems are only logged and execution continues |
 
-No dedicated output-format flag (`text`/`json`) is documented for Kiro CLI — only `--no-interactive`
-mode itself and the model/agent selection flags below.
+No dedicated `text`/`json` output-format flag beyond `--list-models --format json` was found documented.
 
 ### Approvals and permissions
 
-`--trust-all-tools` auto-approves all tools, paths, and URLs (the blanket flag). `--trust-tools=<list>`
-gives granular auto-approval for a named subset (e.g. `read,grep`) — prefer it when the run can be
-scoped. What happens if neither flag is passed and a tool needs approval is **NOT DOCUMENTED** in the
-source files — treat empty output with a clean exit as a stalled or silently-denied run, per the general
-CLI failure guidance, and read stderr.
+`--trust-all-tools` auto-approves all tool calls without prompting — the docs explicitly flag that this
+includes arbitrary shell execution ("use with caution"). `--trust-tools=<comma-list>` (e.g.
+`read,grep,write`) grants granular auto-approval instead, and the docs recommend it over
+`--trust-all-tools` on least-privilege grounds. **What happens if neither flag is passed and a tool needs
+approval during `--no-interactive` is NOT DOCUMENTED** — AWS's own docs do not state the fallback
+(stall, error, or silent exit 0). Do not assume any of the three; pass an explicit trust flag rather than
+relying on undocumented default behavior.
 
 ### Models and how to list them
 
-No CLI subcommand for listing models is documented. Selection is `--model <alias>`; the default can be
-set permanently with `kiro-cli settings chat.defaultModel <alias>`. Source names a balanced daily-driver
-tier (1M context), a fast/cheap tier for quick suggestions, a max-reasoning tier (also 1M context), a
-set of OpenAI tiers (flagship/balanced/fast), and two open-weight alternatives — but flags the two
-newest Anthropic tiers as **experimental preview, gated to Pro/Pro+/Pro Max/Power plans**, with older
-generations remaining selectable as fallback. Kiro bills by a **credit multiplier per model**, so model
-choice maps directly to spend — check the multiplier before defaulting to the heaviest tier. Always
-search the web and check [Artificial Analysis](https://artificialanalysis.ai/) for current aliases,
-gating, and pricing before pinning one.
+Run **`kiro-cli chat --list-models`** (add `--format json` for machine-readable output). Selection is
+`--model <alias>` on `chat`; the permanent default is set with `kiro-cli settings
+chat.defaultModel <alias>`.
 
-**Built-in subagents** (specialists in isolated context, selected with `--agent "<name>"`): a Codebase
-Analyst for deep codebase Q&A and dependency mapping, an Implementation Specialist for writing/refactoring
-code, and a Research Assistant for web research and documentation lookup. Do not select a read-only or
-planning-only agent for a headless delegation — per this project's rule, a subagent must run in a mode
-that completes without asking for approval.
+If the user names a model, use it. Otherwise ask the binary first. Kiro bills by a **credit-based
+subscription** (Free/Pro/Pro+/Pro Max/Power tiers, each with a monthly credit allotment; add-on credits
+and overage both bill at a flat per-credit rate) and gates newer/premium models behind a paid tier — the
+Free tier gets a baseline model plus open-weight models only. Check
+[Artificial Analysis](https://artificialanalysis.ai/) and the vendor's own pricing docs before assuming
+availability or cost for a given model.
+
+**Built-in agents**, selectable via `--agent "<name>"` (list with `kiro-cli agent list`): **Default**
+(general-purpose, all tools — the one to use for delegation), **Spec** (structured feature development
+with approval gates), **Quick Spec** (auto-generates all phases, no gates), **Bug Fix** (structured bug
+investigation/resolution). **Do not select `Plan`** (explores and produces a plan; cannot write files or
+execute commands — read-only by design) **or `Guide`/`Help`** (CLI-only, documentation-grounded Q&A over
+an indexed-docs tool, not general coding agents) for headless delegation — none of the three can do real
+work. Users can also define custom agents (`kiro-cli agent create|edit|validate|migrate|set-default`).
 
 ### Command pattern
 
@@ -164,12 +175,12 @@ kiro-cli chat --no-interactive "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [
 ### Prompt examples
 
 - **Implement:** `kiro-cli chat --no-interactive "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | VERIFICATION: [test_command] | OUTPUT: [format]" --trust-all-tools`
-- **Investigate:** `kiro-cli chat --no-interactive "GOAL: Map how [feature] works | SCOPE: [paths] | OUTPUT: concise file:line map" --agent "Codebase Analyst" --trust-tools=read,grep`
+- **Investigate:** `kiro-cli chat --no-interactive "GOAL: Map how [feature] works | SCOPE: [paths] | OUTPUT: concise file:line map" --agent "Default" --trust-tools=read,grep`
 - **Refactor:** `kiro-cli chat --no-interactive "GOAL: Refactor [area] for better performance | SCOPE: [paths] | VERIFICATION: [test_command] | OUTPUT: summary of edits" --trust-all-tools`
 
 ### Docs and reference
 
-- Delegation checklist, model/subagent tables, context handling: [reference.md](reference.md)
-- Vendor documentation: no canonical URL captured in source; auth via `KIRO_API_KEY`
-- Flags taken from this repo's existing skill and reference docs; no installed-binary verification
-  stamp is recorded in the source. Confirm against `kiro-cli --help` before relying on this in production.
+- Delegation checklist, agent/model tables, config paths: [reference.md](reference.md)
+- Vendor documentation: <https://kiro.dev/docs/cli/headless/> and <https://kiro.dev/docs/reference/cli-commands/>
+- **Checked against the official Kiro (kiro.dev) documentation on 2026-09-19. Not run against an
+  installed binary — confirm with `kiro-cli --help` before trusting a flag.**

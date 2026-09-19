@@ -112,16 +112,15 @@ loudly.
 
 ## Vendor card
 
-> **Documented, not verified.** Written from Devin's published CLI docs (checked 2026-09-06) and
-> **not** run against an installed binary. Confirm every flag below with `devin --help` before
-> trusting it — this matters more than usual here because Devin's own docs disagree with each
-> other on the bypass-mode name (see Approvals below).
+> **Documented, not run against a binary.** Checked against `docs.devin.ai` on 2026-09-19. Confirm
+> every flag with `devin --help` before trusting it, especially the permission-mode value — see
+> below.
 
 ### Binary and prompt form
 
 - **Binary:** `devin`
-- **Prompt form:** **flag.** `-p`, `--print [PROMPT]` is documented as "non-interactive output
-  mode, exits after response," with the prompt as its argument, e.g. `devin -p "prompt text"`. The
+- **Prompt form:** **flag.** `-p`, `--print [PROMPT]` is documented as "print response and exit
+  (non-interactive mode)," with the prompt as its argument, e.g. `devin -p "prompt text"`. The
   prompt can also be given after a bare `--` (`devin -- add a login page`), but for delegation use
   `-p` so the run is explicitly non-interactive and exits.
 
@@ -130,64 +129,61 @@ loudly.
 | Need | Flag |
 |---|---|
 | Run once and exit | `-p`, `--print [PROMPT]` |
-| Export the run | `--export <file>`, e.g. `--export out.json` |
-| Config file | `--config <path>` (no default path documented) |
-| Workspace trust check | `--respect-workspace-trust [true\|false]` (default `true`) |
+| Load the initial prompt from a file | `--prompt-file <path>` |
+| Export the conversation after each turn | `--export <file>` |
+| Config file | `--config <path>` |
+| Workspace trust check (default `true`) | `--respect-workspace-trust [true\|false]` |
 
-No output-format flag (text/json) and no exit-code table are documented. Treat empty stdout as
-failure rather than trusting the exit status alone.
+No output-format flag (text/json) and no exit-code table are documented.
 
 ### Approvals and permissions
 
-Permission modes, set via `--permission-mode <MODE>` (or `DEVIN_PERMISSION_MODE`):
+Set with `--permission-mode <MODE>` (or `DEVIN_PERMISSION_MODE`). The current docs give:
 
 | Mode | Behavior |
 |---|---|
-| `normal` | Default; prompts for approval. |
-| `accept-edits` | Accepts edits without prompting. |
-| `smart` | Auto-approves edits; a fast model judges other actions and falls back to prompting. |
-| `dangerous` | Auto-approves **all** tool calls. |
-| `autonomous` | **Requires `--sandbox`.** Auto-approves everything **except file writes**; an OS sandbox enforces the boundary instead of prompts — not blanket autonomy. |
+| `normal` (alias `auto`) | Default; read-only tools auto-run, writes/shell prompt. |
+| `accept-edits` | Auto-approves file edits in the workspace; still prompts for shell/fetch. |
+| `smart` | Auto-approves edits; a fast model judges fetch/shell safety and falls back to prompting. |
+| `dangerous` (aliases `bypass`, `yolo`) | Auto-approves **all** tool calls, including shell. |
+| `autonomous` | **Requires `--sandbox`.** Shell commands and fetches auto-approve inside the OS sandbox; direct file edits via the `edit`/`write` tools still prompt, because those tools run in the CLI process rather than inside the sandbox. Granting a `Write(...)` scope mid-session dynamically expands the sandbox. |
 
-> ⚠️ **Naming conflict in Devin's own docs.** The essential-commands page calls the bypass mode
-> `bypass` (aliases `/yolo`, `/dangerous`); the command reference calls it `dangerous`. Resolve
-> this against `devin --help` (or by passing an invalid `--permission-mode` value) before first
-> use, use whichever spelling the binary accepts, and tell the user which one was correct.
+**Resolved naming conflict:** earlier docs disagreed on whether the bypass mode is called `dangerous`
+or `bypass`. The current reference page states the flag's literal value is `dangerous`, with `bypass`
+and `yolo` as documented aliases — pass whichever your installed binary's `--help` accepts.
 
-What happens to an unanswered approval under `normal`/`accept-edits`/`smart` is **not documented** —
-no exit-code or stall behavior is given. Avoid the situation by running the resolved bypass mode
-(or `autonomous` with `--sandbox`) for headless delegation.
+**What happens with nobody to answer:** the docs state `--print`/`-p` "cannot show the workspace
+trust prompt, so it fails in an untrusted directory" — that specific case is a hard failure, not a
+stall. Beyond workspace trust, the general fallback for an unanswered tool-approval prompt in
+`normal`/`accept-edits`/`smart` mode is **not documented** — avoid the situation by running
+`dangerous` (or `autonomous` with `--sandbox`) for headless delegation.
 
 ### Models and how to list them
 
-Run **`devin models list --format json`** for the identifiers this install accepts — the docs
-mention a `--model` flag and a `DEVIN_MODEL` environment variable but do not enumerate valid IDs, so
-ask the binary rather than guessing. A documented `/fast` interactive command switches to a faster
-model tier.
+Run **`devin models list`** — "list available models, organized by model family." Select for a run
+with `--model <MODEL>` (or `DEVIN_MODEL`).
 
-If the user names a model, use it. Otherwise run the `models list` command first, and use the web /
+If the user names a model, use it. Otherwise run `devin models list` first, and use the web /
 [Artificial Analysis](https://artificialanalysis.ai/) only for pricing and benchmark comparisons.
 
 ### Command pattern
 
-Composed from individually documented flags, not quoted from one example. Resolve
-`<bypass-mode>` against `devin --help` first:
-
 ```bash
 devin -p "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" \
-  --permission-mode <bypass-mode> 2>&1
+  --permission-mode dangerous 2>&1
 ```
 
 ### Prompt examples
 
-- **Implement:** `devin -p "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" --permission-mode <bypass-mode>`
+- **Implement:** `devin -p "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" --permission-mode dangerous`
 - **Investigate (report only):** `devin -p "GOAL: Map how [feature] works | SCOPE: [paths] | CONSTRAINTS: do not edit any file | OUTPUT: concise file:line map"`
 - **Sandboxed autonomous run:** `devin -p "GOAL: [task] | ..." --permission-mode autonomous --sandbox`
 
 ### Docs and reference
 
 - Flags, permission modes, models, skills, auth: [reference.md](reference.md)
-- No vendor documentation URL is recorded in this skill's own sources.
-- **Documented, not verified against an installed binary** — checked against Devin's published
-  docs on 2026-09-06 only. Run `devin --help` and reconcile the bypass-mode name before relying on
-  this card.
+- Vendor documentation: <https://docs.devin.ai/cli/reference/commands> and
+  <https://docs.devin.ai/cli/reference/permissions>
+- **Checked against the official Devin documentation on 2026-09-19. Not run against an installed
+  binary — confirm with `devin --help` before trusting a flag**, particularly the exact
+  `--permission-mode` bypass value.

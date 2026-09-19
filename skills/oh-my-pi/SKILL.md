@@ -115,25 +115,24 @@ loudly.
 ### Binary and prompt form
 
 - **Binary:** `omp`
-- **Prompt form:** **positional**, gated by a boolean flag. `-p`/`--print` takes no value of its own —
-  it only switches off the TUI. The prompt text is a separate positional argument, e.g.
-  `omp -p "prompt"` or `omp -p --mode json "prompt"`. A bare `omp` (no `-p`) opens the interactive TUI
-  and never returns.
+- **Prompt form:** **positional**, gated by a boolean flag. `-p`/`--print` runs `omp` non-interactively
+  (processes the prompt, streams the result to stdout, exits) but takes no value itself — the prompt
+  text follows it positionally: `omp -p "prompt"`. A bare `omp` opens the interactive TUI and never
+  returns.
 
 ### Headless and output flags
 
 | Need | Flag |
 |---|---|
 | Run once and exit | `-p`, `--print` (prompt follows positionally) |
-| Plain text | `--mode text` (the default) |
-| JSON event stream | `--mode json` |
-| Other protocols | `--mode rpc`, `--mode acp`, `--mode rpc-ui` |
-| Wall-clock limit | `--max-time <duration>` (`600`, `10m`, `1h`) — the one CLI here with a real internal timeout |
+| Output mode | `--mode text\|json\|rpc\|rpc-ui\|acp` (`text` default) |
+| Wall-clock limit | `--max-time <duration>` (`600`, `10m`, `1h`) |
+| Include thinking blocks in print output | `--print-thoughts` |
+| Ephemeral, unsaved run | `--no-session` |
 
 ### Approvals and permissions
 
-Three documented levels, set with `--approval-mode <mode>` (or `--auto-approve`/`--yolo` to force
-`yolo`):
+Three tiers, set with `--approval-mode <mode>` (or `--auto-approve`/`--yolo` to force `yolo`):
 
 | Mode | Auto-approves | Prompts for |
 |---|---|---|
@@ -141,25 +140,25 @@ Three documented levels, set with `--approval-mode <mode>` (or `--auto-approve`/
 | `write` | read, write | exec |
 | `yolo` (**default**) | read, write, exec | none |
 
-For subagent-style delegation, the docs state plainly: **"Subagents run headless with
-`tools.approvalMode: yolo` so ordinary tier-based prompts do not stall them."** A `prompt` (ask) policy
-"cannot be satisfied in a headless subagent and rejects the call" — the documented failure mode is a
-**rejection**, not a hang. A `bash` safety override still blocks "critical destructive patterns" (e.g.
-`rm -rf /`, fork bombs) even under `yolo`; an explicit tool/user `deny` policy is also still enforced.
-No exit-code table is documented — treat empty stdout as failure.
+For delegated/subagent runs specifically, the docs state: **"Subagents run headless with
+`tools.approvalMode: yolo` so ordinary tier-based prompts do not stall them."** A per-tool
+`tools.approval.<tool>` override still applies on top of the mode: `deny` blocks the tool, `allow`
+permits it, and `prompt` "cannot be satisfied headlessly and thus rejects the call" — a **rejection**,
+not a hang, is the documented failure signature. `--plan-yolo` forces read-only plan mode at start and
+auto-approves the plan — do not use it for delegation; it still plans instead of acting. No exit-code
+table is documented — treat empty stdout as failure.
 
 ### Models and how to list them
 
-Run **`omp models`** for provider-grouped tables of every available model; `omp models find <substring>`
-filters, `omp models refresh` re-fetches the catalog, `--json` for machine-readable output.
+Run **`omp models`** (default `ls`) for provider-grouped tables of every available model;
+`omp models find <substring>` filters, `omp models refresh` forces a re-fetch, and a bare provider name
+also filters (`omp models openai-codex`). `--json` gives machine-readable output.
 
-Selection is `--model <id-or-role>`, which accepts a role (`slow`, `@slow`), a fuzzy match, or an exact
-`provider/modelId` (use the exact form when an id exists under multiple providers). Role-specific
-overrides: `--smol <id>`, `--slow <id>`, `--plan <id>`. A fixed list of accepted IDs is NOT DOCUMENTED.
-
-If the user names a model or an effort level, use it. Otherwise ask the binary first. For capability
-and price comparisons, check [Artificial Analysis](https://artificialanalysis.ai/) and the vendor's own
-documentation.
+`--model <id-or-role>` accepts an exact `provider/modelId`, a bare model ID, a fuzzy/substring match, or
+a glob scope (`openai/*`, `*-mini*`), each optionally suffixed `:thinkingLevel`
+(`off|minimal|low|medium|high|xhigh|max`). Roles (`default`, `smol`, `slow`, `vision`, `plan`, `commit`,
+`tiny`, `task`, `advisor`) resolve through `settings.modelRoles`; `--smol`, `--slow`, `--plan <id>`
+override specific roles directly. Use the web and the vendor's own docs for pricing and benchmarks.
 
 ### Command pattern
 
@@ -177,7 +176,8 @@ omp -p "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [c
 ### Docs and reference
 
 - Flags, approval modes, models, skills, auth, paths: [reference.md](reference.md)
-- Vendor documentation: `omp.sh/docs` (a client-rendered SPA; the facts here come from the vendor's own
-  `docs/*.md` source in the `can1357/oh-my-pi` repository, not the rendered page)
-- **Documented, not verified.** Written from that docs source on 2026-09-06 and not checked against an
-  installed binary. Run `omp --help` before trusting any flag here.
+- Vendor documentation: <https://github.com/can1357/oh-my-pi/tree/main/docs> (the `omp.sh/docs` site is
+  a client-rendered SPA that 403s non-browser fetches; this GitHub `docs/*.md` tree is what it renders
+  from and is the vendor's own source)
+- **Checked against the official oh-my-pi documentation on 2026-09-19. Not run against an installed
+  binary — confirm with `omp --help` before trusting a flag.**

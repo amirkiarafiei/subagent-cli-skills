@@ -1,32 +1,91 @@
 # Junie CLI — reference
 
-Concise reference for agents. Auth: `JUNIE_API_KEY` (via `--auth` or env).
+> **Checked against the official JetBrains documentation on 2026-09-19. Not run against an installed
+> binary — confirm with `junie --help` before trusting a flag.**
 
-## Models (Mandatory Search Required)
+## Authentication
 
-Model names change frequently. **Always search for latest pricing/aliases.** Consult [Artificial Analysis](https://artificialanalysis.ai/) for up-to-date model performance and pricing data.
+`-a`, `--auth="$JUNIE_API_KEY"` (or the `JUNIE_API_KEY` env var referenced the same way in official
+examples).
 
-| Model ID | Provider | Description |
-|----------|----------|-------------|
-| `sonnet` | Anthropic| Latest Claude Sonnet model. |
-| `opus`   | Anthropic| Latest Claude Opus model. |
-| `gpt`    | OpenAI   | Latest GPT model. |
-| `gemini-3.6-flash`| Google| Latest Gemini Flash model (default since Jul 2026). |
-| `gemini-3.1-pro`  | Google| Latest Gemini **Pro** model — the Pro line is frozen at 3.1; no 3.5/3.6 Pro exists. |
-| `grok`   | xAI      | Latest Grok model. |
+## Models
+
+Selection is `--model [alias]`. Aliases are short vendor-neutral tags, not raw provider model IDs.
+There is no `junie models` subcommand — list available aliases with `junie --help` or the interactive
+`/model` slash command. Always confirm current aliases and pricing via
+[Artificial Analysis](https://artificialanalysis.ai/) and JetBrains' own docs before pinning one.
 
 ## Essential Flags
 
 | Flag | Purpose |
 |------|---------|
-| `--auth` | Provide Junie API token. |
-| `--model` | Specify the model to use. |
+| (positional prompt) | The documented headless prompt form. |
+| `--task <text>` | Explicit flag alternative to the positional prompt. |
+| `--prompt` | Starts an **interactive** session with this text as the pre-submitted first turn — not the headless form. |
+| `-a`, `--auth` | Provide the Junie API token. |
+| `--model` | Specify the model alias. |
 | `--review` | Start a code review task. |
-| `--merge` | Resolve merge conflicts with specified branch/commit. |
+| `--merge [branch]` | Resolve merge conflicts with the specified branch/commit. |
 | `--rebase` | Resolve rebase conflicts. |
-| `--output-format`| `text` (default) or `json`. |
-| `--project`, `-p`| Specify path to project directory. |
-| `--session-id` | Resume a previous session. |
+| `--output-format` | `text` (default), `json`, or `json-stream`. |
+| `--input-format` | `text` or `json`, for piped input. |
+| `--json-output-file <path>` | Save JSON output to a file. |
+| `-p`, `--project <path>` | Path to the project directory. |
+| `--session-id <id>` | Resume or target a specific session. |
+| `--resume` | Resume the most recent session, or the one named by `--session-id`. |
+| `--brave` | Toggle Brave Mode — **interactive mode only**, cannot force auto-approval in a headless run. |
+| `--sandbox` | OS-level command sandboxing — currently limited to development/nightly/experimental builds. |
+
+There are no `chat`/`review` subcommands — review/merge/rebase are flags on the base `junie` binary.
+Slash commands (`/model`, `/brave`, `/sandbox`, `/account`, `/mcp`, `/extensions`, `/settings`, etc.)
+exist only inside interactive sessions.
+
+## Approvals and permissions
+
+Interactive default: Junie asks approval for sensitive actions (terminal commands, edits outside the
+project, MCP calls) unless allowlisted. **Brave Mode** (Off / Auto / On) controls this, toggled with
+`/brave` or Ctrl+B, or the `--brave` flag — but that flag is documented as interactive-mode-only.
+
+**For headless/scripted use, no bypass flag is needed or offered: non-interactive invocations (positional
+prompt, `--task`, piped input, ACP, Gateway) are "trusted by design"** — they cannot prompt for a trust
+decision, so they load project config (MCP servers, hooks, agents, skills, guidelines) and execute
+sensitive actions without asking. This is the practical equivalent of "yolo mode" for automation: simply
+invoke non-interactively. JetBrains' own safety caveat: "Only run Junie non-interactively in projects you
+trust."
+
+Fine-grained control below that lives in the **Action Allowlist**, `~/.junie/allowlist.json` — rules of
+`prefix`/`pattern` + `action: allow|ask`, across five categories: `fileEditing`, `executables`,
+`mcpTools`, `readOutsideProject`, `readSecretFile`. How an `ask` rule resolves in a non-interactive
+session specifically is not spelled out verbatim in the docs — most likely it resolves the same
+"trusted by design" way, but this is inferred, not confirmed.
+
+`--sandbox` / `/sandbox` (OS-level command sandboxing via `sandbox-runtime`/`srt`) exists to make Brave
+Mode safer, but is currently only available in development/nightly/experimental builds — not in EAP or
+release builds. Do not rely on it as a currently-usable safety net.
+
+## Subcommands
+
+None in the traditional sense — `--review`, `--merge`, `--rebase` are flags on the base `junie` binary,
+not separate verbs.
+
+## Configuration and paths
+
+| Component | Path |
+|---|---|
+| Action Allowlist | `~/.junie/allowlist.json` |
+
+No other general Junie-CLI-scoped config-file location was found documented (the IDE plugin's settings
+page is scoped to the JetBrains IDE plugin, not the standalone CLI).
+
+## Documentation
+
+- <https://junie.jetbrains.com/docs/parameters.html> (CLI parameters reference)
+- <https://junie.jetbrains.com/docs/junie-cli.html> (quickstart)
+- <https://junie.jetbrains.com/docs/junie-headless.html> (headless mode)
+- <https://junie.jetbrains.com/docs/action-allowlist-junie-cli.html> (also mirrored at jetbrains.com/help/junie/user-input.html)
+- <https://junie.jetbrains.com/docs/slash-commands.html>
+- <https://junie.jetbrains.com/docs/junie-cli-model-selection.html>
+- Mirror: <https://www.jetbrains.com/help/junie/junie-cli.html>
 
 ## Delegation Checklist
 

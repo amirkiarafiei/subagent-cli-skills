@@ -115,10 +115,10 @@ loudly.
 ### Binary and prompt form
 
 - **Binary:** `claude`
-- **Prompt form:** **positional.** `-p` / `--print` is a mode flag — it switches the CLI to
-  non-interactive "print and exit" behavior, it does not itself carry the prompt text. The prompt
-  is the plain string that follows on the command line, e.g. `claude -p "prompt text"`, or it can be
-  piped over stdin. A bare `claude` with no `-p` opens the interactive TUI and never returns.
+- **Prompt form:** **positional** (or stdin). `-p` / `--print` is a mode flag that switches the CLI
+  to non-interactive "print and exit" behavior — it does not itself carry the prompt text. The
+  prompt is the plain string that follows on the command line, e.g. `claude -p "prompt text"`, or it
+  can be piped over stdin. A bare `claude` with no `-p` opens the interactive TUI and never returns.
 
 ### Headless and output flags
 
@@ -128,6 +128,7 @@ loudly.
 | Minimal startup (skips hooks, LSP, plugin sync, auto-memory, keychain, CLAUDE.md auto-discovery) | `--bare` |
 | Output format | `--output-format text` (default), `json`, or `stream-json` |
 | Cap agentic turns | `--max-turns <n>` |
+| Scope tool grants without a full bypass | `--allowedTools "Bash,Read,Edit"`, `--disallowedTools` |
 
 `--bare` changes auth: Anthropic auth becomes strictly `ANTHROPIC_API_KEY` or `apiKeyHelper` via
 `--settings` — OAuth/keychain are never read, so a subscription-authenticated run fails under
@@ -136,31 +137,37 @@ pass context explicitly via `--add-dir`, `--system-prompt`, `--settings`, `--age
 
 ### Approvals and permissions
 
-- **`--permission-mode auto`** — autonomous execution with a built-in safety classifier.
-- **`--dangerously-skip-permissions`** — bypasses every confirmation prompt.
-- `--permission-mode plan` exists but is a read-only planning mode — do not use it for delegation
-  (see the global rule above: it returns a plan, not the work, and stalls waiting for approval).
-
-What happens if a tool needs approval and nobody answers is **not documented** in this skill's
-sources. Do not rely on a graceful denial — set `--permission-mode auto` or
-`--dangerously-skip-permissions` before the run so the question never comes up headless.
+- **`--permission-mode`** accepts `default`, `acceptEdits`, `plan`, `auto`, `dontAsk`,
+  `bypassPermissions`, or `manual` (an alias for `default`, Claude Code v2.1.200+).
+  `--permission-mode auto` runs unattended with a classifier-backed safety check.
+  `--permission-mode bypassPermissions` is equivalent to **`--dangerously-skip-permissions`** and
+  bypasses every confirmation.
+- **What happens with nobody to answer:** in a `-p` run with no permission host attached, requests
+  that would prompt are **denied** by default — there is nothing to stall on. If you *do* attach a
+  permission host (an Agent SDK `canUseTool` callback, or an MCP tool via
+  `--permission-prompt-tool`), that host is consulted and the run waits on it unless you also pass
+  **`--permission-prompts none`** (Claude Code v2.1.259+), which denies anything that would prompt
+  instead of waiting, and tells Claude not to retry. With `--output-format stream-json`, each denial
+  appears as a `permission_denied` system message.
 
 ### Models and how to list them
 
-No CLI subcommand to list models is documented here. Anthropic ships short family **aliases** that
-track the current generation (fast/cheap, balanced, flagship) instead of dated snapshot IDs — prefer
-the alias so this file and your command don't go stale; use a full dated ID only to pin an exact
-snapshot. Select with `--model <identifier>`.
+No CLI subcommand to list models is confirmed in the official docs. Anthropic ships short family
+**aliases** (fast/cheap, balanced-default, flagship, and a highest-capability tier, plus long-context
+variants) that resolve to the current generation and a `default` value that clears any override —
+prefer an alias over a dated snapshot ID so a pinned command doesn't go stale. Select with
+`--model <alias-or-id>`; switch mid-session with the `/model` slash command. Note: which model an
+alias resolves to can differ by provider (direct API vs. Bedrock vs. Vertex vs. Foundry).
 
-If the user names a model, use it. Otherwise search the web for current alias names and consult
-[Artificial Analysis](https://artificialanalysis.ai/) for capability and price comparisons before
-picking one.
+If the user names a model, use it. Otherwise consult
+[Artificial Analysis](https://artificialanalysis.ai/) and the model-configuration docs below for
+current alias behavior before picking one.
 
 ### Command pattern
 
 ```bash
 claude -p "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" \
-  --permission-mode auto --model <identifier> 2>&1
+  --permission-mode auto --model <alias-or-id> 2>&1
 ```
 
 ### Prompt examples
@@ -172,6 +179,7 @@ claude -p "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS:
 ### Docs and reference
 
 - Flags, models, delegation checklist: [reference.md](reference.md)
-- No vendor documentation URL is recorded in this skill's own sources.
-- **Not verified against an installed binary** — the source files carry no version/date stamp.
-  Confirm every flag with `claude --help` before relying on this card.
+- Vendor documentation: <https://code.claude.com/docs/en/cli-reference> and
+  <https://code.claude.com/docs/en/headless>
+- **Checked against the official Anthropic documentation on 2026-09-19. Not run against an
+  installed binary — confirm with `claude --help` before trusting a flag.**

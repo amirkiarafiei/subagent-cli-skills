@@ -116,40 +116,42 @@ loudly.
 
 - **Binary:** `openhands`
 - **Prompt form:** **flag.** The task is the value of `-t`/`--task "[prompt]"`, or load it from a file
-  with `-f`/`--file [file]`. There is no positional form documented — always attach the prompt to `-t`
-  (or point `-f` at a real, non-empty file).
+  with `-f`/`--file [file]`. One of the two is required to run headless — there is no bare positional
+  form.
 
 ### Headless and output flags
 
 | Need | Flag |
 |---|---|
-| Run without UI, for scripting | `--headless` |
+| Run without the interactive UI | `--headless` |
 | Task text | `-t`, `--task "[prompt]"` |
 | Task from file | `-f`, `--file [file]` |
 | Structured JSONL event stream | `--json` |
 | Resume a previous conversation | `--resume` |
+| Force env-var model overrides | `--override-with-envs` |
 
 ### Approvals and permissions
 
-No separate approve-all flag exists to name: the docs describe auto-approval as **included in
-`--headless`** ("always-approve mode"). Headless mode is, by itself, the always-approve mode — there is
-no narrower or three-level scheme documented, and no stated behavior for a tool call that still can't be
-resolved (stall vs. reject vs. exit 0 is NOT DOCUMENTED for that edge case). Treat empty stdout as
-failure per the general rule below rather than assuming success.
+No separate approve-all flag exists to name, and none is needed: the official docs state plainly,
+**"Headless mode always runs in `always-approve` mode."** Every action executes automatically without
+confirmation, and this "cannot be changed" — `--llm-approve` (the interactive approval toggle) is
+unavailable in headless mode. There is no narrower or three-level scheme documented, and no separate
+case of a tool call that still can't be resolved — headless is unconditionally auto-approve.
 
 ### Models and how to list them
 
-No CLI command to list models is documented. OpenHands configures the model through **environment
-variables** — `LLM_MODEL`, `LLM_API_KEY`, and related vars — rather than a `--model` flag or a `models`
-subcommand. Set these before invoking `openhands --headless`. For capability and price comparisons,
-check [Artificial Analysis](https://artificialanalysis.ai/) and the vendor's own documentation; search
-the web for current OpenHands model configuration guidance since none is pinned in this skill's sources.
+No CLI command to list models is documented. The model is set with environment variables — `LLM_MODEL`
+(provider-prefixed, e.g. `openhands/<identifier>` or `anthropic/<identifier>`) and `LLM_API_KEY` — read
+at startup, or persisted into `~/.openhands/settings.json` after an interactive first run.
+`--override-with-envs` forces `LLM_MODEL`/`LLM_BASE_URL` from the environment to take precedence over
+saved settings for that run. For capability and price comparisons, check
+[Artificial Analysis](https://artificialanalysis.ai/) and the vendor's own documentation.
 
 ### Command pattern
 
 ```bash
-LLM_MODEL=<identifier> LLM_API_KEY=<key> \
-openhands --headless -t "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" 2>&1
+LLM_MODEL=<provider/identifier> LLM_API_KEY=<key> \
+openhands --headless -t "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" --override-with-envs 2>&1
 ```
 
 ### Prompt examples
@@ -161,6 +163,7 @@ openhands --headless -t "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] 
 ### Docs and reference
 
 - Flags, models, delegation checklist: [reference.md](reference.md)
-- No vendor documentation URL is recorded in the source material for this skill.
-- No version or verification date is recorded in the source skill. Confirm every flag against
-  `openhands --help` before relying on it.
+- Vendor documentation: <https://docs.openhands.dev/openhands/usage/cli/headless> and
+  <https://docs.openhands.dev/openhands/usage/llms/openhands-llms>
+- **Checked against the official OpenHands documentation on 2026-09-19. Not run against an installed
+  binary — confirm with `openhands --help` before trusting a flag.**

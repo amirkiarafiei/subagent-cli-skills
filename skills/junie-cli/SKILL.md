@@ -115,41 +115,51 @@ loudly.
 ### Binary and prompt form
 
 - **Binary:** `junie`
-- **Prompt form:** **positional.** The prompt is passed as a bare argument after the flags, e.g.
-  `junie --auth="$JUNIE_API_KEY" "prompt text" --model <alias>`. No flag form of the prompt is
-  documented in the source files.
+- **Prompt form:** **positional** is the documented headless form: `junie --auth="$JUNIE_API_KEY"
+  "prompt text" --model <alias>`. A `--task <text>` flag also exists as an explicit alternative to the
+  positional argument. **Do not confuse this with `--prompt`** — that flag starts an *interactive*
+  session with the prompt pre-submitted as the first turn; it is not the headless form.
 
 ### Headless and output flags
 
 | Need | Flag |
 |---|---|
-| Output format | `--output-format text` (default) or `--output-format json` |
-| Project directory | `--project`, `-p <path>` |
-| Resume a session | `--session-id <id>` |
-| Specialized modes | `--review` (code review), `--merge [branch]` (conflict resolution), `--rebase` |
-
-No dedicated "run once and exit" flag is documented beyond passing the prompt positionally — Junie is
-described as always non-interactive when invoked this way, but no flag equivalent to `--print` or
-`-p/--single` appears in the source docs.
+| Non-interactive run | prompt as a positional argument, or `--task <text>` |
+| Output format | `--output-format text\|json\|json-stream` (three values) |
+| Input format (piped input) | `--input-format text\|json` |
+| Save JSON output to a file | `--json-output-file <path>` |
+| Project directory | `-p`, `--project <path>` |
+| Resume a session | `--session-id <id>` or `--resume` (resumes the last session, or the one named by `--session-id`) |
+| Specialized modes | `--review`, `--merge [branch]`, `--rebase` (flags on the base binary — there are no `chat`/`review` subcommands) |
 
 ### Approvals and permissions
 
-**No approve-all flag is documented anywhere in the source SKILL.md or reference.md for Junie CLI.**
-There is no `--yolo`, `--trust-all-tools`, or narrower allow-rule flag on record. Since headless mode has
-nobody to answer a permission prompt, a task that needs approval will most likely stall or return empty
-output with a success exit code — treat that outcome as failure and read stderr. Because there is no
-scoping flag either, write "report only, no edits" into the prompt's Output field when you want a
-no-write run, rather than trying to suppress edits with a flag that does not exist.
+Junie's approval system is **Brave Mode**, three levels — **Off** (ask before every sensitive action not
+already allowlisted; the interactive default), **Auto** (auto-approve actions it safety-classifies as
+safe, still ask for risky/unrecognized ones), and **On** (execute everything, no prompts). It is toggled
+interactively with `/brave` or Ctrl+B, and there is a `--brave` CLI flag — but the docs state it is
+**"Interactive mode only."** It cannot be used to force On in a headless/scripted invocation.
+
+**This does not leave headless runs blocked.** JetBrains' own docs state that non-interactive sessions
+(a positional prompt, `--task`, piped input, ACP, or Gateway) *"cannot ask for a trust decision, so they
+are trusted by design"* — they load project config (MCP servers, hooks, agents, skills, guidelines) and
+execute sensitive actions without ever prompting. There is no TTY block and no hang; the documented
+caveat is simply "only run Junie non-interactively in projects you trust." Fine-grained control below
+that still exists via the persistent **Action Allowlist** at `~/.junie/allowlist.json` (rules of
+`prefix`/`pattern` + `action: allow|ask` across `fileEditing`, `executables`, `mcpTools`,
+`readOutsideProject`, `readSecretFile`) — how an `ask` entry resolves in a non-interactive run specifically
+is not spelled out verbatim in the docs; treat it as most likely resolving the same "trusted by design"
+way, but unconfirmed. A `--sandbox` flag / `/sandbox` command also exists for OS-level command
+sandboxing, but is currently limited to development/nightly/experimental builds — **do not rely on it in
+a stable release.**
 
 ### Models and how to list them
 
-No CLI subcommand for listing models is documented for Junie. Selection is `--model [alias]`, where the
-recorded aliases are short vendor-neutral tags rather than pinned identifiers (for example a tag for
-"latest Sonnet", one for "latest Opus", one for "latest GPT", and two dated Gemini tiers — the Pro tier
-is frozen at one line, so no newer Pro alias exists yet). Treat all of these as **NOT DOCUMENTED as a
-fixed, stable list** — the source explicitly flags that names change and instructs a mandatory web
-search before picking one. Check [Artificial Analysis](https://artificialanalysis.ai/) and the vendor's
-own docs for current aliases and pricing before pinning a model in a delegation.
+Selection is `--model [alias]`; aliases are short vendor-neutral tags. There is **no separate `junie
+models` subcommand** — list them with `junie --help` or the interactive `/model` slash command.
+
+If the user names a model, use it. Otherwise ask the binary first. For capability and price comparisons,
+check [Artificial Analysis](https://artificialanalysis.ai/) and the vendor's own documentation.
 
 ### Command pattern
 
@@ -166,8 +176,8 @@ junie --auth="$JUNIE_API_KEY" "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [p
 
 ### Docs and reference
 
-- Delegation checklist and model table: [reference.md](reference.md)
-- Vendor documentation: no canonical URL captured in source; auth via `JUNIE_API_KEY` (env or `--auth`)
-- Flags taken from this repo's existing skill and reference docs; no installed-binary verification
-  stamp is recorded in the source, and no approval flag exists to verify in the first place. Confirm
-  against `junie --help` before relying on this in production.
+- Flags, allowlist, model selection: [reference.md](reference.md)
+- Vendor documentation: <https://junie.jetbrains.com/docs/junie-headless.html> and
+  <https://junie.jetbrains.com/docs/parameters.html>
+- **Checked against the official JetBrains documentation on 2026-09-19. Not run against an installed
+  binary — confirm with `junie --help` before trusting a flag.**

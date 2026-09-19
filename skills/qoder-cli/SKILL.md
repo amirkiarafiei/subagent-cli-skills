@@ -115,62 +115,70 @@ loudly.
 ### Binary and prompt form
 
 - **Binary:** `qodercli`
-- **Prompt form:** **flag.** The prompt is the value of `-p`/`--print "prompt"`.
+- **Prompt form:** **flag.** The prompt is the value of `-p`/`--print "prompt"` (also written
+  `--prompt` in places) — "Non-Interactive Mode: output a single response and exit."
 
 ### Headless and output flags
 
 | Need | Flag |
 |---|---|
 | Run once and exit | `-p`, `--print "prompt"` |
-| Plain text | `--output-format text` (the default) |
-| One JSON object | `--output-format json` |
-| Event stream | `--output-format stream-json` |
-| Context window | `--context-window <200000\|400000\|1000000>` |
+| Plain text | `-o text` / `--output-format text` (default) |
+| One JSON object | `-o json` |
+| Event stream | `-o stream-json` |
+| Context window | `--context-window <tokens>` |
 | Reasoning depth | `--reasoning-effort <low\|medium\|high\|xhigh\|max>` |
+| List models and exit | `--list-models` |
 
 ### Approvals and permissions
 
-`--permission-mode <mode>` selects the gate, and two flags force full bypass:
+`--permission-mode <mode>` selects the gate:
 
-| Mode | Behavior when approval would be needed |
+| Mode | Behavior when approval would be needed, headless |
 |---|---|
-| `default` | Sensitive actions require confirmation — **will stall** headless with nobody to answer |
-| `accept_edits` | Auto-approves safe file edits only |
-| `auto` | AI classifier evaluates action safety and proceeds |
-| `bypass_permissions` (`--yolo` / `--dangerously-skip-permissions`) | Skips all approval prompts |
-| `dont_ask` | **Denies** anything requiring approval — a rejection, not a hang |
+| `default` | Auto-runs safe reads/internal ops; sensitive actions need confirmation — **not available headlessly, see below** |
+| `accept_edits` | Auto-approves in-workspace file edits; shell/external ops still gated |
+| `auto` | An agent-side authorization decision per action, no interactive prompt; a circuit breaker asks for confirmation after too many consecutive blocks |
+| `bypass_permissions` (`--yolo` / `--dangerously-skip-permissions`) | Skips approval prompts, but destructive operations against the working dir, home dir, filesystem root, or top-level dirs still require confirmation |
+| `dont_ask` | Built for non-interactive workflows: anything that would need approval is **denied** instead of asked |
+| `plan` | Legacy: maps to `default` plus a read-only work state — do not use for delegation |
 
-For unattended delegation, use `--yolo` (or `--dangerously-skip-permissions`, documented as identical)
-so nothing is left for a prompt that can't be answered. `--allowed-tools`/`--disallowed-tools` scope
-which tools are available at all, and `--max-turns` bounds the dialog length.
+Critically, the official docs state the **headless default explicitly**: **"Headless (`-p`/`--prompt`):
+Auto-deny. No interaction available; `ask` becomes `deny`."** So a plain `-p` run with no
+`--permission-mode` set will silently refuse anything gated — pass `--yolo` (or
+`--dangerously-skip-permissions`, documented as identical) for delegation that needs to act, or
+`dont_ask` if you want that same deny-everything behavior made explicit. `--allowed-tools` /
+`--disallowed-tools` and `--tools` scope which tools are available at all; `--max-turns` bounds the
+dialog length.
 
 ### Models and how to list them
 
 Run **`qodercli --list-models`** to see the models available to the authenticated account.
 
-Selection is `--model <tier-or-name>`. Five simplified tiers exist: `auto` (smart routing, recommended
-default), `efficient`, `performance`, `ultimate`, and `lite` (free, for Team users). `--model` also
-accepts a specific vendor-hosted frontier model identifier directly, listed by `--list-models` — do not
-hardcode one here, since these names and their credit costs change; check
-[the model docs](https://docs.qoder.com/en/cli/model) and [Artificial Analysis](https://artificialanalysis.ai/)
-for current names and pricing.
+Selection is `-m`/`--model <tier-or-name>`. Five simplified tiers exist: `auto` (smart routing,
+recommended default), `performance`, `efficient`, `lite` (free, Team users), and `ultimate` (heaviest
+reasoning). `--model` also accepts a specific vendor-hosted frontier model identifier directly, as
+listed by `--list-models` — do not hardcode one here, since names and credit costs change; check
+[the model docs](https://docs.qoder.com/en/cli/model) and
+[Artificial Analysis](https://artificialanalysis.ai/) for current names and pricing.
 
 ### Command pattern
 
 ```bash
 qodercli -p "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" \
-  --yolo --model <tier-or-identifier> --output-format text 2>&1
+  --yolo --model <tier-or-identifier> -o text 2>&1
 ```
 
 ### Prompt examples
 
-- **Implement:** `qodercli -p "GOAL: [goal] | SCOPE: [paths] | VERIFICATION: [test_command] | OUTPUT: [format]" --yolo --model efficient --output-format text`
-- **Investigate:** `qodercli -p "GOAL: Map how [feature] works | SCOPE: [paths] | OUTPUT: concise file:line map" --yolo --model efficient --output-format text`
-- **Heavy reasoning:** `qodercli -p "GOAL: Design architecture for [feature] | SCOPE: [paths] | OUTPUT: architecture plan" --yolo --model ultimate --reasoning-effort high --output-format text`
+- **Implement:** `qodercli -p "GOAL: [goal] | SCOPE: [paths] | VERIFICATION: [test_command] | OUTPUT: [format]" --yolo --model efficient -o text`
+- **Investigate:** `qodercli -p "GOAL: Map how [feature] works | SCOPE: [paths] | OUTPUT: concise file:line map" --yolo --model efficient -o text`
+- **Heavy reasoning:** `qodercli -p "GOAL: Design architecture for [feature] | SCOPE: [paths] | OUTPUT: architecture plan" --yolo --model ultimate --reasoning-effort high -o text`
 
 ### Docs and reference
 
 - Flags, model tiers, permission modes, config paths: [reference.md](reference.md)
-- Vendor documentation: <https://docs.qoder.com/en/cli/model>
-- No version or verification date is recorded in the source skill. Confirm every flag against
-  `qodercli --help` before relying on it.
+- Vendor documentation: <https://docs.qoder.com/cli/cli-reference> and
+  <https://docs.qoder.com/en/cli/permissions>
+- **Checked against the official Qoder documentation on 2026-09-19. Not run against an installed
+  binary — confirm with `qodercli --help` before trusting a flag.**

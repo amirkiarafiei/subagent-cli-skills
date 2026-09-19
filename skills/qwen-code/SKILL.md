@@ -123,45 +123,60 @@ loudly.
 | Need | Flag |
 |---|---|
 | Run once and exit | `-p`, `--prompt "prompt"` |
-| Clean scripting output | `-o text` (short for `--output-format text`) |
-| Machine-readable stats | `-o json` |
-| Stream events | `-o stream-json` |
-| Verbose debug logging | `--verbose` |
+| Output format | `--output-format text\|json\|stream-json` |
+| Streamed input | `--input-format stream-json` |
+| Wall-clock / call limits | `--max-wall-time`, `--max-tool-calls`, `--max-subagent-depth`, `--deadline` |
+| Reasoning depth | `--effort <level>` |
 
 ### Approvals and permissions
 
-**NOT DOCUMENTED.** No approval, permission-mode, or approve-all flag (`--yolo` or otherwise) appears
-anywhere in this CLI's source material, and neither does any statement of what happens when a tool
-needs approval headlessly — whether it stalls, is auto-denied, or auto-allowed. Do not assume an
-approve-all flag exists or borrow one from another CLI in this repository. Treat empty stdout as a
-failed run per the general rule, and confirm actual behavior against `qwen --help` and, if necessary, a
-live trial before depending on unattended writes.
+**This CLI does document an approval-mode ladder and a CLI flag for it — do not treat it as
+undocumented.** `--approval-mode <mode>` accepts `plan`, `default` ("Ask Permissions"), `auto-edit`,
+`auto`, or `yolo`; `--yolo` is the shorthand for `--approval-mode yolo`. In session, modes also cycle
+with Shift+Tab (Tab on Windows) or `/approval-mode [mode]`.
+
+| Mode | Behavior |
+|---|---|
+| `plan` | Read-only analysis; no edits or commands — **do not use for delegation** |
+| `default` (Ask Permissions) | Manual approval required for edits and commands |
+| `auto-edit` | File edits (`edit`, `write_file`, `notebook_edit`) auto-approved; shell commands still ask |
+| `auto` | A classifier auto-approves read-only/build/test/in-workspace edits, blocks destructive patterns (`rm -rf /`, credential theft, external code execution) |
+| `yolo` | Every tool call, including shell commands and file writes, auto-approved |
+
+The docs state plainly: **"When running headless commands, Ask Permissions Mode is the default
+behavior"** — i.e. without `--approval-mode`/`--yolo`, a plain `qwen -p "..."` defaults to a mode that
+asks for approval. What exactly happens to that ask with no TTY to answer it is not spelled out by the
+vendor (no explicit stall-vs-deny statement was found) — treat it as a stall risk and **always pass
+`--yolo` or `--approval-mode yolo` for unattended delegation**. Note also that `--yolo` only skips
+approval prompts; it does **not** enable a sandbox — `--sandbox`, `QWEN_SANDBOX`, or `tools.sandbox`
+control that separately, and untrusted delegated work should still run in a disposable environment.
 
 ### Models and how to list them
 
 No model-listing command is documented for this CLI. Select with `--model <identifier>`; there is no
 fixed, stable set of accepted strings recorded here — current identifiers split roughly into a
-coding-tuned tier for implementation and a higher-reasoning tier for complex architecture, but the exact
-names shift often. Search the web and consult [Artificial Analysis](https://artificialanalysis.ai/) for
-current identifiers, pricing, and benchmarks before picking one; if the user names a model, use it as
-given.
+coding-tuned tier for implementation and a higher-reasoning tier for complex architecture, but exact
+names shift often. `--fallback-model <identifier>` sets a fallback if the primary is unavailable.
+Search the web and consult [Artificial Analysis](https://artificialanalysis.ai/) for current
+identifiers, pricing, and benchmarks before picking one; if the user names a model, use it as given.
 
 ### Command pattern
 
 ```bash
 qwen -p "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" \
-  -o text --model <identifier> 2>&1
+  --yolo --output-format text --model <identifier> 2>&1
 ```
 
 ### Prompt examples
 
-- **Implement:** `qwen -p "GOAL: [goal] | SCOPE: [paths] | VERIFICATION: [test_command] | OUTPUT: [format]" -o text --model <identifier>`
-- **Heavy analysis:** `qwen -p "GOAL: Analyze complex architecture for potential deadlocks | SCOPE: [paths] | VERIFICATION: [check_command] | OUTPUT: analysis report" --model <higher-reasoning identifier>`
-- **Investigate:** `qwen -p "GOAL: Map how [feature] works | SCOPE: [paths] | OUTPUT: concise file:line map" -o text`
+- **Implement:** `qwen -p "GOAL: [goal] | SCOPE: [paths] | VERIFICATION: [test_command] | OUTPUT: [format]" --yolo --output-format text --model <identifier>`
+- **Heavy analysis:** `qwen -p "GOAL: Analyze complex architecture for potential deadlocks | SCOPE: [paths] | VERIFICATION: [check_command] | OUTPUT: analysis report" --yolo --model <higher-reasoning identifier>`
+- **Investigate:** `qwen -p "GOAL: Map how [feature] works | SCOPE: [paths] | OUTPUT: concise file:line map" --yolo --output-format text`
 
 ### Docs and reference
 
-- Flags, JSON output, context handling: [reference.md](reference.md)
-- No vendor documentation URL is recorded in the source material for this skill.
-- No version or verification date is recorded in the source skill. Confirm every flag against
-  `qwen --help` before relying on it.
+- Flags, approval modes, skills, JSON output: [reference.md](reference.md)
+- Vendor documentation: <https://qwenlm.github.io/qwen-code-docs/en/users/features/approval-mode/> and
+  <https://qwenlm.github.io/qwen-code-docs/en/users/configuration/settings/>
+- **Checked against the official Qwen Code documentation on 2026-09-19. Not run against an installed
+  binary — confirm with `qwen --help` before trusting a flag.**

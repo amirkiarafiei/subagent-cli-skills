@@ -115,37 +115,51 @@ loudly.
 ### Binary and prompt form
 
 - **Binary:** `vibe`
-- **Prompt form:** **flag.** The prompt is the argument of `--prompt "prompt"`.
+- **Prompt form:** **flag.** The prompt is the value of `--prompt "prompt"`, e.g. `vibe --prompt
+  "Analyze the codebase" --max-turns 5 --output json`. Passing `--prompt` puts Vibe in **programmatic
+  mode**, which skips the interactive chat UI entirely and disables interactive tools (e.g.
+  `ask_user_question`).
 
 ### Headless and output flags
 
 | Need | Flag |
 |---|---|
 | Non-interactive prompt | `--prompt "prompt"` |
-| Output format | `--output text` (default), `--output json`, or `--output streaming` |
+| Output format | `--output text\|json\|streaming` (text default) |
 | Turn cap | `--max-turns <N>` |
-| Cost cap | `--max-price <dollars>` |
-| Restrict tool set | `--enabled-tools <list>` — enables only the named tools, disables all others |
+| Cost cap | `--max-price <dollars>` — documented as **"indicative only"**, a soft/approximate limit, not a hard guarantee |
+| Restrict tool set | `--enabled-tools <list>` — exact names, globs (`bash*`), or regex via `re:` prefix (e.g. `re:^serena_.*$`) |
+| Resume | `--continue`/`-c` (most recent session) or `--resume <SESSION_ID>` (specific session) |
 
 ### Approvals and permissions
 
-**Auto-approval is enabled by default in programmatic mode** — passing `--prompt` runs non-interactively
-with tools already approved; no separate `--yolo`-style flag is documented or needed. To narrow what the
-run can touch, use `--enabled-tools <list>` rather than trying to gate individual approvals. What happens
-if a tool outside `--enabled-tools` is needed mid-run is **NOT DOCUMENTED** — treat empty output with a
-clean exit as a stalled or silently-denied run, per the general CLI failure guidance.
+Approval is controlled by **`--agent <mode>`**, with four documented values: `default` (asks before
+every tool), `plan` (read-only — auto-approves safe reads, blocks edits/commands; **do not use for
+delegation**), `accept-edits` (auto-approves file edits, still asks for shell/sensitive tools), and
+`auto-approve` (approves everything — the vendor's own docs flag this as risky). **There is no generic
+`--yolo` or bare `--auto-approve` boolean flag** — passing one is rejected as an unrecognized argument.
+**In programmatic mode (`vibe --prompt …`), Vibe falls back to `auto-approve` when `--agent` is not
+provided** — this is documented and confirmed, so no extra flag is required for a headless run to get
+full auto-approval. Finer-grained control exists via per-tool `"always"/"ask"` settings, bash allow/deny
+lists, and `--trust` (grants temporary folder trust for the current invocation only, non-persistent).
+
+**Unanswered-approval behavior is not documented** — there is no stated exit-code/hang/stall contract for
+a blocked call in headless mode. One community bug report (a specific released version) found that even
+with the `auto-approve` fallback active, a sufficiently complex prompt could trigger an internal "plan
+confirmation" step that the run then **stalls on**, waiting for input headless mode cannot supply — a
+known edge case, not confirmed universal or version-independent behavior. Don't assume a `--prompt` run
+is failure-proof against hanging; wrap it in an external timeout regardless.
 
 ### Models and how to list them
 
-No CLI subcommand for listing models is documented for Mistral Vibe. Selection is `--model
-[model_name]`. Source records a `-latest` alias for the current flagship coding model (123B-class,
-256K context, Vibe's default), a dated pinned snapshot of that same flagship for reproducible runs, a
-mid-tier coding model, a small/fast tier that can run locally on a 24GB GPU, a newer small-tier "labs"
-snapshot, and a separate general-purpose (non-coding) model family. **Naming trap:** marketing names
-like "Devstral 2" or "Devstral Small 2" are not valid API IDs — only the `-latest` alias or a dated
-snapshot (`YYMM` format) work. Always search the web and check
-[Artificial Analysis](https://artificialanalysis.ai/) for current names and pricing before pinning one;
-prefer a dated snapshot over `-latest` when the delegation needs to be reproducible.
+No `vibe models` subcommand or `--list-models` flag is documented. Selection is `--model [model_name]`;
+model IDs can be a `-latest` alias (e.g. a "medium" or "small" tier) or a dated/version-pinned snapshot
+made by replacing `-latest` with a date/version suffix — prefer a pinned snapshot for reproducible
+delegations. An interactive `/model` slash command exists to select the active model, but whether it
+enumerates the full catalog or only opens a picker is not confirmed.
+
+If the user names a model, use it. Otherwise check the vendor's own documentation and
+[Artificial Analysis](https://artificialanalysis.ai/) for current names and pricing before picking one.
 
 ### Command pattern
 
@@ -157,12 +171,13 @@ vibe --prompt "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAI
 ### Prompt examples
 
 - **Implement:** `vibe --prompt "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | VERIFICATION: [test_command] | OUTPUT: [format]" --model <identifier>`
-- **Investigate (report only):** `vibe --prompt "GOAL: Map how [feature] works | SCOPE: [paths] | CONSTRAINTS: do not edit any file | OUTPUT: concise file:line map" --model <small-tier identifier>`
-- **Plan:** `vibe --prompt "GOAL: Design architecture for [feature] | SCOPE: [paths] | OUTPUT: architecture plan" --model <flagship identifier>`
+- **Investigate (report only):** `vibe --prompt "GOAL: Map how [feature] works | SCOPE: [paths] | CONSTRAINTS: do not edit any file | OUTPUT: concise file:line map" --agent accept-edits --model <small-tier identifier>`
+- **Bounded run:** `vibe --prompt "GOAL: [task] | VERIFICATION: [test_command] | OUTPUT: [format]" --max-turns 15 --max-price 2`
 
 ### Docs and reference
 
-- Delegation checklist and model table: [reference.md](reference.md)
-- Vendor documentation: no canonical URL captured in source; auth via `MISTRAL_API_KEY` or `vibe --setup`
-- Flags taken from this repo's existing skill and reference docs; no installed-binary verification
-  stamp is recorded in the source. Confirm against `vibe --help` before relying on this in production.
+- Flags, models, config: [reference.md](reference.md)
+- Vendor documentation: <https://docs.mistral.ai/vibe/code/cli/work-with-cli> and
+  <https://docs.mistral.ai/vibe/code/safety-approvals-permissions>
+- **Checked against the official Mistral AI documentation on 2026-09-19. Not run against an installed
+  binary — confirm with `vibe --help` before trusting a flag.**

@@ -115,11 +115,13 @@ loudly.
 ### Binary and prompt form
 
 - **Binary:** `opencode`
-- **Prompt form:** **positional**, after the `run` subcommand: `opencode run "prompt"`.
-- **The known trap:** `-p` is `--password`, not the prompt. Writing `opencode run -p "GOAL: ..."` (a
-  habit carried over from `claude -p` / `copilot -p` / `qwen -p`) feeds the prompt to basic-auth and
-  leaves the message **empty** — an empty message makes the process **wait on stdin forever**: no
-  session is created, nothing is produced, and it never exits. Always pass the prompt positionally.
+- **Prompt form:** **positional**, after the `run` subcommand: `opencode run "prompt"`
+  (`opencode run [message..]` — the message is variadic positional args).
+- **The verified trap:** `-p` is `--password` (used for basic-auth against `--attach`ed servers), not
+  the prompt. Writing `opencode run -p "GOAL: ..."` (a habit carried over from `claude -p` /
+  `copilot -p` / `qwen -p`) feeds the prompt into basic-auth and leaves the message **empty** — an empty
+  message makes the process **wait on stdin forever**: no session is created, nothing is produced, and
+  it never exits. Always pass the prompt positionally.
 
 ### Headless and output flags
 
@@ -128,21 +130,26 @@ loudly.
 | Run once and exit | `run "prompt"` |
 | Plain output | `--format default` |
 | Structured events | `--format json` |
-| Diagnostics to stderr (often the only output you get) | `--print-logs`, `--log-level <DEBUG\|INFO\|WARN\|ERROR>` |
+| Diagnostics to stderr | `--print-logs`, `--log-level <DEBUG\|INFO\|WARN\|ERROR>` |
+| Reasoning effort | `--variant <provider-specific value>` |
 
 ### Approvals and permissions
 
-`--auto` auto-approves permissions not explicitly denied. **There is no `--dangerously-skip-permissions`
-flag** — OpenCode's parser silently accepts unknown flags rather than erroring, so passing that name
-fails open: the run proceeds as if unflagged. Without `--auto`, the documented behavior is that the run
-**blocks** — stalls waiting — on any permission set to `ask` (e.g. `doom_loop`, `external_directory`);
-it does not auto-deny or exit early. Always pass `--auto` for unattended delegation.
+Official docs define three permission values: `"allow"` (executes without approval), `"ask"` (prompts),
+and `"deny"` (blocked, always enforced regardless of mode). `--auto` "automatically approve[s]
+permission requests that are not explicitly denied" — i.e. it turns every `ask` into an allow while
+still honoring `deny`. **There is no `--dangerously-skip-permissions` flag**; it does not appear in the
+official docs at all.
+
+What happens to an `ask` permission in a non-interactive `opencode run` **without** `--auto` is not
+explicitly documented by the vendor. Given `run` has no TTY to prompt against, treat this as an
+undefined stall risk rather than assuming an auto-deny — always pass `--auto` for unattended delegation
+rather than relying on default behavior.
 
 **Never use `--agent plan` for delegation.** It plans *changes*, not answers — asked to investigate, it
 stops to request permission for its own probes, which headless mode cannot grant, producing an empty
-answer. For a no-edit run, keep `--agent build` (the default) or `--auto`, and write "report only, no
-edits" in the prompt. `opencode agent list` is the authority on which agents exist (`build`, `plan`,
-`explore`, `general`, plus internal `compaction`/`summary`/`title`).
+answer. For a no-edit run, keep `--agent build` (the default) and write "report only, no edits" in the
+prompt, still passing `--auto`.
 
 ### Models and how to list them
 
@@ -174,8 +181,7 @@ opencode run "[prompt]" --auto --print-logs > /tmp/oc-run.log 2>&1 &
 
 ### Docs and reference
 
-- Flags, agents, models, auth: [reference.md](reference.md)
-- No vendor documentation URL is recorded in the source material for this skill; `opencode run --help`
-  and `opencode agent list` are the authorities used to compile it.
-- No version or verification date is recorded in the source skill. Confirm every flag against
-  `opencode run --help` before relying on it.
+- Flags, agents, models, auth, permissions: [reference.md](reference.md)
+- Vendor documentation: <https://opencode.ai/docs/cli/> and <https://opencode.ai/docs/permissions/>
+- **Checked against the official OpenCode documentation on 2026-09-19. Not run against an installed
+  binary — confirm with `opencode run --help` before trusting a flag.**

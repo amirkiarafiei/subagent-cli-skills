@@ -119,54 +119,71 @@ loudly.
 ### Binary and prompt form
 
 - **Binary:** `gemini`
-- **Prompt form:** **positional.** No `-p`/`--prompt` flag exists for this CLI in its documented
-  flag set — the prompt is the plain string passed directly, e.g. `gemini "prompt text" --yolo`.
-  Force a specialist subagent by starting the string with `@name` (see Command pattern below).
+- **Prompt form:** **flag, for reliability.** `--prompt` / `-p <text>` takes the prompt as its value
+  and explicitly "forces non-interactive mode." A positional query string is also accepted
+  (`gemini "prompt text"`), but non-interactive behavior is normally triggered by piping stdin or a
+  non-TTY session, not guaranteed by the bare positional form alone — so for a scripted/headless
+  delegation always pass the prompt via `-p` to be certain the run exits instead of opening the
+  interactive UI.
 
 ### Headless and output flags
 
 | Need | Flag |
 |---|---|
-| Output format | `-o`, `--output-format` — `text` (clean scripting output) or `json` (adds `response`/`stats`) |
-| Resume a session | `-r`, `--resume` (e.g. `-r latest`) |
-| Run in a Git worktree (experimental) | `-w`, `--worktree` |
+| Force non-interactive mode with the prompt | `-p`, `--prompt <text>` |
+| Skip the interactive folder-trust check (headless) | `--skip-trust` |
+| Run in a Git worktree (needs `experimental.worktrees: true`) | `-w`, `--worktree [name]` |
+| Sandboxed execution | `-s`, `--sandbox` |
+
+No dedicated JSON/text `--output-format` flag is documented for this CLI's core output (unlike its
+approval-mode and model flags, which are documented in detail below).
 
 ### Approvals and permissions
 
-- **`--yolo`** (short `-y`) — auto-approve tool calls. This is the only approval-bypass flag
-  documented for this CLI.
-
-What happens to an unanswered approval without `--yolo` is **not documented** in this skill's
-sources — treat it as a stall and always pass `--yolo`/`-y` for headless delegation.
+- **`--approval-mode <default\|auto_edit\|yolo\|plan>`** is the current, non-deprecated control:
+  - `default` — prompts for approval on each tool call.
+  - `auto_edit` — auto-approves edit tools only.
+  - `yolo` — auto-approves all tool calls.
+  - `plan` — read-only; the docs themselves flag it as "currently under development and not yet
+    fully functional." Do not use it for delegation — it doesn't do the work, and it is not a
+    reliable no-op either.
+- **`-y`, `--yolo` is deprecated.** Use `--approval-mode=yolo` instead; the two cannot be combined.
+- **What happens with nobody to answer:** confirmed from the source — in non-interactive mode, a
+  tool call that needs confirmation under `default` (or `auto_edit`, for the tools it doesn't cover)
+  is **treated as a denial** (the policy engine maps `ask_user` to `deny`; the scheduler marks the
+  call as errored with `CONFIRMATION_REQUIRED`). The run continues; that specific tool call simply
+  fails. Pass `--approval-mode=yolo` before running headless if the task needs those calls to
+  succeed.
 
 ### Models and how to list them
 
-No CLI subcommand to list models is documented here. Selection is `-m`/`--model <identifier>`;
-short tier aliases exist (a fast/cheap tier and a heavier "pro" tier) alongside full dotted
-identifiers. Note the vendor's Pro line has historically frozen for long stretches while the fast
-tier keeps advancing — don't assume the two lines version in lockstep.
+No CLI subcommand to list models is documented. Select with `--model`, `-m <alias-or-name>` — the
+default is an automatic-routing alias. Note: `--model` (and the interactive `/model` command) does
+**not** override the model used by sub-agents, so a model report can show other models in use even
+after you set `--model`.
 
 If the user names a model, use it. Otherwise search the web for current identifiers/aliases and
-consult [Artificial Analysis](https://artificialanalysis.ai/) for capability and price comparisons
-— default to the cheaper tier and escalate only for tasks that need the heavier one.
+consult [Artificial Analysis](https://artificialanalysis.ai/) for capability and price comparisons.
 
 ### Command pattern
 
 ```bash
-gemini "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths, @paths as needed] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" \
-  --yolo -o text -m <identifier> 2>&1
+gemini -p "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths, @paths as needed] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" \
+  --approval-mode yolo --skip-trust -m <identifier> 2>&1
 ```
 
 ### Prompt examples
 
-- **Implement:** `gemini "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" --yolo -o text`
-- **Investigate:** `gemini "@codebase_investigator GOAL: Map how [feature] works | SCOPE: [paths] | CONSTRAINTS: report only, no edits | OUTPUT: concise file:line map" --yolo -o text`
-- **Security:** `gemini "@gemini-cli-security GOAL: Audit for injection/XSS/auth issues | SCOPE: @./src | CONSTRAINTS: report only, no edits | OUTPUT: report with severities" --yolo -o text`
+- **Implement:** `gemini -p "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" --approval-mode yolo --skip-trust`
+- **Investigate:** `gemini -p "GOAL: Map how [feature] works | SCOPE: [paths] | CONSTRAINTS: report only, no edits | OUTPUT: concise file:line map" --approval-mode default --skip-trust`
+- **Security:** `gemini -p "GOAL: Audit for injection/XSS/auth issues | SCOPE: @./src | CONSTRAINTS: report only, no edits | OUTPUT: report with severities" --approval-mode default --skip-trust`
 
 ### Docs and reference
 
-- Flags, JSON output, subagents, sessions, worktrees, delegation checklist: [reference.md](reference.md)
-- No vendor documentation URL is recorded in this skill's own sources.
-- **Not verified against an installed binary** — the source files carry no version/date stamp, and
-  the CLI itself is marked deprecated by the vendor. Confirm every flag with `gemini --help` before
-  relying on this card.
+- Flags, approval modes, delegation checklist: [reference.md](reference.md)
+- Vendor documentation: <https://github.com/google-gemini/gemini-cli/blob/main/docs/cli/cli-reference.md>
+  and <https://geminicli.com/docs/cli/headless/>
+- **Checked against the official Google/Gemini CLI documentation on 2026-09-19. Not run against an
+  installed binary — confirm with `gemini --help` before trusting a flag.** Note: `--yolo`/`-y`,
+  used throughout the previous version of this card, is now documented as **deprecated** in favor of
+  `--approval-mode=yolo`.
