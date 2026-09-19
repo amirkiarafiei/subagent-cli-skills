@@ -178,6 +178,7 @@ codex exec "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS
 - Vendor documentation: <https://developers.openai.com/codex/cli> and
   <https://developers.openai.com/codex/cli/reference>
 - **Checked against the official OpenAI documentation on 2026-09-19. Not run against an installed
-  binary — confirm with `codex --help` before trusting a flag.** Note: the previous version of this
-  card recommended a `--full-auto` flag; the current docs no longer document that name — the bypass
-  flag is `--dangerously-bypass-approvals-and-sandbox` (alias `--yolo`).
+  binary — confirm with `codex --help` before trusting a flag.** Note on `--full-auto`: an earlier version of
+  this card recommended it. It is now **deprecated** — it still works for one release cycle and prints
+  a warning, but it is scheduled for hard removal, so a command relying on it will start failing. The
+  bypass flag is `--dangerously-bypass-approvals-and-sandbox` (alias `--yolo`).
