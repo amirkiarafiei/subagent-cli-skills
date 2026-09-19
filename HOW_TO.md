@@ -20,9 +20,44 @@ A skill that names a flag the binary rejects is worse than no skill, because the
 
 **Flags never transfer between tools.** `-p` is the prompt in `claude`, `copilot`, and `qwen`—and in OpenCode it is `--password`, which swallows your prompt, leaves the message empty, and hangs the process **forever** waiting on stdin. Assume nothing carries over.
 
+## Start from the template
+
+Every skill in this repository starts as a copy of [`_skill_template/SKILL.md`](_skill_template/SKILL.md).
+
+```bash
+mkdir -p skills/<new-skill>
+cp _skill_template/SKILL.md skills/<new-skill>/SKILL.md
+# then write reference.md for the same tool
+```
+
+The file has two halves, separated by a comment block:
+
+**The global half — sections 1 to 5.** *What is it*, *When to delegate*, *When not to delegate*,
+*Delegation and context transfer protocol*, *CLI failure modes*. **Copy these without any change.**
+They name no vendor and no flag, so they are identical in every skill, and that is the point: a
+change to the delegation doctrine is made once and applied to all skills together. If you think a
+global section is wrong, fix it in the template and in every skill in the same pull request — do not
+fix it in one skill only.
+
+**The vendor half — section 6, the Vendor card.** This is your work. Keep the seven sub-headings and
+their order, because that is what makes the catalog consistent and checkable. What you write under
+them is up to you: the template gives one short note per heading, not a fixed shape. A tool with no
+approve-all flag, or no model list command, says so plainly under that heading rather than dropping it.
+
+### Every skill folder must stand alone
+
+**Never use a symlink, an include, or a reference to a shared file.** The installer copies exactly two
+files — `SKILL.md` and `reference.md` — into the user's skills directory. Anything outside that folder
+does not travel with it. A skill that points at `_skill_template/` or at another skill is broken the
+moment a user installs it.
+
+This means the global half is duplicated 19 times, word for word. That duplication is deliberate.
+The cost is that a doctrine change touches every file; the benefit is that every folder is a complete,
+downloadable unit that works on its own. We accept the cost.
+
 ## Skill Creation Checklist
 
-When creating a new skill (e.g. `tool-cli`), address the following in your `SKILL.md` and `reference.md`:
+You have copied the template and are filling the Vendor card. Work through this list as you do:
 
 ### 0. Agent vs. IDE Compatibility
 - [ ] **Verify CLI Support**: Only tools with a programmatic CLI/headless mode can be used as **subagents**.
