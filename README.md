@@ -2,8 +2,8 @@
 
 A collection of Skills that connects agents from any vendor to each other.
 
-Let Claude Code prompt Codex, Antigravity or Pi as a subagent. The repository supports more than 19
-agents. All agents can call each other as subagent.
+Let Claude Code prompt Codex, Antigravity or Pi as a subagent. All agents can call each other as subagent. Supports more than 19
+agents.
 
 ## How It Works
 
