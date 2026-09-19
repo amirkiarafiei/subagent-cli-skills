@@ -71,6 +71,12 @@ Write the prompt as a transfer of shared state, not as a title. Include all six 
 Prefer sequential delegations with explicit carry-over. Parallel runs diverge unless every run gets
 the same briefing.
 
+**Never call a subagent in plan mode.** Many CLIs have a plan or read-only mode. That mode makes the
+other agent write a plan *for itself*, which is not what you asked for: you want its work or its
+answer, and you keep the planning. Plan mode also stops to ask for approval of the plan, and headless
+mode has nobody to approve it, so the run returns nothing. Use the normal execution mode. If you do
+not want file changes, say "report only, no edits" in the **Output** field instead.
+
 After the subagent returns:
 
 - **Report to the user.** Give a short summary. Do not paste long logs unless the user asks.
@@ -103,59 +109,36 @@ loudly.
 
 ### Binary and prompt form
 
-- **Binary:** `<cli>`
-- **Prompt form:** `<flag | positional>` — *state which, because getting this wrong hangs the run.*
-  <!-- Example: "flag: -p <PROMPT>" or "positional: the first non-flag argument" -->
-- **Install / availability:** `<how the user gets it, one line>`
+*The command name. Whether the prompt is a flag argument or a positional argument. State this
+clearly — this is the mistake that makes a run hang forever.*
 
 ### Headless and output flags
 
-| Need | Flag |
-|---|---|
-| Run once and exit | `<flag>` |
-| Plain text output | `<flag>` |
-| Structured output | `<flag, or "NOT DOCUMENTED">` |
-| Quiet / no banner | `<flag, or "NOT DOCUMENTED">` |
+*The flag that makes the CLI run once and exit. The flags that control the output format.*
 
 ### Approvals and permissions
 
-Headless mode cannot ask the user for permission. State what this CLI does instead.
-
-- **Approve-all flag:** `<flag, or "none exists — say so plainly">`
-- **Narrower option:** `<scoped rule, sandbox, added directory, or "none">`
-- **Behaviour when a tool needs approval:** `<stalls | rejects the call | auto-denies and exits 0>`
-- **Warnings:** `<any documented carve-out, e.g. a flag that still prompts on destructive commands>`
+*What this CLI does when a tool needs approval and nobody is there to answer. Name the approve-all
+flag, or say plainly that none exists. Note any narrower option, and any documented carve-out.*
 
 ### Models and how to list them
 
-- **List command:** `<cli> models` *(ask the binary — do not copy model names into this file)*
-- **Flag:** `<--model, plus any effort/variant flag>`
-- **Accepted shape:** `<slug | family + effort | provider/model>`
-- **If the model is unknown:** `<hard-fails | falls back silently>`
+*The command that lists the models, the model flag, and the shape it accepts. Do not write model
+names here — they go stale faster than anything else in this file.*
 
-If the user names a model or an effort level, use it. Otherwise ask the binary first. Model names
-change often, and a model list written into this file goes stale. For capability and price
-comparisons, check [Artificial Analysis](https://artificialanalysis.ai/) and the vendor's own docs.
+*If the user names a model or an effort level, use it. Otherwise ask the binary first. For capability
+and price comparisons, check [Artificial Analysis](https://artificialanalysis.ai/) and the vendor's
+own documentation.*
 
 ### Command pattern
 
-```bash
-<cli> <headless flag> "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" <approval flag> <output flag> 2>&1
-```
-
-<!-- If you assembled this line from separate flags rather than copying a vendor example, say so. -->
+*One command the reader can copy, with the six handoff fields inside the prompt.*
 
 ### Prompt examples
 
-- **Implement:** `<one line the reader can copy>`
-- **Review:** `<one line>`
-- **Investigate, no edits:** `<one line>`
+*Two or three short lines for the common cases, such as implement, review, and investigate.*
 
 ### Docs and reference
 
-- Flags, models, authentication and paths: [reference.md](reference.md)
-- Vendor documentation: `<live URL, so the agent can check a flag itself>`
-- **Verified against `<cli>` `<version>` on `<YYYY-MM-DD>`.**
-  <!-- If you could not run the binary, replace this line with:
-       > **Documented, not verified.** Written from <vendor> docs on <date> and not checked against
-       > an installed binary. Run `<cli> --help` before trusting a flag, and report any difference. -->
+*A link to `reference.md`, a link to the vendor's live documentation, and the verification stamp:
+the version you checked and the date. If you could not run the binary, say so here instead.*
