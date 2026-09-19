@@ -71,11 +71,16 @@ Write the prompt as a transfer of shared state, not as a title. Include all six 
 Prefer sequential delegations with explicit carry-over. Parallel runs diverge unless every run gets
 the same briefing.
 
+**Run the subagent in the mode that does the work without asking for approval.** Headless mode has
+nobody to answer a permission prompt. Any mode that stops to ask will stall, or return an empty
+answer with a success exit code. Each CLI names this mode differently — take the flag from the vendor
+card below.
+
 **Never call a subagent in plan mode.** Many CLIs have a plan or read-only mode. That mode makes the
 other agent write a plan *for itself*, which is not what you asked for: you want its work or its
-answer, and you keep the planning. Plan mode also stops to ask for approval of the plan, and headless
-mode has nobody to approve it, so the run returns nothing. Use the normal execution mode. If you do
-not want file changes, say "report only, no edits" in the **Output** field instead.
+answer, and you keep the planning. Plan mode also waits for someone to approve that plan, so the run
+comes back with nothing. If you want no file changes, keep the auto-approving mode and write "report
+only, no edits" in the **Output** field. Do not use plan mode to make a run read-only.
 
 After the subagent returns:
 
