@@ -11,9 +11,7 @@ Almost every coding agent has a headless mode. This mode runs the agent from the
 command. Each skill in this repository teaches your main agent how to call one other agent in this
 way.
 
-<p align="center">
-  <img src="./assets/diagram.png" width="320" alt="Delegation Flow Diagram">
-</p>
+![Delegation Flow Diagram](./assets/diagram.png)
 
 Each skill also applies a delegation and context transfer protocol. The subagent starts with an
 empty context. The protocol sends the goal, the decisions and the scope with every command. The
@@ -21,7 +19,10 @@ subagent then has the state that it needs to do the task correctly.
 
 ## 🛠️ Installation
 
+
+
 ### 1. Give this prompt to your agent
+
 ```
 Read https://raw.githubusercontent.com/amirkiarafiei/subagent-cli-skills/main/AGENTIC_INSTALLATION.md and follow the instructions to install the Subagent CLI Skills.
 ```
@@ -44,10 +45,11 @@ chmod +x install.sh
 ./install.sh
 ```
 
+
+
 ### 3. Download the skill folder
 
 From `./skills/{vendor}/Skill.md`
-
 
 ## Example Usage
 
@@ -78,6 +80,8 @@ Build the login form in src/auth/ with Codex. Build the signup form in src/signu
 Ask Pi and Grok and Devin to review the implementation plan to get fresh ideas.
 ```
 
+
+
 ## 🔌 Support
 
 Antigravity · Claude Code · Codex · Copilot · Cursor · Devin · Gemini · Grok · Hermes Agent ·
@@ -92,12 +96,12 @@ by Cognition AI:
 We implement a stateless delegation pattern that offloads tactical work to CLI subagents by injecting
 a comprehensive "shared state" into every atomic command to prevent context fragmentation.
 
-* **Shared State Handoff**: Inject the original goal, prior architectural decisions, and explicit
-  codebase scope into the prompt to bridge the subagent's lack of session history.
-* **Contextual Preservation**: Execute high-volume tasks in isolated headless environments to save
-  orchestrator tokens and avoid "split story" failures caused by missing history.
-* **Result Reconciliation**: Pull new technical assumptions and filesystem changes back into the main
-  thread after every delegation to maintain a single source of truth.
+- **Shared State Handoff**: Inject the original goal, prior architectural decisions, and explicit
+codebase scope into the prompt to bridge the subagent's lack of session history.
+- **Contextual Preservation**: Execute high-volume tasks in isolated headless environments to save
+orchestrator tokens and avoid "split story" failures caused by missing history.
+- **Result Reconciliation**: Pull new technical assumptions and filesystem changes back into the main
+thread after every delegation to maintain a single source of truth.
 
 This methodology is further refined by lessons from **[Superpowers](https://github.com/obra/superpowers)**
 and **[Claude Code](https://github.com/anthropics/claude-code)**, incorporating rigorous verification
