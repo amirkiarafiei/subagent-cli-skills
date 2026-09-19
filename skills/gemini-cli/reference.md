@@ -1,43 +1,77 @@
-# Gemini CLI — reference
+> **Checked against the official Google/Gemini CLI documentation on 2026-09-19. Not run against an installed binary — confirm with `gemini --help` before trusting a flag.**
 
 > [!WARNING]
-> **DEPRECATED**: Gemini CLI has been deprecated in favor of **Antigravity CLI** (`agy`). We strongly recommend migrating to `/antigravity-cli` for up-to-date features and performance.
+> **DEPRECATED**: Gemini CLI has been deprecated in favor of **Antigravity CLI** (`agy`). We
+> strongly recommend migrating to `/antigravity-cli` for up-to-date features and performance.
 
-Concise reference for agents. Auth: `GEMINI_API_KEY` or interactive OAuth.
+## Authentication
 
-## Models (Mandatory Search Required)
+`GEMINI_API_KEY`, or interactive OAuth. Config root is `$GEMINI_CLI_HOME` (falling back to the OS
+home directory), with everything under `<root>/.gemini`.
 
-Model names change frequently. **Always search for latest pricing/aliases.** Consult [Artificial Analysis](https://artificialanalysis.ai/) for up-to-date model performance and pricing data.
+## Models
 
-- **Default (Simple Tasks)**: `gemini-3.6-flash` (or alias `flash` pointing to `gemini-3.6-flash`)
-- **Heavy Tasks**: `pro` (Alias for `gemini-3.1-pro-preview` or `gemini-3.1-pro`)
-
-> **Pro-line caveat:** the Gemini **Pro** line is frozen at `gemini-3.1-pro` (Feb 2026). There is no `gemini-3.5-pro` or `gemini-3.6-pro` — do not guess one. Only the Flash line advanced to `gemini-3.6-flash` (default since Jul 21, 2026).
-
-## Subagents
-
-Specialists run in isolated context. Force with **`@name`** at the start of the prompt.
-
-| Name | Role |
-|------|------|
-| `codebase_investigator` | Deep codebase analysis, dependencies, “how does X work?” |
-| `generalist` | Broad/heavy subtasks (multi-file edits, large output) with tool access. |
-| `gemini-cli-security` | Security-focused audits (injection, XSS, auth). |
-| `code-review` | Code-review / PR-style analysis. |
+No CLI subcommand to list models is documented. Select with `--model`, `-m <alias-or-name>` — the
+default is an automatic-routing alias. **`--model` (and the interactive `/model` command) does not
+override the model used by sub-agents** — a model-usage report can show other models in use even
+after you set `--model`. Search the web / [Artificial Analysis](https://artificialanalysis.ai/) for
+current identifiers and pricing.
 
 ## Essential Flags
 
 | Flag | Short | Purpose |
 |------|-------|---------|
-| `--yolo` | `-y` | Auto-approve tool calls. |
-| `--output-format` | `-o` | `text`, `json`. Use `text` for clean scripting output. |
-| `--model` | `-m` | Specify the model to use. |
-| `--worktree` | `-w` | Run in a Git worktree (experimental). |
-| `--resume` | `-r` | Resume a session (e.g., `-r latest`). |
+| `--prompt <text>` | `-p` | Prompt text; forces non-interactive mode. Use this to guarantee headless execution rather than relying on the bare positional form. |
+| `--prompt-interactive <text>` | `-i` | Execute a prompt, then continue in interactive mode. |
+| `--model <alias-or-name>` | `-m` | Model to use (default: automatic routing). |
+| `--approval-mode <mode>` | | See Approvals below. |
+| `--sandbox` | `-s` | Run in a sandboxed environment. |
+| `--skip-trust` | | Trust the current workspace for this session, skipping the folder-trust check. |
+| `--worktree [name]` | `-w` | Start in a new Git worktree; requires `experimental.worktrees: true` in settings. |
+| `--allowed-mcp-server-names` | | Allowed MCP server names (comma-separated or repeatable). |
+| `--debug` | `-d` | Verbose logging. |
 
-## JSON Output (`-o json`)
+Piped stdin (non-TTY) is prepended to the `--prompt`/positional query, joined by a blank line; an
+8MB input limit applies.
 
-Parse top-level `response` and `stats` (model tokens, tool usage).
+## Approvals and permissions
+
+- **`--approval-mode <default\|auto_edit\|yolo\|plan>`** is the current control:
+  - `default` — prompts for approval on each tool call.
+  - `auto_edit` — auto-approves edit tools (`replace`, `write_file`) only.
+  - `yolo` — auto-approves all tool calls.
+  - `plan` — read-only; the docs themselves flag it as "currently under development and not yet
+    fully functional." Do not use it for delegation.
+- **`-y`, `--yolo` is deprecated** — use `--approval-mode=yolo` instead; the two flags cannot be
+  combined.
+- **`--allowed-tools` is deprecated** in favor of the Policy Engine.
+- **Unanswered approval, documented behavior:** in non-interactive mode, a tool call needing
+  confirmation under `default` (or under `auto_edit`, for tools it doesn't cover) is **treated as a
+  denial** — the policy engine maps `ask_user` to `deny`, and the scheduler marks the call as errored
+  with `CONFIRMATION_REQUIRED`. The run continues; that specific call simply fails. Pass
+  `--approval-mode=yolo` before running headless if the task needs those calls to succeed.
+- In Plan Mode specifically, the policy engine auto-approves the `enter_plan_mode`/`exit_plan_mode`
+  transition tools, and exiting plan mode to implement automatically switches to `yolo` rather than
+  `default`, so the implementation phase does not hang on confirmations.
+
+## Subcommands
+
+Primarily invoked as `gemini -p "..."` with flags. `/agents list` / `reload` / `enable` / `disable`
+/ `config` manage local and remote subagents interactively (agent directories:
+`~/.gemini/agents` and `.gemini/agents`).
+
+## Configuration and paths
+
+- `<root>/.gemini` (root is `$GEMINI_CLI_HOME` or the OS home directory) — `google_accounts.json`,
+  `trustedFolders.json`, and other CLI state.
+- `~/.gemini/agents` and `.gemini/agents` — subagent directories.
+
+## Documentation
+
+- Official docs: <https://github.com/google-gemini/gemini-cli/blob/main/docs/cli/cli-reference.md>,
+  <https://geminicli.com/docs/cli/headless/>,
+  <https://github.com/google-gemini/gemini-cli/blob/main/docs/reference/policy-engine.md>
+- Vendor card in this skill: [SKILL.md](SKILL.md)
 
 ## Delegation Checklist
 

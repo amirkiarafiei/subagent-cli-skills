@@ -1,6 +1,6 @@
 ---
 name: grok-cli
-description: Delegates large multi-step work to xAI's Grok CLI like a subagent—include full goal, prior decisions, scope, and constraints in prompts so isolated sessions stay aligned with the main thread (context handoff per Cognition-style delegation). Use for heavy edits, exploration, reasoning-intensive passes, and machine-readable JSON runs. Skip for trivial one-shot tasks or when everything is already in context.
+description: Use Grok CLI as a subagent. Lets the main agent prompt Grok CLI from the terminal in headless mode with the `grok` command, and send the goal, the decisions and the scope with the task. Use when the user asks to delegate work to Grok CLI, when a task needs a second independent agent, or when a plan needs a fresh perspective.
 allowed-tools:
   - Bash
   - Read
@@ -9,128 +9,167 @@ allowed-tools:
   - Glob
 ---
 
-# Grok CLI (subagent/task delegation)
+# Grok CLI (subagent / task delegation)
 
-> **Documented, not verified.** Written from xAI's published CLI docs on 2026-09-06 and **not** checked
-> against an installed binary. Before trusting any flag here, run `grok --help`; on a mismatch use what
-> the binary actually offers and tell the user which line in this file is wrong.
+<!-- =============================================================================
+     GLOBAL HALF — sections 1 to 5.
+     These sections are identical in every skill in this repository.
+     Copy them without any change. Do not put a vendor name or a flag in them.
+     A change here must be made in all skills at the same time.
+     ============================================================================= -->
 
-Use **Grok CLI** to run a **separate long-horizon pass** over the repo: multi-step implementation, broad
-refactors, batch file writes, or deep exploration—similar to handing a **task to a subagent**. You stay
-orchestrator: smaller prompts, less context burn, often lower spend than doing the same work in-session.
+## What is it
 
-## When to use Grok CLI
+This skill teaches your agent to use an agent from another vendor as a subagent.
 
-- **Large or multi-step work**: several files, phases, or checkpoints (feature slice, migration, test suite, docs sweep).
-- **Reasoning-heavy passes**: `--effort` exposes a reasoning-effort control for harder problems.
-- **Machine-readable results**: `--output-format json` returns one JSON object; `streaming-json` emits newline-delimited events for progress.
-- **Bounded runs**: `--max-turns` caps how many agent turns a delegation may take.
-- **User explicitly asks** for Grok or "use Grok for this."
+Almost every coding agent has a headless mode. Headless mode runs the agent from the terminal with
+one command and returns the answer to stdout. This skill gives the command pattern for one such
+agent, and the protocol to transfer enough context with the task.
 
-## When not to use
+You stay the main agent. You keep the plan, the decisions and the conversation with the user. The
+subagent does one bounded task and reports back.
 
-- **Small / single-step** tasks answerable with one or two edits or a short explanation.
-- **Tight feedback loops** where the user wants rapid back-and-forth refinement in one thread.
-- **Secrets or policy-sensitive** flows—avoid piping credentials; redact before delegating.
-- **Already-loaded context** where duplicating the whole plan adds no value—handle locally.
-- **Low ROI (Return on Investment)**: if the task requires high precision over a single line, or composing the Handoff Table costs more than editing the file yourself. Delegate only when the "mental offloading" outweighs the "handoff overhead."
+## When to delegate
 
-## Delegation and context (critical)
+- **The user asks for it.** The user names another agent, or asks for a second opinion.
+- **Large or multi-step work.** The task covers several files, phases or checkpoints.
+- **Code review with a fresh mind.** Another agent reviews the work with a different lens and no
+  memory of the decisions that produced it.
+- **Planning that needs different ideas.** A second agent proposes options that you did not consider.
+- **An internal council.** Several subagents answer the same question, and you compare the answers.
+- **Deep research.** The other CLI has web search, web extraction or browser automation.
+- **Background investigation.** A long task runs in the background while you continue in the
+  foreground.
 
-Isolated subagent context saves tokens but **splits the story**: Grok does not see the main session's
-full thread. Poor handoffs cause misread subtasks, conflicting assumptions (stack, style, APIs), and
-wasted edits.
+## When not to delegate
 
-When composing the **single Grok prompt**, treat it as passing **enough shared state**, not just a title:
+- **Small or single-step tasks.** One or two edits, or a short explanation, are faster in this thread.
+- **Tight feedback loops.** The user wants quick back-and-forth in one conversation.
+- **Secrets or policy-sensitive work.** Do not pipe credentials into a subagent. Redact first.
+- **Context you already hold.** Repeating the whole plan in a prompt adds no value.
+- **Low return on investment.** If writing the handoff costs more than doing the edit, do the edit.
+- **Work that needs high precision and full judgement.** A subagent without your context will break a
+  task that depends on a detail only this session knows.
+
+## Delegation and context transfer protocol
+
+An isolated subagent saves tokens, but it splits the story. The subagent does not see this
+conversation. A poor handoff causes misread tasks, wrong assumptions about the stack or the style,
+and wasted edits.
+
+Write the prompt as a transfer of shared state, not as a title. Include all six fields:
 
 | Include | Why |
-|--------|-----|
-| **Original goal** | Same north star as the user—not only the immediate micro-task. |
-| **Decisions already made** | Framework, patterns, naming, auth approach, "use X not Y"—anything that would otherwise be guessed wrong. |
-| **Scope** | Paths, modules, and explicit **out of scope** / do-not-touch areas. |
-| **Constraints** | Performance, a11y, compatibility, review gates, "no new deps," etc. |
-| **Verification** | Explicit command (e.g. `npm test`, `lint`) the subagent **must** run and pass before returning. |
-| **Expected output** | e.g. "summarize then list files changed," "report only—no edits," or "apply edits with minimal diff." |
+|---|---|
+| **Goal** | The same objective as the user, not only the immediate micro-task. |
+| **Decisions** | Framework, patterns, naming, "use X not Y" — anything that would otherwise be guessed wrong. |
+| **Scope** | The paths and modules to touch, and the areas to leave alone. |
+| **Constraints** | Performance, accessibility, compatibility, review gates, "no new dependencies". |
+| **Verification** | The exact command the subagent must run and pass before it returns. |
+| **Output** | For example: "report only, no edits", "apply edits with a minimal diff", "list the files changed". |
 
-**After Grok returns**, pull **decisions and constraints** back into the main thread (what it assumed,
-what it changed, open risks). Prefer **sequential** delegations with explicit carry-over over parallel
-runs that might diverge unless they share the same briefing.
+Prefer sequential delegations with explicit carry-over. Parallel runs diverge unless every run gets
+the same briefing.
 
-## Model Selection & Discovery (Mandatory)
+**Run the subagent in the mode that does the work without asking for approval.** Headless mode has
+nobody to answer a permission prompt. Any mode that stops to ask will stall, or return an empty
+answer with a success exit code. Each CLI names this mode differently — take the flag from the vendor
+card below.
 
-**Run `grok models` to list the model IDs this install accepts.** The docs describe `-m, --model <MODEL>`
-as taking a "Model ID" but **do not enumerate the valid strings**, so there is nothing to copy from this
-file — ask the binary. Use the web (or [Artificial Analysis](https://artificialanalysis.ai/)) for pricing
-and benchmarks only. Omit `--model` to use the configured default.
+**Never call a subagent in plan mode.** Many CLIs have a plan or read-only mode. That mode makes the
+other agent write a plan *for itself*, which is not what you asked for: you want its work or its
+answer, and you keep the planning. Plan mode also waits for someone to approve that plan, so the run
+comes back with nothing. If you want no file changes, keep the auto-approving mode and write "report
+only, no edits" in the **Output** field. Do not use plan mode to make a run read-only.
 
-`--effort <LEVEL>` controls reasoning effort; the accepted levels are **NOT DOCUMENTED** in the pages this
-skill was written from. Check `grok --help` before passing it.
+After the subagent returns:
 
-## Programmatic usage (required)
+- **Report to the user.** Give a short summary. Do not paste long logs unless the user asks.
+- **Reconcile the context.** Record the decisions it made, the files it changed, and the open risks,
+  so this session stays the single source of truth.
 
-You **MUST** use Grok CLI programmatically. Do **NOT** start interactive sessions.
+## CLI failure modes
 
-| Requirement | Flag |
-|-------------|------|
-| **Non-interactive** | `-p`, `--single <PROMPT>` — **the prompt is a FLAG argument, not positional** |
-| **Output format** | `--output-format plain\|json\|streaming-json` (`plain` is the default) |
-| **Auto-approval** | `--always-approve` (alias `--yolo`) |
-| **Model** | `-m`, `--model <MODEL>` |
-| **Turn cap** | `--max-turns <N>` |
-| **No TUI takeover** | `--no-alt-screen` (run inline rather than fullscreen) |
-| **Quiet automation** | `--no-auto-update` (skips background update checks — recommended for scripts) |
+Every vendor has its own terminal rules. A headless run fails quietly more often than it fails
+loudly.
 
-> **The prompt goes in `-p`, not after the command.** `grok "do the thing"` is not the documented
-> headless form. Narrower alternatives to blanket approval also exist — `--allow <RULE>`, `--deny <RULE>`
-> and `--sandbox <PROFILE>` — prefer them when you can scope the run.
+- **Wrap the call in an external timeout.** A headless CLI can stall before its own timeout starts.
+- **Exit code 0 is not success.** If stdout is empty, treat the run as failed and read stderr. A
+  permission the CLI could not ask for, and a prompt that never arrived, both look like success.
+- **Never carry a flag habit from one CLI to another.** The same short flag means different things in
+  different tools. In OpenCode, `-p` is `--password`: passing a prompt to it empties the message and
+  the run waits on stdin forever. Confirm every flag against the CLI's own `--help`.
+- **An unrecognized-flag error means this skill is stale, not that the task is impossible.** Read
+  `--help`, continue with the flags that exist, and tell the user which line in this file is wrong.
 
-No quiet/silent flag beyond the above is documented, and **no exit-code table is documented** — so treat
-empty output as failure rather than trusting the status alone.
+<!-- =============================================================================
+     VENDOR HALF — section 6.
+     Everything below is specific to this CLI.
+     Keep all seven sub-headings, in this order, even if the answer is "none".
+     Take every flag from the installed binary (`<cli> --help`), not from memory
+     and not from another skill in this repository.
+     ============================================================================= -->
 
-## Command pattern
+## Vendor card
 
-Composed from individually documented flags (not quoted verbatim from a single doc example):
+### Binary and prompt form
+
+- **Binary:** `grok`
+- **Prompt form:** **flag.** The prompt is the value of `-p`, `--single <PROMPT>`.
+
+### Headless and output flags
+
+| Need | Flag |
+|---|---|
+| Run once and exit | `-p`, `--single <PROMPT>` |
+| Output format | `--output-format plain\|json\|streaming-json` (examples in the docs use `plain`; it is not explicitly stated as the default) |
+| Turn cap | `--max-turns <N>` |
+| Run inline, not fullscreen | `--no-alt-screen` |
+| Skip background update checks | `--no-auto-update` (recommended for scripts) |
+
+### Approvals and permissions
+
+`--always-approve` "skips ordinary permission prompts so tools run without waiting for a click" —
+documented deny rules, hooks, and some shell `ask` rules still apply on top of it. **`--yolo` is not a
+current flag or alias** — it exists only as a legacy `yolo = true` key in `config.toml`, superseded by
+`permission_mode` / `--always-approve`; do not pass `--yolo` on the command line. Narrower options:
+`--allow <RULE>` / `--deny <RULE>` (work in both interactive and headless sessions), and `--sandbox
+<PROFILE>` (documented as a flag; its profile values are not documented).
+
+**What happens when a tool needs approval and nothing can answer:** the call fails immediately and the
+failure is reported back to the model in-band (e.g. "Auto mode blocked this action…"), so the model can
+try another approach or give up — it does **not** hang and does **not** exit 0 with silent empty output.
+A `dontAsk` permission mode does the same silently, denying anything without an explicit allow rule and
+never surfacing a prompt at all. Separately, a recent update means non-interactive sessions no longer
+fail when the agent asks for user input or plan approval — those specific requests are now auto-resolved
+rather than causing a hard failure; tool-permission blocks still fail-and-report as above.
+
+### Models and how to list them
+
+Run **`grok models`** for the model IDs this install accepts. Selection is `-m`, `--model <MODEL>`.
+`--effort <LEVEL>` sets reasoning effort; the accepted level values are not documented — check `grok
+--help`. Omit `--model` to use the configured default.
+
+If the user names a model or an effort level, use it. Otherwise ask the binary first. For capability
+and price comparisons, check [Artificial Analysis](https://artificialanalysis.ai/) and the vendor's own
+documentation.
+
+### Command pattern
 
 ```bash
 grok -p "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" \
   --output-format json --always-approve --no-auto-update --max-turns 40 2>&1
 ```
 
-The docs' own verbatim example, for reference:
+### Prompt examples
 
-```bash
-grok -p "Explain the architecture" --output-format streaming-json
-```
+- **Implement:** `grok -p "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | VERIFICATION: [test_command] | OUTPUT: files changed" --output-format json --always-approve --no-auto-update`
+- **Review (report only):** `grok -p "GOAL: Review [scope] for [concerns] | CONSTRAINTS: do not edit any file | OUTPUT: findings with severity" --output-format plain --always-approve`
+- **Investigate:** `grok -p "GOAL: Map how [feature] works | SCOPE: [paths] | CONSTRAINTS: do not edit any file | OUTPUT: concise file:line map" --output-format plain --always-approve`
 
-## After Grok returns
+### Docs and reference
 
-- **Review** diffs and security-sensitive areas (XSS, injection, auth)—do not merge blindly.
-- **Run** project checks (`lint`, `test`, `typecheck`) as appropriate.
-- **Compress** results for the user: summarize instead of pasting huge logs unless asked.
-- **Reconcile context**: note decisions, files touched, and remaining risks so the **main** session stays aligned.
-
-## If the call fails or hangs
-
-Headless runs fail quietly more often than they fail loudly:
-
-- **Wrap the call in an external timeout.** A headless CLI can stall before its own timeout arms.
-  Grok documents `--max-turns` but **no wall-clock limit**, so the bound has to come from outside.
-- **Exit 0 is not success.** If stdout is empty, treat the run as failed and read stderr — a tool
-  permission the CLI could not prompt for, and a prompt that never arrived, both look like success.
-- **Never carry a flag habit across CLIs.** The same short flag means different things in different
-  tools — in OpenCode `-p` is `--password`, so passing a prompt to it silently empties the message and
-  hangs the run forever. Here `-p` *is* the prompt. Confirm every flag against `grok --help`.
-- **An unrecognized-flag error means this skill is stale, not that the task is impossible.** Run
-  `grok --help`, proceed with the flags that exist, and tell the user which line here needs updating.
-
-## Quick prompts
-
-- **Delegate implementation**: `grok -p "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" --output-format json --always-approve --no-auto-update`
-- **Investigate (report only)**: `grok -p "GOAL: Map how [feature] works | SCOPE: [paths] | CONSTRAINTS: do not edit any file | OUTPUT: concise file:line map" --output-format plain --always-approve`
-- **Watch progress on a long run**: `grok -p "GOAL: [large task] | ..." --output-format streaming-json --always-approve`
-- **Bounded pass**: `grok -p "GOAL: [task] | ..." --max-turns 15 --always-approve --output-format json`
-
-## More detail
-
-- Delegation checklist (short): [reference.md](reference.md#delegation-checklist)
-- Flags, output formats, sessions, skills, auth: [reference.md](reference.md)
+- Flags, models, permissions, skills, paths: [reference.md](reference.md)
+- Vendor documentation: <https://docs.x.ai/build/cli/reference> and <https://docs.x.ai/build/cli/headless-scripting>
+- **Checked against the official xAI documentation on 2026-09-19. Not run against an installed binary —
+  confirm with `grok --help` before trusting a flag.**

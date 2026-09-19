@@ -1,6 +1,6 @@
 ---
 name: pi-cli
-description: Delegates large multi-step work to the Pi CLI like a subagent—include full goal, prior decisions, scope, and constraints in prompts so isolated sessions stay aligned with the main thread (context handoff per Cognition-style delegation). Use for heavy edits, exploration, and JSON-event-driven runs. Skip for trivial one-shot tasks or when everything is already in context.
+description: Use Pi CLI as a subagent. Lets the main agent prompt Pi CLI from the terminal in headless mode with the `pi` command, and send the goal, the decisions and the scope with the task. Use when the user asks to delegate work to Pi CLI, when a task needs a second independent agent, or when a plan needs a fresh perspective.
 allowed-tools:
   - Bash
   - Read
@@ -9,151 +9,165 @@ allowed-tools:
   - Glob
 ---
 
-# Pi CLI (subagent/task delegation)
+# Pi CLI (subagent / task delegation)
 
-> **Documented, not verified.** Written from Pi's published docs (pi.dev) on 2026-09-06 and **not**
-> checked against an installed binary. Before trusting any flag here, run `pi --help`; on a mismatch use
-> what the binary actually offers and tell the user which line in this file is wrong.
+<!-- =============================================================================
+     GLOBAL HALF — sections 1 to 5.
+     These sections are identical in every skill in this repository.
+     Copy them without any change. Do not put a vendor name or a flag in them.
+     A change here must be made in all skills at the same time.
+     ============================================================================= -->
 
-Use **Pi** to run a **separate long-horizon pass** over the repo: multi-step implementation, broad
-refactors, batch file writes, or deep exploration—similar to handing a **task to a subagent**. You stay
-orchestrator: smaller prompts, less context burn.
+## What is it
 
-## When to use Pi
+This skill teaches your agent to use an agent from another vendor as a subagent.
 
-- **Large or multi-step work**: several files, phases, or checkpoints (feature slice, migration, test suite, docs sweep).
-- **Event-driven monitoring**: `--mode json` emits a JSON-lines event stream (`agent_start`, `message_update` deltas, `tool_execution_*`, `agent_end`) — ideal for watching a long delegation.
-- **Multi-provider model choice**: `--provider` and `--model <provider/id>` with a `--thinking` level.
-- **Attachments**: files are referenced with `@` (`pi -p @screenshot.png "What's in this image?"`).
-- **User explicitly asks** for Pi or "use Pi for this."
+Almost every coding agent has a headless mode. Headless mode runs the agent from the terminal with
+one command and returns the answer to stdout. This skill gives the command pattern for one such
+agent, and the protocol to transfer enough context with the task.
 
-## When not to use
+You stay the main agent. You keep the plan, the decisions and the conversation with the user. The
+subagent does one bounded task and reports back.
 
-- **Small / single-step** tasks answerable with one or two edits or a short explanation.
-- **Tight feedback loops** where the user wants rapid back-and-forth refinement in one thread.
-- **Untrusted or destructive work.** Pi's docs state it "does not include a built-in sandbox" and that
-  built-in tools "can read files, write files, edit files, and run shell commands with the permissions of
-  the pi process." There is no tool-approval gate to fall back on — see below.
-- **Secrets or policy-sensitive** flows—avoid piping credentials; redact before delegating.
-- **Low ROI (Return on Investment)**: if the task requires high precision over a single line, or composing the Handoff Table costs more than editing the file yourself.
+## When to delegate
 
-## Delegation and context (critical)
+- **The user asks for it.** The user names another agent, or asks for a second opinion.
+- **Large or multi-step work.** The task covers several files, phases or checkpoints.
+- **Code review with a fresh mind.** Another agent reviews the work with a different lens and no
+  memory of the decisions that produced it.
+- **Planning that needs different ideas.** A second agent proposes options that you did not consider.
+- **An internal council.** Several subagents answer the same question, and you compare the answers.
+- **Deep research.** The other CLI has web search, web extraction or browser automation.
+- **Background investigation.** A long task runs in the background while you continue in the
+  foreground.
 
-Isolated subagent context saves tokens but **splits the story**: Pi does not see the main session's full
-thread. Poor handoffs cause misread subtasks, conflicting assumptions (stack, style, APIs), and wasted
-edits.
+## When not to delegate
 
-When composing the **single Pi prompt**, treat it as passing **enough shared state**, not just a title:
+- **Small or single-step tasks.** One or two edits, or a short explanation, are faster in this thread.
+- **Tight feedback loops.** The user wants quick back-and-forth in one conversation.
+- **Secrets or policy-sensitive work.** Do not pipe credentials into a subagent. Redact first.
+- **Context you already hold.** Repeating the whole plan in a prompt adds no value.
+- **Low return on investment.** If writing the handoff costs more than doing the edit, do the edit.
+- **Work that needs high precision and full judgement.** A subagent without your context will break a
+  task that depends on a detail only this session knows.
+
+## Delegation and context transfer protocol
+
+An isolated subagent saves tokens, but it splits the story. The subagent does not see this
+conversation. A poor handoff causes misread tasks, wrong assumptions about the stack or the style,
+and wasted edits.
+
+Write the prompt as a transfer of shared state, not as a title. Include all six fields:
 
 | Include | Why |
-|--------|-----|
-| **Original goal** | Same north star as the user—not only the immediate micro-task. |
-| **Decisions already made** | Framework, patterns, naming, auth approach, "use X not Y"—anything that would otherwise be guessed wrong. |
-| **Scope** | Paths, modules, and explicit **out of scope** / do-not-touch areas. |
-| **Constraints** | Performance, a11y, compatibility, review gates, "no new deps," etc. |
-| **Verification** | Explicit command (e.g. `npm test`, `lint`) the subagent **must** run and pass before returning. |
-| **Expected output** | e.g. "summarize then list files changed," "report only—no edits," or "apply edits with minimal diff." |
+|---|---|
+| **Goal** | The same objective as the user, not only the immediate micro-task. |
+| **Decisions** | Framework, patterns, naming, "use X not Y" — anything that would otherwise be guessed wrong. |
+| **Scope** | The paths and modules to touch, and the areas to leave alone. |
+| **Constraints** | Performance, accessibility, compatibility, review gates, "no new dependencies". |
+| **Verification** | The exact command the subagent must run and pass before it returns. |
+| **Output** | For example: "report only, no edits", "apply edits with a minimal diff", "list the files changed". |
 
-**After Pi returns**, pull **decisions and constraints** back into the main thread (what it assumed, what
-it changed, open risks). Prefer **sequential** delegations with explicit carry-over over parallel runs
-that might diverge unless they share the same briefing.
+Prefer sequential delegations with explicit carry-over. Parallel runs diverge unless every run gets
+the same briefing.
 
-## Model Selection & Discovery (Mandatory)
+**Run the subagent in the mode that does the work without asking for approval.** Headless mode has
+nobody to answer a permission prompt. Any mode that stops to ask will stall, or return an empty
+answer with a success exit code. Each CLI names this mode differently — take the flag from the vendor
+card below.
 
-**Run `pi --list-models [search]`** for the model strings this install accepts. Models are given as
-`--model <provider/id>` with an optional `:<thinking>` suffix, alongside `--provider <name>` (e.g.
-`anthropic`, `openai`, `google`). Concrete IDs are **NOT DOCUMENTED** beyond that pattern — ask the
-binary. `--thinking` accepts `off`, `minimal`, `low`, `medium`, `high`, `xhigh`, `max`. Use the web for
-pricing and benchmarks only.
+**Never call a subagent in plan mode.** Many CLIs have a plan or read-only mode. That mode makes the
+other agent write a plan *for itself*, which is not what you asked for: you want its work or its
+answer, and you keep the planning. Plan mode also waits for someone to approve that plan, so the run
+comes back with nothing. If you want no file changes, keep the auto-approving mode and write "report
+only, no edits" in the **Output** field. Do not use plan mode to make a run read-only.
 
-## Programmatic usage (required)
+After the subagent returns:
 
-You **MUST** use Pi programmatically. Do **NOT** start interactive sessions.
+- **Report to the user.** Give a short summary. Do not paste long logs unless the user asks.
+- **Reconcile the context.** Record the decisions it made, the files it changed, and the open risks,
+  so this session stays the single source of truth.
 
-| Requirement | Flag |
-|-------------|------|
-| **Non-interactive** | `-p`, `--print` — "Print response and exit". **The prompt itself is POSITIONAL.** |
-| **Event stream** | `--mode json` (JSON lines) or `--mode rpc` (stdin/stdout RPC) |
-| **Model** | `--provider <name>`, `--model <provider/id>`, `--thinking <level>` |
-| **Ephemeral run** | `--no-session` (unsaved) |
-| **Project trust** | `-a`, `--approve` / `-na`, `--no-approve` — **see below, this is not tool approval** |
-| **Tool scoping** | `--tools <list>` / `-t`, `--exclude-tools <list>` / `-xt`, `--no-builtin-tools` / `-nbt`, `--no-tools` / `-nt` |
-| **Auth override** | `--api-key <key>` |
+## CLI failure modes
 
-> **Pi has no tool-approval gate, so there is nothing to bypass — and nothing to invent.** Unlike its
-> peers, Pi ships **no `--yolo`-style approve-all flag**, because it has no per-tool-call permission
-> system at all. Its docs are explicit: Pi "does not include a built-in sandbox," and built-in tools run
-> "with the permissions of the pi process."
->
-> `-a/--approve` means **"Trust project-local files for this run"** and `-na/--no-approve` means
-> **"Ignore project-local files for this run."** That governs whether `.pi/settings.json`, project
-> resources, extensions and project skills are *loaded* — **not** whether a tool call is allowed. Do not
-> present it as an auto-approve flag.
->
-> In headless use this is simply not a stall risk: **"Non-interactive modes (`-p`, `--mode json`, and
-> `--mode rpc`) do not show a trust prompt."** Without a saved decision, untrusted project resources are
-> ignored (global `defaultProjectTrust`: `ask` default, or `always` / `never`).
->
-> ⚠️ The flip side is that a delegated Pi run has your full user permissions with no gate. Pi's own docs
-> recommend running untrusted work "in a container, VM, micro-VM, remote sandbox, or policy-controlled
-> sandbox." Scope risky delegations with `--tools`/`--no-tools` rather than reaching for a bypass that
-> does not exist.
+Every vendor has its own terminal rules. A headless run fails quietly more often than it fails
+loudly.
 
-Pass `--approve` only when the delegation genuinely needs project-local skills or settings loaded.
-**No exit-code table is documented** — treat empty output as failure rather than trusting the status.
+- **Wrap the call in an external timeout.** A headless CLI can stall before its own timeout starts.
+- **Exit code 0 is not success.** If stdout is empty, treat the run as failed and read stderr. A
+  permission the CLI could not ask for, and a prompt that never arrived, both look like success.
+- **Never carry a flag habit from one CLI to another.** The same short flag means different things in
+  different tools. In OpenCode, `-p` is `--password`: passing a prompt to it empties the message and
+  the run waits on stdin forever. Confirm every flag against the CLI's own `--help`.
+- **An unrecognized-flag error means this skill is stale, not that the task is impossible.** Read
+  `--help`, continue with the flags that exist, and tell the user which line in this file is wrong.
 
-## Command pattern
+<!-- =============================================================================
+     VENDOR HALF — section 6.
+     Everything below is specific to this CLI.
+     Keep all seven sub-headings, in this order, even if the answer is "none".
+     Take every flag from the installed binary (`<cli> --help`), not from memory
+     and not from another skill in this repository.
+     ============================================================================= -->
 
-Composed from individually documented flags (not quoted verbatim from a single doc example):
+## Vendor card
+
+### Binary and prompt form
+
+- **Binary:** `pi`
+- **Prompt form:** **positional**, gated by a boolean flag. `-p`/`--print` ("print response and exit")
+  takes no value itself — the prompt is a separate positional argument: `pi -p "text"`,
+  `pi --mode json "Your prompt"`. Attachments use `@file` (`pi @README.md "prompt"`).
+
+### Headless and output flags
+
+| Need | Flag |
+|---|---|
+| Run once and exit | `-p`, `--print` (prompt follows positionally) |
+| JSON-lines event stream | `--mode json` |
+| stdin/stdout RPC | `--mode rpc` |
+| Ephemeral, unsaved run | `--no-session` |
+
+### Approvals and permissions
+
+**Verified: Pi has no per-tool-call permission system, so there is no approve-all flag to name and
+none to invent.** Its own docs state Pi "is a local coding agent. It runs with the permissions of the
+user account that starts it," "does not include a built-in sandbox," and built-in tools "can read
+files, write files, edit files, and run shell commands with the permissions of the pi process."
+
+`-a`/`--approve` and `-na`/`--no-approve` are **not** tool approval — they override **project trust**
+for one run: whether `.pi/settings.json`, project resources, and extensions are *loaded*. The
+`defaultProjectTrust` setting (`ask` default, `always`, or `never`) governs the fallback when no saved
+decision exists, and non-interactive modes (`-p`, `--mode json`, `--mode rpc`) never show a trust
+prompt — they just apply that fallback. Since there is no tool-call gate at all, there is no
+"stall vs. reject" question for delegated actions: a run acts with your full user permissions
+immediately. Scope risk with `--tools <list>` / `--no-tools` instead of looking for a bypass flag that
+doesn't exist. Pi's own docs recommend running untrusted work in a container, VM, or other sandbox you
+provide yourself.
+
+### Models and how to list them
+
+Run **`pi --list-models [search]`** for the model strings this install accepts. Select with
+`--model <provider/id>`, optionally suffixed `:<thinking>`, alongside `--provider <name>` (e.g.
+`anthropic`, `openai`, `google`). Concrete IDs are not pinned in the docs beyond that pattern — ask the
+binary. `--thinking <level>` accepts `off`, `minimal`, `low`, `medium`, `high`, `xhigh`, `max`. Use the
+web for pricing and benchmarks only.
+
+### Command pattern
 
 ```bash
 pi -p "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" 2>&1
 ```
 
-With the JSON event stream, for a long run you want to watch:
+### Prompt examples
 
-```bash
-pi --mode json "GOAL: [goal] | ..." 2>&1
-```
+- **Implement:** `pi -p "GOAL: [goal] | SCOPE: [paths] | VERIFICATION: [test_command] | OUTPUT: [format]"`
+- **Report only, scoped:** `pi -p "GOAL: Map how [feature] works | SCOPE: [paths] | CONSTRAINTS: do not edit any file | OUTPUT: concise file:line map" --no-tools`
+- **Watch a long run:** `pi --mode json "GOAL: [large task] | ..."`
 
-The docs' own verbatim examples, for reference: `pi -p "text"`, `pi --mode json "Your prompt"`,
-`pi @README.md "prompt"`.
+### Docs and reference
 
-## After Pi returns
-
-- **Review** diffs and security-sensitive areas (XSS, injection, auth)—do not merge blindly. This matters
-  more here: there was no approval gate between Pi and your filesystem.
-- **Run** project checks (`lint`, `test`, `typecheck`) as appropriate.
-- **Compress** results for the user: summarize instead of pasting huge logs unless asked.
-- **Reconcile context**: note decisions, files touched, and remaining risks so the **main** session stays aligned.
-
-## If the call fails or hangs
-
-Headless runs fail quietly more often than they fail loudly:
-
-- **Wrap the call in an external timeout.** A headless CLI can stall before its own timeout arms. Pi
-  documents **no timeout or limit flag at all**, so the bound must come from outside.
-- **Exit 0 is not success.** If stdout is empty, treat the run as failed and read stderr — a tool
-  permission the CLI could not prompt for, and a prompt that never arrived, both look like success.
-- **Never carry a flag habit across CLIs.** The same short flag means different things in different
-  tools — in OpenCode `-p` is `--password`, so passing a prompt to it silently empties the message and
-  hangs the run forever. In Pi `-p` is `--print` and the prompt is positional. Confirm every flag
-  against `pi --help`.
-- **An unrecognized-flag error means this skill is stale, not that the task is impossible.** Run
-  `pi --help`, proceed with the flags that exist, and tell the user which line here needs updating.
-- **Missing project skills or settings is a *trust* symptom, not a bug.** Headless runs show no trust
-  prompt, so untrusted project resources are silently ignored. Re-run with `--approve` if the delegation
-  needed them.
-
-## Quick prompts
-
-- **Delegate implementation**: `pi -p "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]"`
-- **Investigate (report only)**: `pi -p "GOAL: Map how [feature] works | SCOPE: [paths] | CONSTRAINTS: do not edit any file | OUTPUT: concise file:line map" --no-tools`
-- **Watch a long run**: `pi --mode json "GOAL: [large task] | ..."`
-- **Scoped, lower-risk pass**: `pi -p "GOAL: [task] | ..." --tools read,grep`
-- **With project skills loaded**: `pi -p "GOAL: [task] | ..." --approve`
-
-## More detail
-
-- Delegation checklist (short): [reference.md](reference.md#delegation-checklist)
 - Flags, JSON events, trust model, skills, auth: [reference.md](reference.md)
+- Vendor documentation: <https://pi.dev/docs/latest/usage> and <https://pi.dev/docs/latest/settings>
+- **Checked against the official Pi documentation on 2026-09-19. Not run against an installed binary —
+  confirm with `pi --help` before trusting a flag.**

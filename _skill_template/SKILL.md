@@ -1,6 +1,6 @@
 ---
-name: copilot-cli
-description: Use GitHub Copilot CLI as a subagent. Lets the main agent prompt GitHub Copilot CLI from the terminal in headless mode with the `copilot` command, and send the goal, the decisions and the scope with the task. Use when the user asks to delegate work to GitHub Copilot CLI, when a task needs a second independent agent, or when a plan needs a fresh perspective.
+name: <skill-name>
+description: Use <Tool> as a subagent. Lets the main agent prompt <Tool> from the terminal in headless mode, and send the goal, the decisions and the scope with the task. Use when the user asks to delegate work to <Tool>, when a task needs a second independent agent, or when a plan needs a fresh perspective.
 allowed-tools:
   - Bash
   - Read
@@ -9,7 +9,7 @@ allowed-tools:
   - Glob
 ---
 
-# GitHub Copilot CLI (subagent / task delegation)
+# <Tool> (subagent / task delegation)
 
 <!-- =============================================================================
      GLOBAL HALF — sections 1 to 5.
@@ -114,74 +114,36 @@ loudly.
 
 ### Binary and prompt form
 
-- **Binary:** `copilot`
-- **Prompt form:** **flag.** The prompt is the value of `-p` / `--prompt`, e.g.
-  `copilot -p "prompt text"` — "execute a prompt in non-interactive mode; the CLI runs the prompt
-  and exits when done." A bare `copilot` with no `-p` opens the interactive interface and never
-  returns. Piped stdin also works: `echo "Fix this bug" | copilot -p`.
+*The command name. Whether the prompt is a flag argument or a positional argument. State this
+clearly — this is the mistake that makes a run hang forever.*
 
 ### Headless and output flags
 
-| Need | Flag |
-|---|---|
-| Run once and exit | `-p`, `--prompt <PROMPT>` |
-| Output only the agent's response, no decorations/stats | `-s` |
-| Output format | `--output-format=text` or `json` (JSONL, one object per line) |
-| Attach a file to the initial prompt | `--attachment <path>` (images or native documents) |
-| Export the session transcript to Markdown | `--share [path]` |
+*The flag that makes the CLI run once and exit. The flags that control the output format.*
 
 ### Approvals and permissions
 
-- **`--allow-all`** (alias **`--yolo`**) — grants all permissions (tools and URL fetches).
-- **`--allow-all-tools`** — narrower: allows every *tool* to run without per-call confirmation, but
-  does not by itself grant URL access.
-- **`--allow-tool=<TOOL>`**, **`--allow-url=<URL>`** — grant only specific tools/URLs; the official
-  docs recommend this narrower form over `--allow-all` outside a sandbox.
-- **`--deny-tool=<TOOL>`**, **`--deny-url=<URL>`** — explicit denials.
-- **What happens with nobody to answer:** not explicitly documented for the case where a call falls
-  outside every allow flag in headless mode. Do not rely on a graceful denial — pass `--allow-all`
-  (or the precise `--allow-tool`/`--allow-url` set the task needs) before running headless so the
-  question never comes up.
+*What this CLI does when a tool needs approval and nobody is there to answer. Name the approve-all
+flag, or say plainly that none exists. Note any narrower option, and any documented carve-out.*
 
 ### Models and how to list them
 
-No CLI subcommand or flag to print the model catalog is documented. The official docs say: "to see
-the model strings for all available models, run the `/model` command in an interactive Copilot CLI
-session" — there is no headless-only way to list them. Copilot is a **multi-provider gateway**, so
-availability varies by plan, org policy, and region. Select with `--model=<identifier>`; pick a
-custom agent with `--agent=<AGENT>`.
+*The command that lists the models, the model flag, and the shape it accepts. Do not write model
+names here — they go stale faster than anything else in this file.*
 
-If the user names a model, use it. Otherwise start an interactive session once to run `/model` and
-capture the current identifiers, and check [Artificial Analysis](https://artificialanalysis.ai/) for
-capability and price comparisons — default to the cheapest suitable tier.
+*If the user names a model or an effort level, use it. Otherwise ask the binary first. For capability
+and price comparisons, check [Artificial Analysis](https://artificialanalysis.ai/) and the vendor's
+own documentation.*
 
 ### Command pattern
 
-```bash
-copilot -p "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths, @ FILENAME as needed] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" \
-  --allow-all -s --model=<identifier> 2>&1
-```
-
-With a specific custom agent:
-
-```bash
-copilot -p "[task]" --agent=<agent-name> --allow-all -s 2>&1
-```
+*One command the reader can copy, with the six handoff fields inside the prompt.*
 
 ### Prompt examples
 
-- **Implement:** `copilot -p "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" --allow-all -s`
-- **Investigate:** `copilot -p "GOAL: Map how [feature] works | SCOPE: [paths] | CONSTRAINTS: report only, no edits | OUTPUT: concise file:line map" --allow-tool=read --allow-tool=grep -s`
-- **Audit:** `copilot -p "GOAL: Audit the codebase for security issues | SCOPE: [paths] | CONSTRAINTS: report only, no edits | OUTPUT: security report" --allow-all -s`
+*Two or three short lines for the common cases, such as implement, review, and investigate.*
 
 ### Docs and reference
 
-- Flags, JSON output, delegation checklist: [reference.md](reference.md)
-- Vendor documentation:
-  <https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-programmatic-reference>
-  and <https://docs.github.com/copilot/concepts/agents/about-copilot-cli>
-- **Checked against the official GitHub documentation on 2026-09-19. Not run against an installed
-  binary — confirm with `copilot --help` before trusting a flag.** Note: the previous version of
-  this card used `--yolo` and `--allow-all-tools` together as if they were both required; the
-  official docs treat `--allow-all` (aliased `--yolo`) as the single broad grant, with
-  `--allow-all-tools` as a narrower tools-only variant.
+*A link to `reference.md`, a link to the vendor's live documentation, and the verification stamp:
+the version you checked and the date. If you could not run the binary, say so here instead.*

@@ -2,8 +2,8 @@
 
 A collection of Skills that connects agents from any vendor to each other.
 
-Let Claude Code prompt Codex, Antigravity or Pi as a subagent. The repository supports more than 19
-agents. All agents can call each other as subagent.
+Let Claude Code prompt Codex, Antigravity or Pi as a subagent. All agents can call each other as subagent. Supports more than 19
+agents.
 
 ## How It Works
 
@@ -51,7 +51,7 @@ chmod +x install.sh
 
 ### 3. Download the skill folder
 
-From `./skills/{vendor}/Skill.md`
+From `./skills/<vendor>/` — it contains `SKILL.md` and `reference.md`
 
 ## Example Usage
 
@@ -76,7 +76,7 @@ Ask Codex with GPT-Astra and Hermes with GLM-5.3 to review this feature using th
 Build the login form in src/auth/ with Codex. Build the signup form in src/signup/ with OpenCode.
 ```
 
-**4. Get fresh ideas on a plan from three differemnt agents**
+**4. Get fresh ideas on a plan from three different agents**
 
 ```
 Ask Pi and Grok and Devin to review the implementation plan to get fresh ideas.

@@ -1,6 +1,6 @@
 ---
 name: qoder-cli
-description: Delegates large multi-step work to Qoder CLI like a subagent—include full goal, prior decisions, scope, and constraints in prompts so isolated sessions stay aligned with the main thread (context handoff per Cognition-style delegation). Use for multi-step implementation, code reviews, autonomous task execution, and codebase exploration. Skip for trivial one-shot tasks or when everything is already in context.
+description: Use Qoder CLI as a subagent. Lets the main agent prompt Qoder CLI from the terminal in headless mode with the `qodercli` command, and send the goal, the decisions and the scope with the task. Use when the user asks to delegate work to Qoder CLI, when a task needs a second independent agent, or when a plan needs a fresh perspective.
 allowed-tools:
   - Bash
   - Read
@@ -9,127 +9,176 @@ allowed-tools:
   - Glob
 ---
 
-# Qoder CLI (subagent/task delegation)
+# Qoder CLI (subagent / task delegation)
 
-Use **Qoder CLI** to run a **separate long-horizon pass** over the repo: multi-step implementation, broad refactors, batch file writes, or deep exploration—similar to handing a **task to a subagent**. You stay orchestrator: smaller prompts, less context burn, often lower spend than doing the same work entirely in-session.
+<!-- =============================================================================
+     GLOBAL HALF — sections 1 to 5.
+     These sections are identical in every skill in this repository.
+     Copy them without any change. Do not put a vendor name or a flag in them.
+     A change here must be made in all skills at the same time.
+     ============================================================================= -->
 
-Qoder CLI provides tiered model selection (Auto, Efficient, Performance, Ultimate) and direct frontier model access, with built-in tools (Grep, Read, Write, Bash), web search, MCP tool integration, and a Plug-in/Skill system for specialized workflows.
+## What is it
 
-## When to use Qoder CLI
+This skill teaches your agent to use an agent from another vendor as a subagent.
 
-- **Large or multi-step work**: several files, phases, or checkpoints (feature slice, migration, test suite, docs sweep).
-- **Autonomous goal execution**: Use `/goal` or `auto` permission mode for zero-interruption bounded tasks.
-- **Heavy code generation or editing**: Qoder CLI drives tool use while you summarize outcomes and merge.
-- **Parallel mental lane**: you continue planning or reviewing while Qoder CLI runs a bounded task in the background (see `/tasks` in TUI).
-- **Web search & research**: Built-in WebFetch/WebSearch for deep research or API documentation searches.
-- **Plan-then-execute workflow**: Start in read-only Plan mode, review the proposal, then execute autonomously.
-- **User explicitly asks** for Qoder or "use Qoder CLI for this."
+Almost every coding agent has a headless mode. Headless mode runs the agent from the terminal with
+one command and returns the answer to stdout. This skill gives the command pattern for one such
+agent, and the protocol to transfer enough context with the task.
 
-## When not to use
+You stay the main agent. You keep the plan, the decisions and the conversation with the user. The
+subagent does one bounded task and reports back.
 
-- **Small / single-step** tasks answerable with one or two edits or a short explanation.
-- **Tight feedback loops** where the user wants rapid back-and-forth refinement in one thread.
-- **Secrets or policy-sensitive** flows—avoid piping credentials; redact before delegating.
-- **Already-loaded context** where duplicating the whole plan adds no value—handle locally.
-- **Low ROI (Return on Investment)**: If the task is "needle-in-a-haystack" (requires high precision over a single line) or if the time to compose the Handoff Table exceeds the time to simply edit the file locally. Delegation should only be used when the "mental offloading" outweighs the "handoff overhead."
+## When to delegate
 
-## Delegation and context (critical)
+- **The user asks for it.** The user names another agent, or asks for a second opinion.
+- **Large or multi-step work.** The task covers several files, phases or checkpoints.
+- **Code review with a fresh mind.** Another agent reviews the work with a different lens and no
+  memory of the decisions that produced it.
+- **Planning that needs different ideas.** A second agent proposes options that you did not consider.
+- **An internal council.** Several subagents answer the same question, and you compare the answers.
+- **Deep research.** The other CLI has web search, web extraction or browser automation.
+- **Background investigation.** A long task runs in the background while you continue in the
+  foreground.
 
-Isolated subagent context saves tokens but **splits the story**: Qoder CLI does not see the main session's full thread. Poor handoffs cause misread subtasks, conflicting assumptions (stack, style, APIs), and wasted edits—see Cognition's discussion of **sharing context** and **implicit decisions** in multi-step setups.
+## When not to delegate
 
-When composing the **single Qoder CLI prompt** (using `-p`), treat it as passing **enough shared state**, not just a title:
+- **Small or single-step tasks.** One or two edits, or a short explanation, are faster in this thread.
+- **Tight feedback loops.** The user wants quick back-and-forth in one conversation.
+- **Secrets or policy-sensitive work.** Do not pipe credentials into a subagent. Redact first.
+- **Context you already hold.** Repeating the whole plan in a prompt adds no value.
+- **Low return on investment.** If writing the handoff costs more than doing the edit, do the edit.
+- **Work that needs high precision and full judgement.** A subagent without your context will break a
+  task that depends on a detail only this session knows.
+
+## Delegation and context transfer protocol
+
+An isolated subagent saves tokens, but it splits the story. The subagent does not see this
+conversation. A poor handoff causes misread tasks, wrong assumptions about the stack or the style,
+and wasted edits.
+
+Write the prompt as a transfer of shared state, not as a title. Include all six fields:
 
 | Include | Why |
-|--------|-----|
-| **Original goal** | Same north star as the user—not only the immediate micro-task. |
-| **Decisions already made** | Framework, patterns, naming, auth approach, "use X not Y"—anything that would otherwise be guessed wrong. |
-| **Scope** | Paths, modules, and explicit **out of scope** / do-not-touch areas. |
-| **Constraints** | Performance, a11y, compatibility, review gates, "no new deps," etc. |
-| **Verification** | Explicit command (e.g. `npm test`, `lint`) the subagent **must** run and pass before returning. |
-| **Expected output** | e.g. "summarize then list files changed," "report only—no edits," or "apply edits with minimal diff." |
+|---|---|
+| **Goal** | The same objective as the user, not only the immediate micro-task. |
+| **Decisions** | Framework, patterns, naming, "use X not Y" — anything that would otherwise be guessed wrong. |
+| **Scope** | The paths and modules to touch, and the areas to leave alone. |
+| **Constraints** | Performance, accessibility, compatibility, review gates, "no new dependencies". |
+| **Verification** | The exact command the subagent must run and pass before it returns. |
+| **Output** | For example: "report only, no edits", "apply edits with a minimal diff", "list the files changed". |
 
-**After Qoder CLI returns**, pull **decisions and constraints** back into the main thread (what it assumed, what it changed, open risks). Prefer **sequential** delegations with explicit carry-over over parallel runs that might diverge unless they share the same briefing.
+Prefer sequential delegations with explicit carry-over. Parallel runs diverge unless every run gets
+the same briefing.
 
-If the delegation would need a long transcript to be safe, **summarize** the relevant parts into the prompt (compressed "state of the union") rather than a one-line subtask.
+**Run the subagent in the mode that does the work without asking for approval.** Headless mode has
+nobody to answer a permission prompt. Any mode that stops to ask will stall, or return an empty
+answer with a success exit code. Each CLI names this mode differently — take the flag from the vendor
+card below.
 
-## Model Selection & Discovery (Mandatory)
+**Never call a subagent in plan mode.** Many CLIs have a plan or read-only mode. That mode makes the
+other agent write a plan *for itself*, which is not what you asked for: you want its work or its
+answer, and you keep the planning. Plan mode also waits for someone to approve that plan, so the run
+comes back with nothing. If you want no file changes, keep the auto-approving mode and write "report
+only, no edits" in the **Output** field. Do not use plan mode to make a run read-only.
 
-**MANDATORY: Search the web for latest Qoder CLI model names, aliases, and pricing before selecting a model.** Consult [https://docs.qoder.com/en/cli/model](https://docs.qoder.com/en/cli/model) and [Artificial Analysis](https://artificialanalysis.ai/) for up-to-date benchmarks, pricing, and model performance data.
+After the subagent returns:
 
-Qoder CLI offers two model selection paths:
+- **Report to the user.** Give a short summary. Do not paste long logs unless the user asks.
+- **Reconcile the context.** Record the decisions it made, the files it changed, and the open risks,
+  so this session stays the single source of truth.
 
-### Tiered Modes (Simplified Selection)
+## CLI failure modes
 
-| Tier | Use Case | Credit Cost |
-|------|----------|-------------|
-| `auto` (Smart Routing) | Most daily development work (recommended default) | ~1.0x |
-| `efficient` | Basic code generation, unit tests, daily Q&A | ~0.3x |
-| `performance` | Core feature implementation, architecture design | ~1.1x |
-| `ultimate` | Complex system design, high-difficulty problem analysis | ~1.6x |
-| `lite` | Quick validation, basic logic (Team users, free) | Free |
+Every vendor has its own terminal rules. A headless run fails quietly more often than it fails
+loudly.
 
-### Frontier Models (Direct Selection)
+- **Wrap the call in an external timeout.** A headless CLI can stall before its own timeout starts.
+- **Exit code 0 is not success.** If stdout is empty, treat the run as failed and read stderr. A
+  permission the CLI could not ask for, and a prompt that never arrived, both look like success.
+- **Never carry a flag habit from one CLI to another.** The same short flag means different things in
+  different tools. In OpenCode, `-p` is `--password`: passing a prompt to it empties the message and
+  the run waits on stdin forever. Confirm every flag against the CLI's own `--help`.
+- **An unrecognized-flag error means this skill is stale, not that the task is impossible.** Read
+  `--help`, continue with the flags that exist, and tell the user which line in this file is wrong.
 
-- **Fast (Simple Tasks)**: `DeepSeek-V4-Flash` (Fast reasoning, low cost, balanced capabilities).
-- **Balanced (Daily Driver)**: `MiniMax-M3` (Native multimodal, frontier coding, 1M context).
-- **Coding Specialist**: `Kimi-K2.7-Code` (Long-context coding, precise instruction following).
-- **Strong / Large (Heavy Reasoning)**: `DeepSeek-V4-Pro` (Complex reasoning, code gen, engineering), `Qwen3.7-Max` (Agentic capabilities, long-horizon complex tasks), or `GLM-5.2` (Complex systems engineering, long-horizon tasks).
-- **Strategy**: Default to `efficient` tier or `DeepSeek-V4-Flash` for simple tasks to minimize costs. Use `ultimate` tier or `DeepSeek-V4-Pro`/`Qwen3.7-Max`/`GLM-5.2` for critical architecture and reasoning tasks. Always verify latest model versions and costs via the [model docs](https://docs.qoder.com/en/cli/model) and `qodercli --list-models`.
+<!-- =============================================================================
+     VENDOR HALF — section 6.
+     Everything below is specific to this CLI.
+     Keep all seven sub-headings, in this order, even if the answer is "none".
+     Take every flag from the installed binary (`<cli> --help`), not from memory
+     and not from another skill in this repository.
+     ============================================================================= -->
 
-## Programmatic usage (required)
+## Vendor card
 
-You **MUST** use Qoder CLI programmatically. Do **NOT** start interactive sessions.
+### Binary and prompt form
 
-| Requirement | Flag |
-|-------------|------|
-| **Non-interactive** | `-p "prompt"` or `--print "prompt"` |
-| **Auto-approval** | `--yolo` or `--dangerously-skip-permissions` |
-| **Permission Mode** | `--permission-mode auto` (classifier-based) or `--permission-mode accept_edits` |
-| **Model Selection** | `--model [tier_or_model_name]` |
-| **Output Format** | `--output-format [text|json|stream-json]` |
-| **Reasoning Effort** | `--reasoning-effort [low|medium|high|xhigh|max]` |
-| **Context Window** | `--context-window [200000|400000|1000000]` |
+- **Binary:** `qodercli`
+- **Prompt form:** **flag.** The prompt is the value of `-p`/`--print "prompt"` (also written
+  `--prompt` in places) — "Non-Interactive Mode: output a single response and exit."
 
-## Command pattern
+### Headless and output flags
+
+| Need | Flag |
+|---|---|
+| Run once and exit | `-p`, `--print "prompt"` |
+| Plain text | `-o text` / `--output-format text` (default) |
+| One JSON object | `-o json` |
+| Event stream | `-o stream-json` |
+| Context window | `--context-window <tokens>` |
+| Reasoning depth | `--reasoning-effort <low\|medium\|high\|xhigh\|max>` |
+| List models and exit | `--list-models` |
+
+### Approvals and permissions
+
+`--permission-mode <mode>` selects the gate:
+
+| Mode | Behavior when approval would be needed, headless |
+|---|---|
+| `default` | Auto-runs safe reads/internal ops; sensitive actions need confirmation — **not available headlessly, see below** |
+| `accept_edits` | Auto-approves in-workspace file edits; shell/external ops still gated |
+| `auto` | An agent-side authorization decision per action, no interactive prompt; a circuit breaker asks for confirmation after too many consecutive blocks |
+| `bypass_permissions` (`--yolo` / `--dangerously-skip-permissions`) | Skips approval prompts, but destructive operations against the working dir, home dir, filesystem root, or top-level dirs still require confirmation |
+| `dont_ask` | Built for non-interactive workflows: anything that would need approval is **denied** instead of asked |
+| `plan` | Legacy: maps to `default` plus a read-only work state — do not use for delegation |
+
+Critically, the official docs state the **headless default explicitly**: **"Headless (`-p`/`--prompt`):
+Auto-deny. No interaction available; `ask` becomes `deny`."** So a plain `-p` run with no
+`--permission-mode` set will silently refuse anything gated — pass `--yolo` (or
+`--dangerously-skip-permissions`, documented as identical) for delegation that needs to act, or
+`dont_ask` if you want that same deny-everything behavior made explicit. `--allowed-tools` /
+`--disallowed-tools` and `--tools` scope which tools are available at all; `--max-turns` bounds the
+dialog length.
+
+### Models and how to list them
+
+Run **`qodercli --list-models`** to see the models available to the authenticated account.
+
+Selection is `-m`/`--model <tier-or-name>`. Five simplified tiers exist: `auto` (smart routing,
+recommended default), `performance`, `efficient`, `lite` (free, Team users), and `ultimate` (heaviest
+reasoning). `--model` also accepts a specific vendor-hosted frontier model identifier directly, as
+listed by `--list-models` — do not hardcode one here, since names and credit costs change; check
+[the model docs](https://docs.qoder.com/en/cli/model) and
+[Artificial Analysis](https://artificialanalysis.ai/) for current names and pricing.
+
+### Command pattern
 
 ```bash
-qodercli -p "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" --yolo --model efficient --output-format text 2>&1
+qodercli -p "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" \
+  --yolo --model <tier-or-identifier> -o text 2>&1
 ```
 
-For heavy reasoning tasks:
+### Prompt examples
 
-```bash
-qodercli -p "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" --yolo --model ultimate --reasoning-effort high --output-format text 2>&1
-```
+- **Implement:** `qodercli -p "GOAL: [goal] | SCOPE: [paths] | VERIFICATION: [test_command] | OUTPUT: [format]" --yolo --model efficient -o text`
+- **Investigate:** `qodercli -p "GOAL: Map how [feature] works | SCOPE: [paths] | OUTPUT: concise file:line map" --yolo --model efficient -o text`
+- **Heavy reasoning:** `qodercli -p "GOAL: Design architecture for [feature] | SCOPE: [paths] | OUTPUT: architecture plan" --yolo --model ultimate --reasoning-effort high -o text`
 
-## After Qoder CLI returns
+### Docs and reference
 
-- **Review** diffs and security-sensitive areas (XSS, injection, auth)—do not merge blindly.
-- **Run** project checks (`lint`, `test`, `typecheck`) as appropriate.
-- **Compress** results for the user: summarize results for the user instead of pasting huge logs unless asked.
-- **Reconcile context**: note decisions, files touched, and remaining risks so the **main** session stays aligned.
-
-## If the call fails or hangs
-
-Headless runs fail quietly more often than they fail loudly:
-
-- **Wrap the call in an external timeout.** A headless CLI can stall before its own timeout arms.
-- **Exit 0 is not success.** If stdout is empty, treat the run as failed and read stderr — a tool
-  permission the CLI could not prompt for, and a prompt that never arrived, both look like success.
-- **Never carry a flag habit across CLIs.** The same short flag means different things in different
-  tools — in OpenCode `-p` is `--password`, so passing a prompt to it silently empties the message and
-  hangs the run forever. Confirm every flag against `qodercli --help`.
-- **An unrecognized-flag error means this skill is stale, not that the task is impossible.** Run
-  `qodercli --help`, proceed with the flags that exist, and tell the user which line here needs updating.
-
-## Quick prompts
-
-- **Delegate implementation**: `qodercli -p "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" --yolo --model efficient --output-format text`
-- **Investigate**: `qodercli -p "GOAL: Map how [feature] works | SCOPE: [paths] | OUTPUT: concise file:line map" --yolo --model efficient --output-format text`
-- **Architecture / Heavy Reasoning**: `qodercli -p "GOAL: Design architecture for [feature] | SCOPE: [paths] | CONSTRAINTS: [constraints] | OUTPUT: architecture plan" --yolo --model ultimate --reasoning-effort high --output-format text`
-- **Web Research**: `qodercli -p "GOAL: Find latest documentation for [library] | CONSTRAINTS: focus on breaking changes in [version] | OUTPUT: summary report" --yolo --model efficient --output-format text`
-
-## More detail
-
-- Delegation checklist (short): [reference.md](reference.md#delegation-checklist)
-- Flags, models, permissions, worktree: [reference.md](reference.md)
+- Flags, model tiers, permission modes, config paths: [reference.md](reference.md)
+- Vendor documentation: <https://docs.qoder.com/cli/cli-reference> and
+  <https://docs.qoder.com/en/cli/permissions>
+- **Checked against the official Qoder documentation on 2026-09-19. Not run against an installed
+  binary — confirm with `qodercli --help` before trusting a flag.**
