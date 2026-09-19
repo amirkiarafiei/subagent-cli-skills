@@ -31,18 +31,45 @@ The skills, and the command each one drives:
     devin-cli        devin       pi-cli         pi
     oh-my-pi         omp
 
-## What to work out
+## Find out what is on the machine
 
-**Where to install.** You know where you load skills from and what layout you expect, so use that.
-If you are unsure, `install.sh` in this repository lists the directory for every supported agent.
-Ask the user whether they want the skills available everywhere or only in this project.
+Probe for the commands above with `command -v`. A skill is only worth installing if its command
+exists. Two exceptions: skip the skill for yourself, because you would only be delegating to
+yourself, and do not probe for `agent` — the name is too generic to prove that Cursor is installed.
 
-**Which skills.** A skill is only worth installing if its command exists, so probe with
-`command -v`. Two exceptions: skip the skill for yourself, since you would only be delegating to
-yourself, and do not probe for `agent` — the name is too generic to be evidence of Cursor.
+## Explain it, then ask
 
-**Anything else you cannot settle.** Ask the user, in your own words. Do not install before they
-answer.
+Your user may not know what any of this changes. Explain it before you ask them to choose. Write in
+plain, simple English: short sentences, common words, one idea per sentence. Do not say
+"orchestrator", "headless", "delegation", "context window" or "handoff" to them.
+
+Make sure they understand three things:
+
+- You are the main agent. You stay in this conversation, and you keep the plan and the decisions.
+- A subagent is a different AI tool already on their computer. You can send it one job. It does that
+  job on its own and sends the result back to you.
+- A skill is only instructions. Installing one does not run anything and does not cost anything. It
+  teaches you how to use one of those tools when you need it.
+
+Then tell them which tools you actually found, say which ones you would pick and why, and ask what
+they want. Also ask whether the skills should work everywhere on their computer, or only in this
+project. Keep it to a few sentences — they asked for an install, not a lecture.
+
+Wait for their answer before you install anything. Use your own words throughout; there is no script
+to copy here.
+
+## Where the skills go
+
+You should already know where you load skills from and what layout you expect, so use that. If you
+are not sure, find out rather than guessing a path:
+
+- read your own vendor's documentation,
+- use your vendor's self-configuration skill if one ships with you,
+- search the web for your agent's skills directory,
+- or read `install.sh` in this repository, which lists the directory for every supported agent.
+
+Never invent a path. A skill written to the wrong directory is silently ignored, and the user will
+think the install worked.
 
 ## Install
 
