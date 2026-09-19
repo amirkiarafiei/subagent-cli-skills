@@ -1,100 +1,105 @@
 # Subagent CLI Skills 🧔🏻👶🏻
-Let your Claude Code prompt Codex, Copilot and Gemini simultaneously!
 
-A collection of Skills for cross-agent task delegation. Let your orchestrator (like Claude Code or Antigravity) use Antigravity/Gemini CLI as a subagent to reduce your context usage and costs.
+A collection of Skills that connects agents from any vendor to each other.
+
+Let Claude Code prompt Codex, Antigravity or Pi as a subagent. The repository supports more than 19
+agents. All agents can call each other as subagent.
 
 ## How It Works
 
-Your primary agent can delegate tasks to other agents that support programmatic usage through the terminal (headless mode). This offloads context-heavy work, ensuring the main orchestrator stays lean and efficient.
+Almost every coding agent has a headless mode. This mode runs the agent from the terminal with one
+command. Each skill in this repository teaches your main agent how to call one other agent in this
+way.
 
 <p align="center">
   <img src="./assets/diagram.png" width="320" alt="Delegation Flow Diagram">
 </p>
 
-By treating CLI tools as specialized subagents, you can bypass context window limitations and significantly reduce token costs. The primary agent remains the high-level decision maker, while the subagents handle the tactical implementation, research, and codebase exploration.
+Each skill also applies a delegation and context transfer protocol. The subagent starts with an
+empty context. The protocol sends the goal, the decisions and the scope with every command. The
+subagent then has the state that it needs to do the task correctly.
 
 ## 🛠️ Installation
 
-### Ask your agent to install (Agentic)
-
-Paste this into Claude Code, Cursor, Antigravity, Codex, or any agent that can read a URL:
-
+### 1. Give this prompt to your agent
 ```
 Read https://raw.githubusercontent.com/amirkiarafiei/subagent-cli-skills/main/AGENTIC_INSTALLATION.md and follow the instructions to install the Subagent CLI Skills.
 ```
-See [AGENTIC_INSTALLATION.md](AGENTIC_INSTALLATION.md) for exactly what it will do.
 
-### Quick Install (Interactive)
+Your agent asks you three short questions. Then it installs the skills. See
+[AGENTIC_INSTALLATION.md](AGENTIC_INSTALLATION.md).
 
-The easiest way to install skills using the interactive installer. 
+### 2. Interactive Installer
 
-**Run via curl:**
+Run the installer with curl:
+
 ```bash
 curl -sSL https://raw.githubusercontent.com/amirkiarafiei/subagent-cli-skills/main/install.sh | bash
 ```
 
-OR
+Or run it locally, if you cloned the repository:
 
-**Run locally (if you cloned the repo):**
 ```bash
 chmod +x install.sh
 ./install.sh
 ```
 
-### Manual Installation
-
-1. Identify your agent's skill directory (e.g., `~/.claude/skills/` or `~/.cursor/skills/`).
-2. Copy the desired skill folder from the `skills/` directory in this repository to that location.
-3. Restart your agent or refresh skills.
-
-## Usage
-
-Activate the necessary skills using the `/` command (e.g., `/copilot-cli` or `/antigravity-cli` or `/gemini-cli`) supported in many tools. Once activated, your agent itself can decide the right time to delegate to the subagent or you can explicitly ask it to delegate: 
-
-> *"Use Antigravity CLI to search for the latest documentation of [library] and summarize breaking changes."*
-
-The agent will use the skill to construct a programmatic CLI call, execute the task, and return the summary to the main thread.
+### 3. Download the skill folder
 
 
-## Delegation Technique
+## Example Usage
 
-The delegation technique and philosophy used in this project are inspired by the principles outlined in **[Don't Build Multi-Agents](https://cognition.ai/blog/dont-build-multi-agents#applying-the-principles)** by Cognition AI:
+Name the tool in your request. Your agent then activates the correct skill. You can also type the
+slash command yourself. You can name a model for each tool.
 
-We implement a stateless delegation pattern that offloads tactical work to CLI subagents by injecting a comprehensive "shared state" into every atomic command to prevent
-  context fragmentation.
+**1. Review a feature with two different agents and models**
 
-   * **Shared State Handoff**: Inject the original goal, prior architectural decisions, and explicit codebase scope into the prompt to bridge the subagent's lack of session
-     history.
-   * **Contextual Preservation**: Execute high-volume tasks in isolated headless environments to save orchestrator tokens and avoid "split story" failures caused by missing
-     history.
-   * **Result Reconciliation**: Pull new technical assumptions and filesystem changes back into the main thread after every delegation to maintain a single source of truth.
+```
+Ask Codex with GPT-Astra and Hermes with GLM-5.3 to review this feature using their subagent cli skills
+```
 
-This methodology is further refined by lessons from **[Superpowers](https://github.com/obra/superpowers)** and **[Claude Code](https://github.com/anthropics/claude-code)**, incorporating rigorous verification loops and context hygiene to ensure subagents remain aligned with the primary orchestrator.
+**2. Get the latest documentation**
 
+```
+/antigravity-cli Read the latest docs for the Stripe API. List the breaking changes.
+```
+
+**3. Build two features at the same time with two different agents**
+
+```
+Build the login form in src/auth/ with Codex. Build the signup form in src/signup/ with OpenCode.
+```
+
+**4. Get fresh ideas on a plan from three differemnt agents**
+
+```
+Ask Pi and Grok and Devin to review the implementation plan to get fresh ideas.
+```
 
 ## 🔌 Support
 
-As Orchestrator or Subagent or Both:
+Antigravity · Claude Code · Codex · Copilot · Cursor · Devin · Gemini · Grok · Hermes Agent ·
+Junie · Kimi Code · Kiro · Mistral Vibe · Oh My Pi · OpenCode · OpenHands · Pi · Qoder · Qwen Code
 
-- [x] **Claude Code** (Both)
-- [x] **Cursor** (Both)
-- [x] **Antigravity** (Both - can use skills and act as a subagent via Antigravity CLI `agy`)
-- [x] **Codex** (Both)
-- [x] **Gemini** (Both - Deprecated but supported)
-- [x] **Copilot** (Both)
-- [x] **Junie** (Both)
-- [x] **Kiro** (Both)
-- [x] **OpenHands** (Both)
-- [x] **OpenCode** (Both)
-- [x] **QwenCode** (Both)
-- [x] **Mistral Vibe** (Both)
-- [x] **Kimi Code** (Both)
-- [x] **Qoder CLI** (Both)
-- [x] **Hermes Agent** (Both)
-- [x] **Grok** (Both - xAI Grok CLI `grok`)
-- [x] **Devin** (Both - skills are repo-local, see AGENTIC_INSTALLATION.md)
-- [x] **Pi** (Both - `pi`)
-- [x] **Oh My Pi** (Both - `omp`)
+## Delegation and Context Transfer Protocol
+
+The delegation technique and philosophy used in this project are inspired by the principles outlined
+in **[Don't Build Multi-Agents](https://cognition.ai/blog/dont-build-multi-agents#applying-the-principles)**
+by Cognition AI:
+
+We implement a stateless delegation pattern that offloads tactical work to CLI subagents by injecting
+a comprehensive "shared state" into every atomic command to prevent context fragmentation.
+
+* **Shared State Handoff**: Inject the original goal, prior architectural decisions, and explicit
+  codebase scope into the prompt to bridge the subagent's lack of session history.
+* **Contextual Preservation**: Execute high-volume tasks in isolated headless environments to save
+  orchestrator tokens and avoid "split story" failures caused by missing history.
+* **Result Reconciliation**: Pull new technical assumptions and filesystem changes back into the main
+  thread after every delegation to maintain a single source of truth.
+
+This methodology is further refined by lessons from **[Superpowers](https://github.com/obra/superpowers)**
+and **[Claude Code](https://github.com/anthropics/claude-code)**, incorporating rigorous verification
+loops and context hygiene to ensure subagents remain aligned with the primary orchestrator.
 
 ## License
 
