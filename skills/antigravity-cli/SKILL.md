@@ -1,6 +1,6 @@
 ---
 name: antigravity-cli
-description: Delegates large multi-step work to Antigravity CLI like a subagent—include full goal, prior decisions, scope, and constraints in prompts so isolated sessions stay aligned with the main thread (context handoff per Cognition-style delegation). Use for heavy edits, exploration, web search, and read-only plan-mode reviews. Skip for trivial one-shot tasks or when everything is already in context.
+description: Use Antigravity CLI as a subagent. Lets the main agent prompt Antigravity CLI from the terminal in headless mode with the `agy` command, and send the goal, the decisions and the scope with the task. Use when the user asks to delegate work to Antigravity CLI, when a task needs a second independent agent, or when a plan needs a fresh perspective.
 allowed-tools:
   - Bash
   - Read
@@ -9,117 +9,168 @@ allowed-tools:
   - Glob
 ---
 
-# Antigravity CLI (subagent/task delegation)
+# Antigravity CLI (subagent / task delegation)
 
-Use **Antigravity CLI** to run a **separate long-horizon pass** over the repo: multi-step implementation, broad refactors, batch file writes, or deep exploration—similar to handing a **task to a subagent**. You stay orchestrator: smaller prompts, less context burn, often lower spend than doing the same work entirely in-session.
+<!-- =============================================================================
+     GLOBAL HALF — sections 1 to 5.
+     These sections are identical in every skill in this repository.
+     Copy them without any change. Do not put a vendor name or a flag in them.
+     A change here must be made in all skills at the same time.
+     ============================================================================= -->
 
-## When to use Antigravity CLI
+## What is it
 
-- **Large or multi-step work**: several files, phases, or checkpoints (feature slice, migration, test suite, docs sweep).
-- **Heavy code generation or editing**: Antigravity drives automated tool use while you summarize outcomes and merge.
-- **Read-only review passes**: `--mode plan` cannot edit by construction, which makes it the right mode for audits, reviews, and "explain how this works" work.
-- **Powerful Web Search**: Delegate deep research or API documentation searches to Antigravity to leverage its integrated web search grounding.
-- **Fresh tool stack**: Native Google search grounding, MCP tools, sandbox protection, and other Antigravity-only capabilities.
-- **User explicitly asks** for Antigravity or "use Antigravity CLI for this."
+This skill teaches your agent to use an agent from another vendor as a subagent.
 
-## When not to use
+Almost every coding agent has a headless mode. Headless mode runs the agent from the terminal with
+one command and returns the answer to stdout. This skill gives the command pattern for one such
+agent, and the protocol to transfer enough context with the task.
 
-- **Small / single-step** tasks answerable with one or two edits or a short explanation.
-- **Tight feedback loops** where the user wants rapid back-and-forth refinement in one thread.
-- **Secrets or policy-sensitive** flows—avoid piping credentials; redact before delegating.
-- **Already-loaded context** where duplicating the whole plan adds no value—handle locally.
-- **Low ROI (Return on Investment)**: If the task requires high precision over a single line or if the time to compose the Handoff Table exceeds the time to simply edit the file locally. Delegation should only be used when the "mental offloading" outweighs the "handoff overhead."
+You stay the main agent. You keep the plan, the decisions and the conversation with the user. The
+subagent does one bounded task and reports back.
 
-## Delegation and context (critical)
+## When to delegate
 
-Isolated subagent context saves tokens but **splits the story**: Antigravity does not see the main session's full thread. Poor handoffs cause misread subtasks, conflicting assumptions (stack, style, APIs), and wasted edits.
+- **The user asks for it.** The user names another agent, or asks for a second opinion.
+- **Large or multi-step work.** The task covers several files, phases or checkpoints.
+- **Code review with a fresh mind.** Another agent reviews the work with a different lens and no
+  memory of the decisions that produced it.
+- **Planning that needs different ideas.** A second agent proposes options that you did not consider.
+- **An internal council.** Several subagents answer the same question, and you compare the answers.
+- **Deep research.** The other CLI has web search, web extraction or browser automation.
+- **Background investigation.** A long task runs in the background while you continue in the
+  foreground.
 
-When composing the **single Antigravity prompt**, treat it as passing **enough shared state**, not just a title:
+## When not to delegate
+
+- **Small or single-step tasks.** One or two edits, or a short explanation, are faster in this thread.
+- **Tight feedback loops.** The user wants quick back-and-forth in one conversation.
+- **Secrets or policy-sensitive work.** Do not pipe credentials into a subagent. Redact first.
+- **Context you already hold.** Repeating the whole plan in a prompt adds no value.
+- **Low return on investment.** If writing the handoff costs more than doing the edit, do the edit.
+- **Work that needs high precision and full judgement.** A subagent without your context will break a
+  task that depends on a detail only this session knows.
+
+## Delegation and context transfer protocol
+
+An isolated subagent saves tokens, but it splits the story. The subagent does not see this
+conversation. A poor handoff causes misread tasks, wrong assumptions about the stack or the style,
+and wasted edits.
+
+Write the prompt as a transfer of shared state, not as a title. Include all six fields:
 
 | Include | Why |
-|--------|-----|
-| **Original goal** | Same north star as the user—not only the immediate micro-task. |
-| **Decisions already made** | Framework, patterns, naming, auth approach, "use X not Y"—anything that would otherwise be guessed wrong. |
-| **Scope** | Paths, modules, and explicit **out of scope** / do-not-touch areas. |
-| **Constraints** | Performance, a11y, compatibility, review gates, "no new deps," etc. |
-| **Verification** | Explicit command (e.g. `npm test`, `lint`) the subagent **must** run and pass before returning. |
-| **Expected output** | e.g. "summarize then list files changed," "report only—no edits," or "apply edits with minimal diff." |
+|---|---|
+| **Goal** | The same objective as the user, not only the immediate micro-task. |
+| **Decisions** | Framework, patterns, naming, "use X not Y" — anything that would otherwise be guessed wrong. |
+| **Scope** | The paths and modules to touch, and the areas to leave alone. |
+| **Constraints** | Performance, accessibility, compatibility, review gates, "no new dependencies". |
+| **Verification** | The exact command the subagent must run and pass before it returns. |
+| **Output** | For example: "report only, no edits", "apply edits with a minimal diff", "list the files changed". |
 
-**After Antigravity returns**, pull **decisions and constraints** back into the main thread (what it assumed, what it changed, open risks). Prefer **sequential** delegations with explicit carry-over over parallel runs that might diverge unless they share the same briefing.
+Prefer sequential delegations with explicit carry-over. Parallel runs diverge unless every run gets
+the same briefing.
 
-If the delegation would need a long transcript to be safe, **summarize** the relevant parts into the prompt (compressed "state of the union") rather than a one-line subtask.
+**Run the subagent in the mode that does the work without asking for approval.** Headless mode has
+nobody to answer a permission prompt. Any mode that stops to ask will stall, or return an empty
+answer with a success exit code. Each CLI names this mode differently — take the flag from the vendor
+card below.
 
-## Model Selection & Discovery (Mandatory)
+**Never call a subagent in plan mode.** Many CLIs have a plan or read-only mode. That mode makes the
+other agent write a plan *for itself*, which is not what you asked for: you want its work or its
+answer, and you keep the planning. Plan mode also waits for someone to approve that plan, so the run
+comes back with nothing. If you want no file changes, keep the auto-approving mode and write "report
+only, no edits" in the **Output** field. Do not use plan mode to make a run read-only.
 
-**MANDATORY: run `agy models` to list the slugs this build actually accepts before selecting a model.** Also consult [Artificial Analysis](https://artificialanalysis.ai/) for up-to-date benchmarks and pricing. Names change frequently.
+After the subagent returns:
 
-Slugs carry a reasoning tier. Pass either a **full slug** (`gemini-3.6-flash-medium`) or a **family name plus `--effort`** (`--model gemini-3.6-flash --effort medium`). A family name **alone is rejected**.
+- **Report to the user.** Give a short summary. Do not paste long logs unless the user asks.
+- **Reconcile the context.** Record the decisions it made, the files it changed, and the open risks,
+  so this session stays the single source of truth.
 
-- **Default (Simple Tasks)**: `gemini-3.6-flash` + `--effort low|medium` (speed, research, formatting).
-- **Heavy Tasks**: `gemini-3.1-pro` + `--effort high` (deep reasoning, large refactors).
-- **Strategy**: Default to Flash to minimize cost; escalate to Pro only for critical architecture work.
+## CLI failure modes
 
-Headless mode does **not** silently fall back on an unknown model—it exits non-zero with an `ERROR` status, so a typo fails the run rather than quietly switching models.
+Every vendor has its own terminal rules. A headless run fails quietly more often than it fails
+loudly.
 
-## Programmatic usage (required)
+- **Wrap the call in an external timeout.** A headless CLI can stall before its own timeout starts.
+- **Exit code 0 is not success.** If stdout is empty, treat the run as failed and read stderr. A
+  permission the CLI could not ask for, and a prompt that never arrived, both look like success.
+- **Never carry a flag habit from one CLI to another.** The same short flag means different things in
+  different tools. In OpenCode, `-p` is `--password`: passing a prompt to it empties the message and
+  the run waits on stdin forever. Confirm every flag against the CLI's own `--help`.
+- **An unrecognized-flag error means this skill is stale, not that the task is impossible.** Read
+  `--help`, continue with the flags that exist, and tell the user which line in this file is wrong.
 
-You **MUST** use Antigravity CLI programmatically. Do **NOT** start interactive sessions.
+<!-- =============================================================================
+     VENDOR HALF — section 6.
+     Everything below is specific to this CLI.
+     Keep all seven sub-headings, in this order, even if the answer is "none".
+     Take every flag from the installed binary (`<cli> --help`), not from memory
+     and not from another skill in this repository.
+     ============================================================================= -->
 
-| Requirement | Flag / Option |
-|-------------|---------------|
-| **Non-interactive** | `-p` / `--print` / `--prompt` (**required**—see below) |
-| **Output format** | `--output-format text` (default; also `json`, `stream-json`) |
-| **Model Selection** | `--model [slug]`, plus `--effort low\|medium\|high` |
-| **Read access to files** | `--add-dir /absolute/path` (repeatable, **absolute paths only**) |
-| **Read-only pass** | `--mode plan` (also `accept-edits`) |
-| **Long runs** | `--print-timeout 15m` (default is only `5m`) |
-| **Auto-approval** | `--dangerously-skip-permissions` (blunt—prefer `--add-dir` / allow-rules) |
+## Vendor card
 
-A bare `agy "prompt"` starts an **interactive session**. Without `-p` a delegated call opens the TUI
-and hangs instead of running and exiting, so every programmatic invocation must pass it.
+### Binary and prompt form
 
-### Permissions in headless mode
+- **Binary:** `agy`
+- **Prompt form:** **flag.** The prompt is the argument of `-p` (aliases `--print`, `--prompt`).
+  A bare `agy "prompt"` opens the interactive interface and never returns.
 
-Headless mode cannot prompt, so any tool needing approval is **auto-denied** and the run still **exits 0** with an empty response. Grant the narrowest access that lets the task finish:
+### Headless and output flags
 
-1. **`--add-dir /abs/path`** for files it must read. Reads are *not* granted by the shell's working directory, and a relative path such as `.` does not resolve to your cwd—**pass absolute paths**.
-2. **Allow-rules** in `~/.gemini/antigravity-cli/settings.json` under `permissions.allow` for shell use, e.g. `"command(git)"`. Inspect what is currently in effect with `agy -p "/permissions"` (a free query—no quota, no conversation).
-3. **`--dangerously-skip-permissions`** only as a last resort; it approves file writes and command execution alike.
+| Need | Flag |
+|---|---|
+| Run once and exit | `-p`, `--print`, `--prompt` |
+| Plain text | `--output-format text` (the default) |
+| One JSON object | `--output-format json` |
+| Event stream | `--output-format stream-json` |
+| Structured answer | `--json-schema <schema or path>` |
+| Longer runs | `--print-timeout <duration>` — the default is only 5 minutes |
 
-## Command pattern
+### Approvals and permissions
+
+Headless mode cannot ask, so a tool that needs approval is **auto-denied**, and the run still **exits
+0** with an empty answer and a notice on stderr. Grant access before the run, from the narrowest
+option upward:
+
+1. **`--add-dir <absolute path>`** — repeatable. File reads are *not* granted by the working
+   directory, and a relative path such as `.` does not resolve to your current directory. Use
+   absolute paths.
+2. **Allow-rules** under `permissions.allow` in `~/.gemini/antigravity-cli/settings.json`, written as
+   `action(target)`, for example `command(git)`. Inspect the effective rules with
+   `agy -p "/permissions"`, which answers without starting a run.
+3. **`--dangerously-skip-permissions`** — approves every tool, including writes and shell commands.
+
+### Models and how to list them
+
+Run **`agy models`** for the identifiers this build accepts.
+
+Selection is `--model <identifier>` together with `--effort low|medium|high`. A model family on its
+own is rejected — pass the full tiered identifier, or the family plus an effort level. An unknown
+model does not fall back silently: the run exits non-zero and lists what is available.
+
+If the user names a model or an effort level, use it. Otherwise ask the binary first. For capability
+and price comparisons, check [Artificial Analysis](https://artificialanalysis.ai/) and the vendor's
+own documentation.
+
+### Command pattern
 
 ```bash
-agy -p "[prompt]" --output-format text --model gemini-3.6-flash --effort medium \
-  --add-dir /abs/path/to/repo --print-timeout 15m 2>&1
+agy -p "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" \
+  --output-format text --model <identifier> --effort medium \
+  --add-dir /absolute/path/to/repo --print-timeout 15m 2>&1
 ```
 
-## If the call fails or hangs
+### Prompt examples
 
-Headless runs fail quietly more often than they fail loudly. Treat these as defaults, not ceremony:
+- **Implement:** `agy -p "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | VERIFICATION: [test_command] | OUTPUT: files changed" --add-dir /abs/repo --print-timeout 15m`
+- **Review:** `agy -p "GOAL: Review [scope] for [concerns] | CONSTRAINTS: do not edit any file | OUTPUT: findings with severity" --add-dir /abs/repo`
+- **Investigate:** `agy -p "GOAL: Map how [feature] works | SCOPE: [paths] | CONSTRAINTS: do not edit any file | OUTPUT: file:line map" --add-dir /abs/repo`
 
-- **Wrap the call in an external timeout.** A headless CLI can stall before its own timeout arms, so bound it from outside (`timeout 900 agy -p ...`).
-- **Exit 0 is not success.** If stdout is empty, treat the run as failed and read stderr—the usual cause is a tool permission the CLI could not prompt for.
-- **`flags provided but not defined` means this skill is stale, not that the task is impossible.** Run `agy --help`, proceed with the flags that exist, and tell the user which line here needs updating. Vendor docs and changelogs can describe flags the installed build does not have—`--help` is the only authority.
-- **Never carry a flag habit across CLIs.** The same short flag means different things in different tools — in OpenCode `-p` is `--password`, so passing a prompt to it silently empties the message and hangs the run forever. Confirm every flag against `agy --help`.
-- **Separate a broken environment from a broken prompt** before debugging the prompt: re-run with a trivial prompt and minimal flags (e.g. `reply with exactly ALIVE`).
-- **Need progress on a long run?** Prefer `--output-format stream-json` over removing quiet flags—structured output stays parseable while showing tool calls and token usage as they happen.
+### Docs and reference
 
-## After Antigravity returns
-
-- **Review** diffs and security-sensitive areas (XSS, injection, auth)—do not merge blindly.
-- **Run** project checks (`lint`, `test`, `typecheck`) as appropriate.
-- **Compress** results for the user: summarize results for the user instead of pasting huge logs unless asked.
-- **Reconcile context**: note decisions, files touched, and remaining risks so the **main** session stays aligned.
-
-## Quick prompts
-
-- **Delegate implementation**: `agy -p "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" --output-format text --model gemini-3.6-flash --effort medium --add-dir /abs/repo --print-timeout 15m`
-- **Investigate (read-only)**: `agy -p "GOAL: Map how [feature] works | SCOPE: [paths] | OUTPUT: concise file:line map" --mode plan --output-format text --add-dir /abs/repo`
-- **Web Search**: `agy -p "GOAL: Find latest documentation for [library] | CONSTRAINTS: focus on breaking changes in [version] | OUTPUT: summary report" --output-format text`
-- **Security (read-only)**: `agy -p "GOAL: Audit for injection/XSS/auth issues | SCOPE: src/ | OUTPUT: report with severities" --mode plan --output-format text --model gemini-3.1-pro --effort high --add-dir /abs/repo --print-timeout 15m`
-- **Structured result**: `agy -p "[prompt]" --output-format json --json-schema '{"type":"object","properties":{"findings":{"type":"array","items":{"type":"string"}}},"required":["findings"]}'` then read `.structured_output`.
-
-## More detail
-
-- Delegation checklist (short): [reference.md](reference.md#delegation-checklist)
-- Flags, output formats, models, conversations, permissions: [reference.md](reference.md)
+- Flags, models, permissions and paths: [reference.md](reference.md)
+- Vendor documentation: <https://antigravity.google/docs/cli/headless>
+- **Verified against `agy` v1.1.12 on 2026-08-12.**

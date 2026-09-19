@@ -1,6 +1,6 @@
 ---
 name: hermes-agent
-description: Delegates large multi-step work to Hermes Agent CLI like a subagent—include full goal, prior decisions, scope, and constraints in prompts so isolated sessions stay aligned with the main thread (context handoff per Cognition-style delegation). Use for multi-step implementation, code review, research, and autonomous task execution. Skip for trivial one-shot tasks or when everything is already in context.
+description: Use Hermes Agent CLI as a subagent. Lets the main agent prompt Hermes Agent CLI from the terminal in headless mode with the `hermes` command, and send the goal, the decisions and the scope with the task. Use when the user asks to delegate work to Hermes Agent CLI, when a task needs a second independent agent, or when a plan needs a fresh perspective.
 allowed-tools:
   - Bash
   - Read
@@ -9,130 +9,173 @@ allowed-tools:
   - Glob
 ---
 
-# Hermes Agent CLI (subagent/task delegation)
+# Hermes Agent CLI (subagent / task delegation)
 
-Use **Hermes Agent CLI** to run a **separate long-horizon pass** over the repo: multi-step implementation, broad refactors, batch file writes, deep research, or code review—similar to handing a **task to a subagent**. You stay orchestrator: smaller prompts, less context burn, often lower spend than doing the same work entirely in-session.
+<!-- =============================================================================
+     GLOBAL HALF — sections 1 to 5.
+     These sections are identical in every skill in this repository.
+     Copy them without any change. Do not put a vendor name or a flag in them.
+     A change here must be made in all skills at the same time.
+     ============================================================================= -->
 
-Hermes Agent provides a rich tool system with file editing (`patch`, `read_file`, `write_file`, `search_files`), terminal access, web search/extraction, browser automation, delegation (`delegate_task`), code execution, and a large built-in skills catalog. It supports multiple model providers (Nous Portal, OpenRouter, Anthropic, OpenAI, Ollama, etc.) and can run background tasks in parallel.
+## What is it
 
-## When to use Hermes Agent CLI
+This skill teaches your agent to use an agent from another vendor as a subagent.
 
-- **Large or multi-step work**: several files, phases, or checkpoints (feature slice, migration, test suite, docs sweep).
-- **Deep research**: Built-in web search, web extraction, and browser automation for documentation digging or investigative research.
-- **Code review**: Built-in `requesting-code-review` skill and `github-code-review` skill for PR-style analysis.
-- **Heavy code generation or editing**: Hermes drives tool use (file tools, terminal) while you summarize outcomes and merge.
-- **Parallel work**: Use `/background` or `delegate_task` to spawn isolated subagent sessions for concurrent tasks.
-- **Background investigations**: Start long-running research tasks while you continue working in the foreground.
-- **Plan-then-execute**: Use the built-in `plan` skill for structured markdown planning before execution.
-- **User explicitly asks** for Hermes or "use Hermes Agent for this."
+Almost every coding agent has a headless mode. Headless mode runs the agent from the terminal with
+one command and returns the answer to stdout. This skill gives the command pattern for one such
+agent, and the protocol to transfer enough context with the task.
 
-## When not to use
+You stay the main agent. You keep the plan, the decisions and the conversation with the user. The
+subagent does one bounded task and reports back.
 
-- **Small / single-step** tasks answerable with one or two edits or a short explanation.
-- **Tight feedback loops** where the user wants rapid back-and-forth refinement in one thread.
-- **Secrets or policy-sensitive** flows—avoid piping credentials; redact before delegating.
-- **Already-loaded context** where duplicating the whole plan adds no value—handle locally.
-- **Low ROI (Return on Investment)**: If the task is "needle-in-a-haystack" (requires high precision over a single line) or if the time to compose the Handoff Table exceeds the time to simply edit the file locally. Delegation should only be used when the "mental offloading" outweighs the "handoff overhead."
+## When to delegate
 
-## Delegation and context (critical)
+- **The user asks for it.** The user names another agent, or asks for a second opinion.
+- **Large or multi-step work.** The task covers several files, phases or checkpoints.
+- **Code review with a fresh mind.** Another agent reviews the work with a different lens and no
+  memory of the decisions that produced it.
+- **Planning that needs different ideas.** A second agent proposes options that you did not consider.
+- **An internal council.** Several subagents answer the same question, and you compare the answers.
+- **Deep research.** The other CLI has web search, web extraction or browser automation.
+- **Background investigation.** A long task runs in the background while you continue in the
+  foreground.
 
-Isolated subagent context saves tokens but **splits the story**: Hermes Agent does not see the main session's full thread. Poor handoffs cause misread subtasks, conflicting assumptions (stack, style, APIs), and wasted edits.
+## When not to delegate
 
-When composing the **single Hermes prompt** (using `-q`), treat it as passing **enough shared state**, not just a title:
+- **Small or single-step tasks.** One or two edits, or a short explanation, are faster in this thread.
+- **Tight feedback loops.** The user wants quick back-and-forth in one conversation.
+- **Secrets or policy-sensitive work.** Do not pipe credentials into a subagent. Redact first.
+- **Context you already hold.** Repeating the whole plan in a prompt adds no value.
+- **Low return on investment.** If writing the handoff costs more than doing the edit, do the edit.
+- **Work that needs high precision and full judgement.** A subagent without your context will break a
+  task that depends on a detail only this session knows.
+
+## Delegation and context transfer protocol
+
+An isolated subagent saves tokens, but it splits the story. The subagent does not see this
+conversation. A poor handoff causes misread tasks, wrong assumptions about the stack or the style,
+and wasted edits.
+
+Write the prompt as a transfer of shared state, not as a title. Include all six fields:
 
 | Include | Why |
-|--------|-----|
-| **Original goal** | Same north star as the user—not only the immediate micro-task. |
-| **Decisions already made** | Framework, patterns, naming, auth approach, "use X not Y"—anything that would otherwise be guessed wrong. |
-| **Scope** | Paths, modules, and explicit **out of scope** / do-not-touch areas. |
-| **Constraints** | Performance, a11y, compatibility, review gates, "no new deps," etc. |
-| **Verification** | Explicit command (e.g. `npm test`, `lint`) the subagent **must** run and pass before returning. |
-| **Expected output** | e.g. "summarize then list files changed," "report only—no edits," or "apply edits with minimal diff." |
+|---|---|
+| **Goal** | The same objective as the user, not only the immediate micro-task. |
+| **Decisions** | Framework, patterns, naming, "use X not Y" — anything that would otherwise be guessed wrong. |
+| **Scope** | The paths and modules to touch, and the areas to leave alone. |
+| **Constraints** | Performance, accessibility, compatibility, review gates, "no new dependencies". |
+| **Verification** | The exact command the subagent must run and pass before it returns. |
+| **Output** | For example: "report only, no edits", "apply edits with a minimal diff", "list the files changed". |
 
-**After Hermes returns**, pull **decisions and constraints** back into the main thread (what it assumed, what it changed, open risks). Prefer **sequential** delegations with explicit carry-over over parallel runs that might diverge unless they share the same briefing.
+Prefer sequential delegations with explicit carry-over. Parallel runs diverge unless every run gets
+the same briefing.
 
-If the delegation would need a long transcript to be safe, **summarize** the relevant parts into the prompt (compressed "state of the union") rather than a one-line subtask.
+**Run the subagent in the mode that does the work without asking for approval.** Headless mode has
+nobody to answer a permission prompt. Any mode that stops to ask will stall, or return an empty
+answer with a success exit code. Each CLI names this mode differently — take the flag from the vendor
+card below.
 
-## Model Selection & Discovery (Mandatory)
+**Never call a subagent in plan mode.** Many CLIs have a plan or read-only mode. That mode makes the
+other agent write a plan *for itself*, which is not what you asked for: you want its work or its
+answer, and you keep the planning. Plan mode also waits for someone to approve that plan, so the run
+comes back with nothing. If you want no file changes, keep the auto-approving mode and write "report
+only, no edits" in the **Output** field. Do not use plan mode to make a run read-only.
 
-**MANDATORY: Search the web for latest Hermes Agent compatible models and pricing before selecting a model.** Hermes Agent uses a provider-based model system where models are specified as `provider/model-name`. Available models depend on the authenticated providers (Nous Portal, OpenRouter, Anthropic, OpenAI, Ollama, etc.).
+After the subagent returns:
 
-Since model availability depends on the user's configured providers, use the following discovery strategy:
+- **Report to the user.** Give a short summary. Do not paste long logs unless the user asks.
+- **Reconcile the context.** Record the decisions it made, the files it changed, and the open risks,
+  so this session stays the single source of truth.
 
-1. **Search the web first**: Look for the latest recommended models compatible with the user's provider (e.g., Claude Sonnet, GPT, Gemini, DeepSeek, Qwen, etc.).
-2. **Fallback**: Consult [Artificial Analysis](https://artificialanalysis.ai/) for up-to-date benchmarks, pricing, and model performance data.
-3. **Provider-aware selection**: Format models as `provider/model-name` (e.g., `anthropic/claude-sonnet-5`, `openai/gpt-5.6-sol`, `openrouter/moonshotai/kimi-k2.7-code`, `ollama/model-name`).
+## CLI failure modes
 
-General recommendations (subject to change—always verify):
+Every vendor has its own terminal rules. A headless run fails quietly more often than it fails
+loudly.
 
-- **Fast / Simple Tasks**: `google/gemini-3.6-flash`, `openai/gpt-5.6-luna`, `anthropic/claude-haiku-4-5`, or `deepseek/deepseek-v4-flash` (low cost, fast).
-- **Heavy / Complex Tasks**: `anthropic/claude-opus-5`, `openai/gpt-5.6-sol`, or `google/gemini-3.1-pro` (deep reasoning). Open-weight frontier: `zai/glm-5.2`, `minimax/minimax-m3`, `moonshotai/kimi-k2.7-code`.
-- **Strategy**: Default to fast/cheap models for simple delegations. Escalate to frontier models for critical architecture and reasoning tasks. Always verify the latest model names, aliases, and costs via web search.
+- **Wrap the call in an external timeout.** A headless CLI can stall before its own timeout starts.
+- **Exit code 0 is not success.** If stdout is empty, treat the run as failed and read stderr. A
+  permission the CLI could not ask for, and a prompt that never arrived, both look like success.
+- **Never carry a flag habit from one CLI to another.** The same short flag means different things in
+  different tools. In OpenCode, `-p` is `--password`: passing a prompt to it empties the message and
+  the run waits on stdin forever. Confirm every flag against the CLI's own `--help`.
+- **An unrecognized-flag error means this skill is stale, not that the task is impossible.** Read
+  `--help`, continue with the flags that exist, and tell the user which line in this file is wrong.
 
-## Programmatic usage (required)
+<!-- =============================================================================
+     VENDOR HALF — section 6.
+     Everything below is specific to this CLI.
+     Keep all seven sub-headings, in this order, even if the answer is "none".
+     Take every flag from the installed binary (`<cli> --help`), not from memory
+     and not from another skill in this repository.
+     ============================================================================= -->
 
-You **MUST** use Hermes CLI programmatically. Do **NOT** start interactive sessions.
+## Vendor card
 
-| Requirement | Flag |
-|-------------|------|
-| **Non-interactive** | `chat -q "prompt"` (single query mode) |
-| **Quiet output (programmatic)** | `-Q` (suppress banner, spinner, tool previews — **always use for subagent**) |
-| **Auto-approval** | `--yolo` (bypasses permission checks) |
-| **Auto-approval (env)** | `HERMES_YOLO_MODE=true` (also disables prompts) |
-| **Model Selection** | `--model "provider/model-name"` or `-m` |
-| **Provider Selection** | `--provider [provider-name]` |
-| **Toolsets** | `--toolsets "file,terminal,web,skills"` (comma-separated) or `-t` |
-| **Skill Preloading** | `-s skill-name` (preload one or more skills, comma-separated or repeat flag) |
-| **Worktree** | `-w` (run in isolated git worktree for parallel agents) |
-| **Isolated run** | `--ignore-user-config --ignore-rules` (bypass config/skills for CI-like execution) |
+### Binary and prompt form
 
-## Command pattern
+- **Binary:** `hermes`
+- **Prompt form:** **flag.** The prompt is the argument of `-q` on the `chat` subcommand:
+  `hermes chat -q "prompt"`. Always add `-Q` (quiet) alongside it for programmatic use — it suppresses
+  the banner, spinner, and tool previews so stdout carries only the final response and a session id.
+
+### Headless and output flags
+
+| Need | Flag |
+|---|---|
+| Run once and exit | `chat -q "prompt"` (single-query mode) |
+| Quiet, script-safe output | `-Q`, `--quiet` — suppresses banner/spinner/tool previews |
+| Verbose/debug output | `--verbose`, `-v` |
+| Turn cap | `--max-turns N` (default 90) — bounds a stuck delegation |
+| Tag session as third-party | `--source tool` — keeps it out of the user's own session list |
+
+No dedicated `--output-format json` flag is documented for Hermes; `-Q` plus the final response is the
+machine-readable surface.
+
+### Approvals and permissions
+
+`--yolo` skips permission checks and auto-approves all tools; the env var `HERMES_YOLO_MODE=true` does
+the same and also disables prompts. `--accept-hooks` auto-approves shell hooks without a TTY prompt.
+No narrower per-tool allow-rule flag is documented (permission granularity in this CLI comes from
+`--toolsets`, which enables or omits whole tool bundles, not individual approvals). What happens if a
+prompt is needed and `--yolo`/`--accept-hooks` were not passed is **NOT DOCUMENTED** — treat empty
+stdout with a clean exit code as a stalled or silently-denied run, per the general CLI failure guidance,
+and read stderr.
+
+`--checkpoints` snapshots files before destructive operations (`/rollback` restores them) — a cheap
+safety net for a delegation that writes, independent of the approval flag.
+
+### Models and how to list them
+
+Models are specified as `provider/model-name` (e.g. `anthropic/<identifier>`, `openrouter/<provider>/<model>`,
+`ollama/<model-name>`). Run **`hermes model --refresh`** to re-fetch each authenticated provider's live
+`/v1/models` list rather than guessing an ID, or `hermes model` for the interactive provider+model
+picker. `hermes config show` / `hermes status` show current configuration, but `config show` prints a
+formatted box, not `key=value` lines — grepping it for a field name returns nothing.
+
+Provider keys are `nous`, `openrouter`, `anthropic`, `openai`, `google`, `xai`, `mistral`, `deepseek`,
+`moonshotai`, `minimax`, `groq`, `zai`, `ollama` (note `zai`, not `zhipuai`). Model availability depends
+entirely on which providers the user has authenticated — search the web or check
+[Artificial Analysis](https://artificialanalysis.ai/) for current pricing and benchmarks, then confirm
+the exact ID against `hermes model --refresh` before pinning it in a delegation.
+
+### Command pattern
 
 ```bash
-hermes chat -q "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" --yolo -Q --toolsets "file,terminal,web,skills" 2>&1
+hermes chat -q "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" \
+  --yolo -Q --toolsets "file,terminal,web,skills" --model "provider/<identifier>" 2>&1
 ```
 
-With specific model:
+### Prompt examples
 
-```bash
-hermes chat -q "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" --yolo -Q --model "anthropic/claude-sonnet-5" --toolsets "file,terminal,web,skills" 2>&1
-```
+- **Implement:** `hermes chat -q "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | VERIFICATION: [test_command] | OUTPUT: files changed" --yolo -Q --toolsets "file,terminal,web,skills"`
+- **Review:** `hermes chat -q "GOAL: Review [scope] for [concerns] | OUTPUT: review report with severities" --yolo -Q --toolsets "file,terminal,web" -s requesting-code-review`
+- **Research (report only):** `hermes chat -q "GOAL: Find latest documentation for [library] | CONSTRAINTS: do not edit any file | OUTPUT: summary report" --yolo -Q --toolsets "web,file"`
 
-In isolated worktree (parallel agent sessions):
+### Docs and reference
 
-```bash
-hermes chat -q "GOAL: [task]" --yolo -Q -w 2>&1
-```
-
-## After Hermes Agent returns
-
-- **Review** diffs and security-sensitive areas (XSS, injection, auth)—do not merge blindly.
-- **Run** project checks (`lint`, `test`, `typecheck`) as appropriate.
-- **Compress** results for the user: summarize results for the user instead of pasting huge logs unless asked.
-- **Reconcile context**: note decisions, files touched, and remaining risks so the **main** session stays aligned.
-
-## If the call fails or hangs
-
-Headless runs fail quietly more often than they fail loudly:
-
-- **Wrap the call in an external timeout.** A headless CLI can stall before its own timeout arms.
-- **Exit 0 is not success.** If stdout is empty, treat the run as failed and read stderr — a tool
-  permission the CLI could not prompt for, and a prompt that never arrived, both look like success.
-- **Never carry a flag habit across CLIs.** The same short flag means different things in different
-  tools — in OpenCode `-p` is `--password`, so passing a prompt to it silently empties the message and
-  hangs the run forever. Confirm every flag against `hermes --help`.
-- **An unrecognized-flag error means this skill is stale, not that the task is impossible.** Run
-  `hermes --help`, proceed with the flags that exist, and tell the user which line here needs updating.
-
-## Quick prompts
-
-- **Delegate implementation**: `hermes chat -q "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" --yolo -Q --toolsets "file,terminal,web,skills"`
-- **Investigate**: `hermes chat -q "GOAL: Map how [feature] works | SCOPE: [paths] | OUTPUT: concise file:line map" --yolo -Q --toolsets "file,terminal"`
-- **Code Review**: `hermes chat -q "GOAL: Review changes for [concerns] | SCOPE: [paths] | OUTPUT: review report with severities" --yolo -Q --toolsets "file,terminal,web" -s requesting-code-review`
-- **Web Research**: `hermes chat -q "GOAL: Find latest documentation for [library] | CONSTRAINTS: focus on breaking changes in [version] | OUTPUT: summary report" --yolo -Q --toolsets "web,file"`
-- **Background Task**: Start a long-running task in the orchestrator session with `/background` (if using interactively) or delegate via `delegate_task`.
-
-## More detail
-
-- Delegation checklist (short): [reference.md](reference.md#delegation-checklist)
-- Flags, tools, toolsets, models, skills: [reference.md](reference.md)
+- Delegation checklist and full flag/tool/toolset/model tables: [reference.md](reference.md)
+- Vendor documentation: no single canonical URL captured in source; auth via `hermes setup` /
+  `hermes setup --portal` / `hermes model`
+- Flags taken from this repo's existing skill and reference docs; no installed-binary verification
+  stamp is recorded in the source. Confirm against `hermes --help` before relying on this in production.

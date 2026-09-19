@@ -1,6 +1,6 @@
 ---
 name: junie-cli
-description: Delegates large multi-step work to Junie CLI like a subagent—include full goal, prior decisions, scope, and constraints in prompts so isolated sessions stay aligned with the main thread (context handoff per Cognition-style delegation). Use for code reviews, refactors, and CI/CD automation. Skip for trivial one-shot tasks or when everything is already in context.
+description: Use Junie CLI as a subagent. Lets the main agent prompt Junie CLI from the terminal in headless mode with the `junie` command, and send the goal, the decisions and the scope with the task. Use when the user asks to delegate work to Junie CLI, when a task needs a second independent agent, or when a plan needs a fresh perspective.
 allowed-tools:
   - Bash
   - Read
@@ -9,84 +9,165 @@ allowed-tools:
   - Glob
 ---
 
-# Junie CLI (subagent/task delegation)
+# Junie CLI (subagent / task delegation)
 
-Use **Junie CLI** to run a **separate long-horizon pass** over the repo: code reviews, multi-step implementation, or broad refactors—similar to handing a **task to a subagent**. You stay orchestrator: smaller prompts, less context burn.
+<!-- =============================================================================
+     GLOBAL HALF — sections 1 to 5.
+     These sections are identical in every skill in this repository.
+     Copy them without any change. Do not put a vendor name or a flag in them.
+     A change here must be made in all skills at the same time.
+     ============================================================================= -->
 
-## When to use Junie CLI
+## What is it
 
-- **Automated Code Reviews**: Use the specialized `--review` agent for deep diff-aware reviews.
-- **Large or multi-step work**: several files, phases, or checkpoints.
-- **Conflict Resolution**: Specialized `--merge` and `--rebase` modes for resolving git conflicts.
-- **Parallel mental lane**: you continue planning or reviewing while Junie runs a bounded task.
-- **User explicitly asks** for Junie or “use Junie for this.”
+This skill teaches your agent to use an agent from another vendor as a subagent.
 
-## When not to use
+Almost every coding agent has a headless mode. Headless mode runs the agent from the terminal with
+one command and returns the answer to stdout. This skill gives the command pattern for one such
+agent, and the protocol to transfer enough context with the task.
 
-- **Small / single-step** tasks answerable with one or two edits or a short explanation.
-- **Tight feedback loops** where the user wants rapid back-and-forth refinement in one thread.
-- **Secrets or policy-sensitive** flows—avoid piping credentials; redact before delegating.
-- **Already-loaded context** where duplicating the whole plan adds no value—handle locally.
-- **Low ROI (Return on Investment)**: If the task is "needle-in-a-haystack" (requires high precision over a single line) or if the time to compose the Handoff Table exceeds the time to simply edit the file locally. Delegation should only be used when the "mental offloading" outweighs the "handoff overhead."
+You stay the main agent. You keep the plan, the decisions and the conversation with the user. The
+subagent does one bounded task and reports back.
 
-## Delegation and context (critical)
+## When to delegate
 
-Isolated subagent context saves tokens but **splits the story**: Junie does not see the main session's full thread. Poor handoffs cause misread subtasks, conflicting assumptions (stack, style, APIs), and wasted edits.
+- **The user asks for it.** The user names another agent, or asks for a second opinion.
+- **Large or multi-step work.** The task covers several files, phases or checkpoints.
+- **Code review with a fresh mind.** Another agent reviews the work with a different lens and no
+  memory of the decisions that produced it.
+- **Planning that needs different ideas.** A second agent proposes options that you did not consider.
+- **An internal council.** Several subagents answer the same question, and you compare the answers.
+- **Deep research.** The other CLI has web search, web extraction or browser automation.
+- **Background investigation.** A long task runs in the background while you continue in the
+  foreground.
 
-When composing the **single Junie prompt**, treat it as passing **enough shared state**, not just a title:
+## When not to delegate
+
+- **Small or single-step tasks.** One or two edits, or a short explanation, are faster in this thread.
+- **Tight feedback loops.** The user wants quick back-and-forth in one conversation.
+- **Secrets or policy-sensitive work.** Do not pipe credentials into a subagent. Redact first.
+- **Context you already hold.** Repeating the whole plan in a prompt adds no value.
+- **Low return on investment.** If writing the handoff costs more than doing the edit, do the edit.
+- **Work that needs high precision and full judgement.** A subagent without your context will break a
+  task that depends on a detail only this session knows.
+
+## Delegation and context transfer protocol
+
+An isolated subagent saves tokens, but it splits the story. The subagent does not see this
+conversation. A poor handoff causes misread tasks, wrong assumptions about the stack or the style,
+and wasted edits.
+
+Write the prompt as a transfer of shared state, not as a title. Include all six fields:
 
 | Include | Why |
-|--------|-----|
-| **Original goal** | Same north star as the user—not only the immediate micro-task. |
-| **Decisions already made** | Framework, patterns, naming, auth approach, “use X not Y”—anything that would otherwise be guessed wrong. |
-| **Scope** | Paths, modules, and explicit **out of scope** / do-not-touch areas. |
-| **Constraints** | Performance, a11y, compatibility, review gates, “no new deps,” etc. |
-| **Verification** | Explicit command (e.g. `npm test`, `lint`) the subagent **must** run and pass before returning. |
-| **Expected output** | e.g. “summarize then list files changed,” “report only—no edits,” or “apply edits with minimal diff.” |
+|---|---|
+| **Goal** | The same objective as the user, not only the immediate micro-task. |
+| **Decisions** | Framework, patterns, naming, "use X not Y" — anything that would otherwise be guessed wrong. |
+| **Scope** | The paths and modules to touch, and the areas to leave alone. |
+| **Constraints** | Performance, accessibility, compatibility, review gates, "no new dependencies". |
+| **Verification** | The exact command the subagent must run and pass before it returns. |
+| **Output** | For example: "report only, no edits", "apply edits with a minimal diff", "list the files changed". |
 
-## Model Selection & Discovery (Mandatory)
+Prefer sequential delegations with explicit carry-over. Parallel runs diverge unless every run gets
+the same briefing.
 
-**MANDATORY: Search the web for latest Junie model names and pricing before selecting a model.** You should also consult [Artificial Analysis](https://artificialanalysis.ai/) for the most up-to-date benchmarks, pricing, and model performance data.
+**Run the subagent in the mode that does the work without asking for approval.** Headless mode has
+nobody to answer a permission prompt. Any mode that stops to ask will stall, or return an empty
+answer with a success exit code. Each CLI names this mode differently — take the flag from the vendor
+card below.
 
-## Programmatic usage (required)
+**Never call a subagent in plan mode.** Many CLIs have a plan or read-only mode. That mode makes the
+other agent write a plan *for itself*, which is not what you asked for: you want its work or its
+answer, and you keep the planning. Plan mode also waits for someone to approve that plan, so the run
+comes back with nothing. If you want no file changes, keep the auto-approving mode and write "report
+only, no edits" in the **Output** field. Do not use plan mode to make a run read-only.
 
-You **MUST** use Junie CLI programmatically. Do **NOT** start interactive sessions.
+After the subagent returns:
 
-| Requirement | Flag |
-|-------------|------|
-| **Authentication** | `--auth="$JUNIE_API_KEY"` |
-| **Model Selection** | `--model [alias]` |
-| **Output Format** | `--output-format [text|json]` |
-| **Specialized Mode**| `--review`, `--merge`, `--rebase` |
+- **Report to the user.** Give a short summary. Do not paste long logs unless the user asks.
+- **Reconcile the context.** Record the decisions it made, the files it changed, and the open risks,
+  so this session stays the single source of truth.
 
-## Command pattern
+## CLI failure modes
+
+Every vendor has its own terminal rules. A headless run fails quietly more often than it fails
+loudly.
+
+- **Wrap the call in an external timeout.** A headless CLI can stall before its own timeout starts.
+- **Exit code 0 is not success.** If stdout is empty, treat the run as failed and read stderr. A
+  permission the CLI could not ask for, and a prompt that never arrived, both look like success.
+- **Never carry a flag habit from one CLI to another.** The same short flag means different things in
+  different tools. In OpenCode, `-p` is `--password`: passing a prompt to it empties the message and
+  the run waits on stdin forever. Confirm every flag against the CLI's own `--help`.
+- **An unrecognized-flag error means this skill is stale, not that the task is impossible.** Read
+  `--help`, continue with the flags that exist, and tell the user which line in this file is wrong.
+
+<!-- =============================================================================
+     VENDOR HALF — section 6.
+     Everything below is specific to this CLI.
+     Keep all seven sub-headings, in this order, even if the answer is "none".
+     Take every flag from the installed binary (`<cli> --help`), not from memory
+     and not from another skill in this repository.
+     ============================================================================= -->
+
+## Vendor card
+
+### Binary and prompt form
+
+- **Binary:** `junie`
+- **Prompt form:** **positional.** The prompt is passed as a bare argument after the flags, e.g.
+  `junie --auth="$JUNIE_API_KEY" "prompt text" --model <alias>`. No flag form of the prompt is
+  documented in the source files.
+
+### Headless and output flags
+
+| Need | Flag |
+|---|---|
+| Output format | `--output-format text` (default) or `--output-format json` |
+| Project directory | `--project`, `-p <path>` |
+| Resume a session | `--session-id <id>` |
+| Specialized modes | `--review` (code review), `--merge [branch]` (conflict resolution), `--rebase` |
+
+No dedicated "run once and exit" flag is documented beyond passing the prompt positionally — Junie is
+described as always non-interactive when invoked this way, but no flag equivalent to `--print` or
+`-p/--single` appears in the source docs.
+
+### Approvals and permissions
+
+**No approve-all flag is documented anywhere in the source SKILL.md or reference.md for Junie CLI.**
+There is no `--yolo`, `--trust-all-tools`, or narrower allow-rule flag on record. Since headless mode has
+nobody to answer a permission prompt, a task that needs approval will most likely stall or return empty
+output with a success exit code — treat that outcome as failure and read stderr. Because there is no
+scoping flag either, write "report only, no edits" into the prompt's Output field when you want a
+no-write run, rather than trying to suppress edits with a flag that does not exist.
+
+### Models and how to list them
+
+No CLI subcommand for listing models is documented for Junie. Selection is `--model [alias]`, where the
+recorded aliases are short vendor-neutral tags rather than pinned identifiers (for example a tag for
+"latest Sonnet", one for "latest Opus", one for "latest GPT", and two dated Gemini tiers — the Pro tier
+is frozen at one line, so no newer Pro alias exists yet). Treat all of these as **NOT DOCUMENTED as a
+fixed, stable list** — the source explicitly flags that names change and instructs a mandatory web
+search before picking one. Check [Artificial Analysis](https://artificialanalysis.ai/) and the vendor's
+own docs for current aliases and pricing before pinning a model in a delegation.
+
+### Command pattern
 
 ```bash
-junie --auth="$JUNIE_API_KEY" "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | OUTPUT: [format]" --model sonnet --output-format text 2>&1
+junie --auth="$JUNIE_API_KEY" "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" \
+  --model <alias> --output-format text 2>&1
 ```
 
-## After Junie returns
+### Prompt examples
 
-- **Review** diffs and security-sensitive areas (XSS, injection, auth)—do not merge blindly.
-- **Run** project checks (`lint`, `test`, `typecheck`) as appropriate.
-- **Compress** results for the user: summarize results for the user instead of pasting huge logs unless asked.
-- **Reconcile context**: note decisions, files touched, and remaining risks so the **main** session stays aligned.
+- **Implement:** `junie --auth="$JUNIE_API_KEY" "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | VERIFICATION: [test_command] | OUTPUT: [format]" --model <alias>`
+- **Code review:** `junie --auth="$JUNIE_API_KEY" --review "GOAL: Review my changes for [concerns] | SCOPE: [paths] | VERIFICATION: [check_command] | OUTPUT: review report"`
+- **Conflict resolution:** `junie --auth="$JUNIE_API_KEY" --merge [branch] "GOAL: Resolve conflicts between current branch and [branch] | CONSTRAINTS: prefer [strategy]"`
 
-## If the call fails or hangs
+### Docs and reference
 
-Headless runs fail quietly more often than they fail loudly:
-
-- **Wrap the call in an external timeout.** A headless CLI can stall before its own timeout arms.
-- **Exit 0 is not success.** If stdout is empty, treat the run as failed and read stderr — a tool
-  permission the CLI could not prompt for, and a prompt that never arrived, both look like success.
-- **Never carry a flag habit across CLIs.** The same short flag means different things in different
-  tools — in OpenCode `-p` is `--password`, so passing a prompt to it silently empties the message and
-  hangs the run forever. Confirm every flag against `junie --help`.
-- **An unrecognized-flag error means this skill is stale, not that the task is impossible.** Run
-  `junie --help`, proceed with the flags that exist, and tell the user which line here needs updating.
-
-## Quick prompts
-
-- **Delegate implementation**: `junie --auth="$JUNIE_API_KEY" "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" --model sonnet`
-- **Code Review**: `junie --auth="$JUNIE_API_KEY" --review "GOAL: Review my changes for [specific concerns] | SCOPE: [paths] | VERIFICATION: [check_command] | OUTPUT: review report"`
-- **Conflict Resolution**: `junie --auth="$JUNIE_API_KEY" --merge [branch] "GOAL: Resolve conflicts between current branch and [branch] | CONSTRAINTS: prefer [strategy]"`
+- Delegation checklist and model table: [reference.md](reference.md)
+- Vendor documentation: no canonical URL captured in source; auth via `JUNIE_API_KEY` (env or `--auth`)
+- Flags taken from this repo's existing skill and reference docs; no installed-binary verification
+  stamp is recorded in the source, and no approval flag exists to verify in the first place. Confirm
+  against `junie --help` before relying on this in production.

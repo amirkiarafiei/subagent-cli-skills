@@ -1,6 +1,6 @@
 ---
 name: claude-code
-description: Delegates large multi-step work to Claude Code CLI like a subagent—include full goal, prior decisions, scope, and constraints in prompts so isolated sessions stay aligned with the main thread (context handoff per Cognition-style delegation). Use for heavy edits, exploration, and agentic coding. Skip for trivial one-shot tasks or when everything is already in context.
+description: Use Claude Code CLI as a subagent. Lets the main agent prompt Claude Code CLI from the terminal in headless mode with the `claude` command, and send the goal, the decisions and the scope with the task. Use when the user asks to delegate work to Claude Code CLI, when a task needs a second independent agent, or when a plan needs a fresh perspective.
 allowed-tools:
   - Bash
   - Read
@@ -9,83 +9,169 @@ allowed-tools:
   - Glob
 ---
 
-# Claude Code CLI (subagent/task delegation)
+# Claude Code CLI (subagent / task delegation)
 
-Use **Claude Code CLI** to run a **separate long-horizon pass** over the repo: multi-step implementation, broad refactors, batch file writes, or deep exploration—similar to handing a **task to a subagent**. You stay orchestrator: smaller prompts, less context burn, often lower spend than doing the same work entirely in-session.
+<!-- =============================================================================
+     GLOBAL HALF — sections 1 to 5.
+     These sections are identical in every skill in this repository.
+     Copy them without any change. Do not put a vendor name or a flag in them.
+     A change here must be made in all skills at the same time.
+     ============================================================================= -->
 
-## When to use Claude Code CLI
+## What is it
 
-- **Large or multi-step work**: several files, phases, or checkpoints (feature slice, migration, test suite, docs sweep).
-- **Heavy code generation or editing**: Claude Code drives tool use while you summarize outcomes and merge.
-- **Parallel mental lane**: you continue planning or reviewing while Claude Code runs a bounded task.
-- **User explicitly asks** for Claude Code or “use Claude Code for this.”
+This skill teaches your agent to use an agent from another vendor as a subagent.
 
-## When not to use
+Almost every coding agent has a headless mode. Headless mode runs the agent from the terminal with
+one command and returns the answer to stdout. This skill gives the command pattern for one such
+agent, and the protocol to transfer enough context with the task.
 
-- **Small / single-step** tasks answerable with one or two edits or a short explanation.
-- **Tight feedback loops** where the user wants rapid back-and-forth refinement in one thread.
-- **Secrets or policy-sensitive** flows—avoid piping credentials; redact before delegating.
-- **Already-loaded context** where duplicating the whole plan adds no value—handle locally.
-- **Low ROI (Return on Investment)**: If the task is "needle-in-a-haystack" (requires high precision over a single line) or if the time to compose the Handoff Table exceeds the time to simply edit the file locally. Delegation should only be used when the "mental offloading" outweighs the "handoff overhead."
+You stay the main agent. You keep the plan, the decisions and the conversation with the user. The
+subagent does one bounded task and reports back.
 
-## Delegation and context (critical)
+## When to delegate
 
-Isolated subagent context saves tokens but **splits the story**: Claude Code does not see the main session's full thread. Poor handoffs cause misread subtasks, conflicting assumptions (stack, style, APIs), and wasted edits.
+- **The user asks for it.** The user names another agent, or asks for a second opinion.
+- **Large or multi-step work.** The task covers several files, phases or checkpoints.
+- **Code review with a fresh mind.** Another agent reviews the work with a different lens and no
+  memory of the decisions that produced it.
+- **Planning that needs different ideas.** A second agent proposes options that you did not consider.
+- **An internal council.** Several subagents answer the same question, and you compare the answers.
+- **Deep research.** The other CLI has web search, web extraction or browser automation.
+- **Background investigation.** A long task runs in the background while you continue in the
+  foreground.
 
-When composing the **single Claude Code prompt**, treat it as passing **enough shared state**, not just a title:
+## When not to delegate
+
+- **Small or single-step tasks.** One or two edits, or a short explanation, are faster in this thread.
+- **Tight feedback loops.** The user wants quick back-and-forth in one conversation.
+- **Secrets or policy-sensitive work.** Do not pipe credentials into a subagent. Redact first.
+- **Context you already hold.** Repeating the whole plan in a prompt adds no value.
+- **Low return on investment.** If writing the handoff costs more than doing the edit, do the edit.
+- **Work that needs high precision and full judgement.** A subagent without your context will break a
+  task that depends on a detail only this session knows.
+
+## Delegation and context transfer protocol
+
+An isolated subagent saves tokens, but it splits the story. The subagent does not see this
+conversation. A poor handoff causes misread tasks, wrong assumptions about the stack or the style,
+and wasted edits.
+
+Write the prompt as a transfer of shared state, not as a title. Include all six fields:
 
 | Include | Why |
-|--------|-----|
-| **Original goal** | Same north star as the user—not only the immediate micro-task. |
-| **Decisions already made** | Framework, patterns, naming, auth approach, “use X not Y”—anything that would otherwise be guessed wrong. |
-| **Scope** | Paths, modules, and explicit **out of scope** / do-not-touch areas. |
-| **Constraints** | Performance, a11y, compatibility, review gates, “no new deps,” etc. |
-| **Verification** | Explicit command (e.g. `npm test`, `lint`) the subagent **must** run and pass before returning. |
-| **Expected output** | e.g. “summarize then list files changed,” “report only—no edits,” or “apply edits with minimal diff.” |
+|---|---|
+| **Goal** | The same objective as the user, not only the immediate micro-task. |
+| **Decisions** | Framework, patterns, naming, "use X not Y" — anything that would otherwise be guessed wrong. |
+| **Scope** | The paths and modules to touch, and the areas to leave alone. |
+| **Constraints** | Performance, accessibility, compatibility, review gates, "no new dependencies". |
+| **Verification** | The exact command the subagent must run and pass before it returns. |
+| **Output** | For example: "report only, no edits", "apply edits with a minimal diff", "list the files changed". |
 
-## Model Selection & Discovery (Mandatory)
+Prefer sequential delegations with explicit carry-over. Parallel runs diverge unless every run gets
+the same briefing.
 
-**MANDATORY: Search the web for latest Claude model names and pricing before selecting a model.** You should also consult [Artificial Analysis](https://artificialanalysis.ai/) for the most up-to-date benchmarks, pricing, and model performance data.
+**Run the subagent in the mode that does the work without asking for approval.** Headless mode has
+nobody to answer a permission prompt. Any mode that stops to ask will stall, or return an empty
+answer with a success exit code. Each CLI names this mode differently — take the flag from the vendor
+card below.
 
-## Programmatic usage (required)
+**Never call a subagent in plan mode.** Many CLIs have a plan or read-only mode. That mode makes the
+other agent write a plan *for itself*, which is not what you asked for: you want its work or its
+answer, and you keep the planning. Plan mode also waits for someone to approve that plan, so the run
+comes back with nothing. If you want no file changes, keep the auto-approving mode and write "report
+only, no edits" in the **Output** field. Do not use plan mode to make a run read-only.
 
-You **MUST** use Claude Code CLI programmatically. Do **NOT** start interactive sessions.
+After the subagent returns:
 
-| Requirement | Flag |
-|-------------|------|
-| **Non-interactive** | `-p` or `--print` |
-| **Auto-approval** | `--permission-mode auto` or `--dangerously-skip-permissions` |
-| **Model Selection** | `--model [model_name]` |
-| **Minimal Startup** | `--bare` |
+- **Report to the user.** Give a short summary. Do not paste long logs unless the user asks.
+- **Reconcile the context.** Record the decisions it made, the files it changed, and the open risks,
+  so this session stays the single source of truth.
 
-## Command pattern
+## CLI failure modes
+
+Every vendor has its own terminal rules. A headless run fails quietly more often than it fails
+loudly.
+
+- **Wrap the call in an external timeout.** A headless CLI can stall before its own timeout starts.
+- **Exit code 0 is not success.** If stdout is empty, treat the run as failed and read stderr. A
+  permission the CLI could not ask for, and a prompt that never arrived, both look like success.
+- **Never carry a flag habit from one CLI to another.** The same short flag means different things in
+  different tools. In OpenCode, `-p` is `--password`: passing a prompt to it empties the message and
+  the run waits on stdin forever. Confirm every flag against the CLI's own `--help`.
+- **An unrecognized-flag error means this skill is stale, not that the task is impossible.** Read
+  `--help`, continue with the flags that exist, and tell the user which line in this file is wrong.
+
+<!-- =============================================================================
+     VENDOR HALF — section 6.
+     Everything below is specific to this CLI.
+     Keep all seven sub-headings, in this order, even if the answer is "none".
+     Take every flag from the installed binary (`<cli> --help`), not from memory
+     and not from another skill in this repository.
+     ============================================================================= -->
+
+## Vendor card
+
+### Binary and prompt form
+
+- **Binary:** `claude`
+- **Prompt form:** **positional.** `-p` / `--print` is a mode flag — it switches the CLI to
+  non-interactive "print and exit" behavior, it does not itself carry the prompt text. The prompt
+  is the plain string that follows on the command line, e.g. `claude -p "prompt text"`, or it can be
+  piped over stdin. A bare `claude` with no `-p` opens the interactive TUI and never returns.
+
+### Headless and output flags
+
+| Need | Flag |
+|---|---|
+| Run once and exit | `-p`, `--print` |
+| Minimal startup (skips hooks, LSP, plugin sync, auto-memory, keychain, CLAUDE.md auto-discovery) | `--bare` |
+| Output format | `--output-format text` (default), `json`, or `stream-json` |
+| Cap agentic turns | `--max-turns <n>` |
+
+`--bare` changes auth: Anthropic auth becomes strictly `ANTHROPIC_API_KEY` or `apiKeyHelper` via
+`--settings` — OAuth/keychain are never read, so a subscription-authenticated run fails under
+`--bare`. Bedrock/Vertex/Foundry auth is unaffected. Since CLAUDE.md is not loaded under `--bare`,
+pass context explicitly via `--add-dir`, `--system-prompt`, `--settings`, `--agents`.
+
+### Approvals and permissions
+
+- **`--permission-mode auto`** — autonomous execution with a built-in safety classifier.
+- **`--dangerously-skip-permissions`** — bypasses every confirmation prompt.
+- `--permission-mode plan` exists but is a read-only planning mode — do not use it for delegation
+  (see the global rule above: it returns a plan, not the work, and stalls waiting for approval).
+
+What happens if a tool needs approval and nobody answers is **not documented** in this skill's
+sources. Do not rely on a graceful denial — set `--permission-mode auto` or
+`--dangerously-skip-permissions` before the run so the question never comes up headless.
+
+### Models and how to list them
+
+No CLI subcommand to list models is documented here. Anthropic ships short family **aliases** that
+track the current generation (fast/cheap, balanced, flagship) instead of dated snapshot IDs — prefer
+the alias so this file and your command don't go stale; use a full dated ID only to pin an exact
+snapshot. Select with `--model <identifier>`.
+
+If the user names a model, use it. Otherwise search the web for current alias names and consult
+[Artificial Analysis](https://artificialanalysis.ai/) for capability and price comparisons before
+picking one.
+
+### Command pattern
 
 ```bash
-claude -p "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" --permission-mode auto --model [model] 2>&1
+claude -p "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" \
+  --permission-mode auto --model <identifier> 2>&1
 ```
 
-## After Claude Code returns
+### Prompt examples
 
-- **Review** diffs and security-sensitive areas (XSS, injection, auth)—do not merge blindly.
-- **Run** project checks (`lint`, `test`, `typecheck`) as appropriate.
-- **Compress** results for the user: summarize results for the user instead of pasting huge logs unless asked.
-- **Reconcile context**: note decisions, files touched, and remaining risks so the **main** session stays aligned.
+- **Implement:** `claude -p "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | VERIFICATION: [test_command] | OUTPUT: files changed" --permission-mode auto`
+- **Review:** `claude -p "GOAL: Review [scope] for [concerns] | CONSTRAINTS: report only, no edits | OUTPUT: findings with severity" --permission-mode auto`
+- **Investigate:** `claude -p "GOAL: Map how [feature] works | SCOPE: [paths] | CONSTRAINTS: report only, no edits | OUTPUT: file:line map" --permission-mode auto`
 
-## If the call fails or hangs
+### Docs and reference
 
-Headless runs fail quietly more often than they fail loudly:
-
-- **Wrap the call in an external timeout.** A headless CLI can stall before its own timeout arms.
-- **Exit 0 is not success.** If stdout is empty, treat the run as failed and read stderr — a tool
-  permission the CLI could not prompt for, and a prompt that never arrived, both look like success.
-- **Never carry a flag habit across CLIs.** The same short flag means different things in different
-  tools — in OpenCode `-p` is `--password`, so passing a prompt to it silently empties the message and
-  hangs the run forever. Confirm every flag against `claude --help`.
-- **An unrecognized-flag error means this skill is stale, not that the task is impossible.** Run
-  `claude --help`, proceed with the flags that exist, and tell the user which line here needs updating.
-
-## Quick prompts
-
-- **Delegate implementation**: `claude -p "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" --permission-mode auto`
-- **Investigate**: `claude -p "GOAL: Map how [feature] works | SCOPE: [paths] | OUTPUT: concise file:line map" --permission-mode plan`
-- **Plan**: `claude -p "GOAL: Design architecture for [feature] | SCOPE: [paths] | OUTPUT: architecture plan" --permission-mode plan`
+- Flags, models, delegation checklist: [reference.md](reference.md)
+- No vendor documentation URL is recorded in this skill's own sources.
+- **Not verified against an installed binary** — the source files carry no version/date stamp.
+  Confirm every flag with `claude --help` before relying on this card.
