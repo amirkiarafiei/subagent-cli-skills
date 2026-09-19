@@ -46,6 +46,8 @@ chmod +x install.sh
 
 ### 3. Download the skill folder
 
+From `./skills/{vendor}/Skill.md`
+
 
 ## Example Usage
 
