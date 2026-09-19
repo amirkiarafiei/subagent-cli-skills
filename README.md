@@ -21,18 +21,7 @@ subagent then has the state that it needs to do the task correctly.
 
 ## 🛠️ Installation
 
-
-
-### 1. Give this prompt to your agent
-
-```
-Read https://raw.githubusercontent.com/amirkiarafiei/subagent-cli-skills/main/AGENTIC_INSTALLATION.md and follow the instructions to install the Subagent CLI Skills.
-```
-
-Your agent asks you three short questions. Then it installs the skills. See
-[AGENTIC_INSTALLATION.md](AGENTIC_INSTALLATION.md).
-
-### 2. Interactive Installer
+### 1. Interactive Installer
 
 Run the installer with curl:
 
@@ -47,7 +36,14 @@ chmod +x install.sh
 ./install.sh
 ```
 
+### 2. Give this prompt to your agent
 
+```
+Read https://raw.githubusercontent.com/amirkiarafiei/subagent-cli-skills/main/AGENTIC_INSTALLATION.md and follow the instructions to install the Subagent CLI Skills.
+```
+
+Your agent finds which tools you have, asks what it needs to know, and installs the skills. See
+[AGENTIC_INSTALLATION.md](AGENTIC_INSTALLATION.md).
 
 ### 3. Download the skill folder
 
