@@ -11,7 +11,9 @@ Almost every coding agent has a headless mode. This mode runs the agent from the
 command. Each skill in this repository teaches your main agent how to call one other agent in this
 way.
 
-![Delegation Flow Diagram](./assets/banner.png)
+<p align="center">
+  <img src="assets/banner.png" width="500" alt="Delegation Flow Diagram">
+</p>
 
 Each skill also applies a delegation and context transfer protocol. The subagent starts with an
 empty context. The protocol sends the goal, the decisions and the scope with every command. The

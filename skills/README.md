@@ -1,7 +1,7 @@
 <h3 align="center">Let your Claude Code prompt Codex and Antigravity as Subagent</h3>
 
 <p align="center">
-  <img src="../assets/banner.png" width="320" alt="Delegation Flow Diagram">
+  <img src="../assets/banner.png" width="500" alt="Delegation Flow Diagram">
 </p>
 
 Each folder here is one skill. A skill teaches your main agent to send a task to a different CLI
