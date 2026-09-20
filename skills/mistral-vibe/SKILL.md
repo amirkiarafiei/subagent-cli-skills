@@ -54,8 +54,19 @@ subagent does one bounded task and reports back.
 ## Delegation and context transfer protocol
 
 An isolated subagent saves tokens, but it splits the story. The subagent does not see this
-conversation. A poor handoff causes misread tasks, wrong assumptions about the stack or the style,
-and wasted edits.
+conversation. It has no memory of the goal you agreed with the user, the decisions you already made,
+or the paths you agreed not to touch. A poor handoff causes misread tasks, wrong assumptions about
+the stack or the style, and wasted edits.
+
+Treat every call as **stateless delegation**: the subagent keeps nothing between calls, so each
+command must carry its own state. A good handoff happens when you keep these practices in mind:
+
+- **Shared state handoff.** The prompt carries the original goal, the decisions already made, and the
+  explicit scope, to bridge the subagent's missing session history.
+- **Contextual preservation.** The high-volume work stays in the isolated process, so the bulk never
+  enters this conversation and no "split story" forms from missing history.
+- **Result reconciliation.** What comes back is folded into this thread afterwards, so there is a
+  single source of truth.
 
 Write the prompt as a transfer of shared state, not as a title. Include all six fields:
 
