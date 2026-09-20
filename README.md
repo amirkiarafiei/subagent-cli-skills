@@ -21,7 +21,7 @@ subagent then has the state that it needs to do the task correctly.
 
 ## 🛠️ Installation
 
-### 1. Interactive Installer
+### Option 1: Interactive Installer
 
 Run the installer with curl:
 
@@ -36,7 +36,7 @@ chmod +x install.sh
 ./install.sh
 ```
 
-### 2. Give this prompt to your agent
+### Option 2: Give this prompt to your agent
 
 ```
 Read https://raw.githubusercontent.com/amirkiarafiei/subagent-cli-skills/main/AGENTIC_INSTALLATION.md and follow the instructions to install the Subagent CLI Skills.
@@ -45,7 +45,7 @@ Read https://raw.githubusercontent.com/amirkiarafiei/subagent-cli-skills/main/AG
 Your agent finds which tools you have, asks what it needs to know, and installs the skills. See
 [AGENTIC_INSTALLATION.md](AGENTIC_INSTALLATION.md).
 
-### 3. Download the skill folder
+### Option 3: Download the skill folder
 
 From `./skills/<vendor>/` — it contains `SKILL.md` and `reference.md`
 
@@ -54,10 +54,10 @@ From `./skills/<vendor>/` — it contains `SKILL.md` and `reference.md`
 Name the tool in your request. Your agent then activates the correct skill. You can also type the
 slash command yourself. You can name a model for each tool.
 
-**1. Review a feature with two different agents and models**
+**1. Review code with two different agents and models**
 
 ```
-Ask Codex with GPT-Astra and Hermes with GLM-5.3 to review this feature using their subagent cli skills
+Ask Codex with GPT-Astra and Hermes with GLM-5.3 to review the code using their subagent cli skills
 ```
 
 **2. Get the latest documentation**
@@ -69,13 +69,13 @@ Ask Codex with GPT-Astra and Hermes with GLM-5.3 to review this feature using th
 **3. Build two features at the same time with two different agents**
 
 ```
-Build the login form in src/auth/ with Codex. Build the signup form in src/signup/ with OpenCode.
+Build the login form with Codex. Build the signup form with OpenCode.
 ```
 
 **4. Get fresh ideas on a plan from three different agents**
 
 ```
-Ask Pi and Grok and Devin to review the implementation plan to get fresh ideas.
+Ask Pi and Grok and Devin to analyze the plan to get fresh and diverse ideas.
 ```
 
 

@@ -28,13 +28,13 @@ Ask Codex with GPT-Astra and Hermes with GLM-5.3 to review this feature using th
 **3. Build two features at the same time**
 
 ```
-Build the login form in src/auth/ with Codex. Build the signup form in src/signup/ with OpenCode.
+Build the login form with Codex. Build the signup form with OpenCode.
 ```
 
 **4. Get fresh ideas on a plan from three agents**
 
 ```
-Ask Pi and Grok and Devin to review the implementation plan to get fresh ideas.
+Ask Pi and Grok and Devin to analyze the plan to get fresh and diverse ideas.
 ```
 
 ## Available skills
