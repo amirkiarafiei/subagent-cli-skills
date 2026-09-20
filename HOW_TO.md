@@ -51,7 +51,7 @@ files — `SKILL.md` and `reference.md` — into the user's skills directory. An
 does not travel with it. A skill that points at `_skill_template/` or at another skill is broken the
 moment a user installs it.
 
-This means the global half is duplicated 19 times, word for word. That duplication is deliberate.
+This means the global half is duplicated 20 times, word for word. That duplication is deliberate.
 The cost is that a doctrine change touches every file; the benefit is that every folder is a complete,
 downloadable unit that works on its own. We accept the cost.
 
@@ -87,7 +87,7 @@ Run `tool --help` and `tool <subcommand> --help` **first**, and take every flag 
 
 ### 5. Headless Permissions and Failure Modes
 - [ ] **Name what happens when the tool cannot prompt**: headless mode has nobody to ask, so tools get denied, and the denial is usually **silent**. Document whether a denied run exits non-zero or exits 0 with empty output.
-- [ ] **Include the shared "If the call fails or hangs" section** (copy it from any existing skill, substituting the binary name). All 19 skills carry it; new ones should too.
+- [ ] **Include the shared "If the call fails or hangs" section** (copy it from any existing skill, substituting the binary name). All 20 skills carry it; new ones should too.
 
 ### 6. Reference File (`reference.md`)
 - [ ] **Essential Flags**: A concise table, verified against `--help`.

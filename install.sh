@@ -20,6 +20,7 @@ TOOL_NAMES=(
   "Claude Code" "Cursor" "Antigravity" "Codex" "Gemini" "Copilot"
   "Junie" "Kiro" "OpenHands" "OpenCode" "QwenCode" "Mistral Vibe"
   "Kimi Code" "Qoder CLI" "Hermes Agent" "Grok" "Pi" "Oh My Pi"
+  "OpenClaw"
   "Custom path…"
 )
 TOOL_DIRS=(
@@ -41,6 +42,7 @@ TOOL_DIRS=(
   "$HOME/.grok/skills"
   "$HOME/.pi/agent/skills"
   "$HOME/.omp/agent/skills"
+  "$HOME/.openclaw/skills"
   ""
 )
 
@@ -49,7 +51,7 @@ SKILL_NAMES=(
   "antigravity-cli" "gemini-cli" "copilot-cli" "qwen-code" "codex-cli"
   "kiro-cli" "cursor-cli" "junie-cli" "openhands-cli" "opencode-cli"
   "claude-code" "mistral-vibe" "kimi-code" "qoder-cli" "hermes-agent"
-  "grok-cli" "devin-cli" "pi-cli" "oh-my-pi"
+  "grok-cli" "devin-cli" "pi-cli" "oh-my-pi" "openclaw-cli"
 )
 SKILL_HINTS=(
   "agy · Google Antigravity" "gemini · deprecated, still supported"
@@ -58,7 +60,7 @@ SKILL_HINTS=(
   "openhands · OpenHands" "opencode · OpenCode" "claude · Claude Code"
   "vibe · Mistral Vibe" "kimi · Kimi Code" "qodercli · Qoder"
   "hermes · Hermes Agent" "grok · xAI Grok" "devin · Devin"
-  "pi · Pi" "omp · Oh My Pi"
+  "pi · Pi" "omp · Oh My Pi" "openclaw · OpenClaw"
 )
 
 # ------------------------------------------------------- capabilities ------

@@ -29,7 +29,7 @@ The skills, and the command each one drives:
     kimi-code        kimi        qoder-cli      qodercli
     hermes-agent     hermes      grok-cli       grok
     devin-cli        devin       pi-cli         pi
-    oh-my-pi         omp
+    oh-my-pi         omp         openclaw-cli   openclaw
 
 ## Find out what is on the machine
 
