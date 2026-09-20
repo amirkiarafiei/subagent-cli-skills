@@ -74,7 +74,7 @@ Write the prompt as a transfer of shared state, not as a title. Include all six 
 |---|---|
 | **Goal** | The same objective as the user, not only the immediate micro-task. |
 | **Decisions** | Framework, patterns, naming, "use X not Y" — anything that would otherwise be guessed wrong. |
-| **Scope** | The paths and modules to touch, and the areas to leave alone. |
+| **Scope** | The absolute paths and modules to touch, and the areas to leave alone. A relative path may not resolve where you expect. |
 | **Constraints** | Performance, accessibility, compatibility, review gates, "no new dependencies". |
 | **Verification** | The exact command the subagent must run and pass before it returns. |
 | **Output** | For example: "report only, no edits", "apply edits with a minimal diff", "list the files changed". |
