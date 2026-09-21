@@ -39,9 +39,9 @@ Ask Pi and Grok and Devin to analyze the plan to get fresh and diverse ideas.
 
 ## Available skills
 
-20 CLI agents: Antigravity (`agy`), Claude Code, Codex, Copilot, Cursor, Devin, Gemini, Grok,
-Hermes, Junie, Kimi Code, Kiro, Mistral Vibe, Oh My Pi, OpenClaw, OpenCode, OpenHands, Pi, Qoder,
-Qwen Code.
+24 CLI agents: Antigravity (`agy`), Claude Code, Cline, Codex, Copilot, Cursor, Deep Agents Code
+(`dcode`), Devin, Gemini, Goose, Grok, Hermes, Junie, Kilo Code, Kimi Code, Kiro, Mistral Vibe,
+Oh My Pi, OpenClaw, OpenCode, OpenHands, Pi, Qoder, Qwen Code.
 
 Every skill holds two files: `SKILL.md` for the behaviour, and `reference.md` for the flags, models
 and authentication.

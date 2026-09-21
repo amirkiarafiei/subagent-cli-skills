@@ -2,7 +2,7 @@
 
 A collection of Skills that connects agents from any vendor to each other.
 
-Let Claude Code prompt Codex, Antigravity or Pi as a subagent. All agents can call each other as subagent. Supports 20
+Let Claude Code prompt Codex, Antigravity or Pi as a subagent. All agents can call each other as subagent. Supports 24
 agents.
 
 ## How It Works
@@ -82,9 +82,9 @@ Ask Pi and Grok and Devin to analyze the plan to get fresh and diverse ideas.
 
 ## 🔌 Support
 
-Antigravity · Claude Code · Codex · Copilot · Cursor · Devin · Gemini · Grok · Hermes Agent ·
-Junie · Kimi Code · Kiro · Mistral Vibe · Oh My Pi · OpenClaw · OpenCode · OpenHands · Pi · Qoder ·
-Qwen Code
+Antigravity · Claude Code · Cline · Codex · Copilot · Cursor · Deep Agents Code · Devin · Gemini ·
+Goose · Grok · Hermes Agent · Junie · Kilo Code · Kimi Code · Kiro · Mistral Vibe · Oh My Pi ·
+OpenClaw · OpenCode · OpenHands · Pi · Qoder · Qwen Code
 
 ## Delegation and Context Transfer Protocol
 

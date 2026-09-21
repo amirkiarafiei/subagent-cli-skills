@@ -30,6 +30,8 @@ The skills, and the command each one drives:
     hermes-agent     hermes      grok-cli       grok
     devin-cli        devin       pi-cli         pi
     oh-my-pi         omp         openclaw-cli   openclaw
+    cline-cli        cline       kilocode-cli   kilo
+    goose-cli        goose       deepagents-code  dcode
 
 ## Find out what is on the machine
 
