@@ -123,13 +123,15 @@ loudly.
 
 ## Vendor card
 
-> **Deprecated by the vendor** in favor of Antigravity CLI (`agy`) — legacy support for `gemini`
-> remains available. Prefer the `antigravity-cli` skill for new delegations; use this card only when
-> `gemini` is what's installed or explicitly requested.
+> **Replaced for individual tiers.** Google says Antigravity CLI (`agy`) replaced Gemini CLI on
+> 2026-06-18 for free individual access and Google AI Pro/Ultra. The `gemini` repository still ships
+> for enterprise Code Assist. Prefer the `antigravity-cli` skill for new delegations; use this card
+> only when `gemini` is what's installed or explicitly requested.
 
 ### Binary and prompt form
 
 - **Binary:** `gemini`
+- **Install:** `npm install -g @google/gemini-cli` (npm package `@google/gemini-cli`).
 - **Prompt form:** **flag, for reliability.** `--prompt` / `-p <text>` takes the prompt as its value
   and explicitly "forces non-interactive mode." A positional query string is also accepted
   (`gemini "prompt text"`), but non-interactive behavior is normally triggered by piping stdin or a
@@ -145,9 +147,10 @@ loudly.
 | Skip the interactive folder-trust check (headless) | `--skip-trust` |
 | Run in a Git worktree (needs `experimental.worktrees: true`) | `-w`, `--worktree [name]` |
 | Sandboxed execution | `-s`, `--sandbox` |
+| Output format | `-o`, `--output-format <text\|json\|stream-json>` |
 
-No dedicated JSON/text `--output-format` flag is documented for this CLI's core output (unlike its
-approval-mode and model flags, which are documented in detail below).
+`--output-format json` returns one JSON result. `stream-json` streams JSON events. See the headless
+docs for the schema.
 
 ### Approvals and permissions
 
@@ -191,10 +194,13 @@ gemini -p "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths, @paths as need
 
 ### Docs and reference
 
+- **Skills:** `gemini skills list`, `enable`, `disable`, `install`, `link` and `uninstall` manage
+  agent skills (`--scope` picks user or workspace). User skills live in `~/.gemini/skills/` or
+  `~/.agents/skills/`. Workspace skills live in `.gemini/skills/` or `.agents/skills/`. Workspace
+  skills win over user skills. Inside one tier, `.agents/skills/` wins over `.gemini/skills/`.
 - Flags, approval modes, delegation checklist: [reference.md](reference.md)
 - Vendor documentation: <https://github.com/google-gemini/gemini-cli/blob/main/docs/cli/cli-reference.md>
   and <https://geminicli.com/docs/cli/headless/>
-- **Checked against the official Google/Gemini CLI documentation on 2026-09-19. Not run against an
-  installed binary — confirm with `gemini --help` before trusting a flag.** Note: `--yolo`/`-y`,
-  used throughout the previous version of this card, is now documented as **deprecated** in favor of
-  `--approval-mode=yolo`.
+- **Checked against `gemini` 0.51.0 `--help` on 2026-11-05.** Behavior that depends on the docs only
+  (unanswered approvals, `experimental.worktrees`) was not run. The `-y`/`--yolo` deprecation comes
+  from the docs; the 0.51.0 help does not tag it. Confirm with `gemini --help` before trusting a flag.

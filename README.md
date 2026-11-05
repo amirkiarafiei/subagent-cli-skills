@@ -82,9 +82,32 @@ Ask Pi and Grok and Devin to analyze the plan to get fresh and diverse ideas.
 
 ## 🔌 Support
 
-Antigravity · Claude Code · Cline · Codex · Copilot · Cursor · Deep Agents Code · Devin · Gemini ·
-Goose · Grok · Hermes Agent · Junie · Kilo Code · Kimi Code · Kiro · Mistral Vibe · Oh My Pi ·
-OpenClaw · OpenCode · OpenHands · Pi · Qoder · Qwen Code
+<p>
+<img src=".github/readme-assets/antigravity.svg" alt="" width="18" height="18" align="texttop" /> Antigravity ·
+<img src=".github/readme-assets/claude-code.svg" alt="" width="18" height="18" align="texttop" /> Claude Code ·
+<img src=".github/readme-assets/cline.svg" alt="" width="18" height="18" align="texttop" /> Cline ·
+<img src=".github/readme-assets/codex.svg" alt="" width="18" height="18" align="texttop" /> Codex ·
+<img src=".github/readme-assets/copilot.svg" alt="" width="18" height="18" align="texttop" /> Copilot ·
+<img src=".github/readme-assets/cursor.svg" alt="" width="18" height="18" align="texttop" /> Cursor ·
+<img src=".github/readme-assets/deepagents-code.svg" alt="" width="18" height="18" align="texttop" /> Deep Agents Code ·
+<img src=".github/readme-assets/devin.svg" alt="" width="18" height="18" align="texttop" /> Devin ·
+<img src=".github/readme-assets/gemini.svg" alt="" width="18" height="18" align="texttop" /> Gemini ·
+<img src=".github/readme-assets/goose.svg" alt="" width="18" height="18" align="texttop" /> Goose ·
+<img src=".github/readme-assets/grok.svg" alt="" width="18" height="18" align="texttop" /> Grok ·
+<img src=".github/readme-assets/hermes-agent.svg" alt="" width="18" height="18" align="texttop" /> Hermes Agent ·
+<img src=".github/readme-assets/junie.svg" alt="" width="18" height="18" align="texttop" /> Junie ·
+<img src=".github/readme-assets/kilocode.svg" alt="" width="18" height="18" align="texttop" /> Kilo Code ·
+<img src=".github/readme-assets/kimi-code.svg" alt="" width="18" height="18" align="texttop" /> Kimi Code ·
+<img src=".github/readme-assets/kiro.svg" alt="" width="18" height="18" align="texttop" /> Kiro ·
+<img src=".github/readme-assets/mistral-vibe.svg" alt="" width="18" height="18" align="texttop" /> Mistral Vibe ·
+<img src=".github/readme-assets/oh-my-pi.svg" alt="" width="18" height="18" align="texttop" /> Oh My Pi ·
+<img src=".github/readme-assets/openclaw.svg" alt="" width="18" height="18" align="texttop" /> OpenClaw ·
+<img src=".github/readme-assets/opencode.svg" alt="" width="18" height="18" align="texttop" /> OpenCode ·
+<img src=".github/readme-assets/openhands.svg" alt="" width="18" height="18" align="texttop" /> OpenHands ·
+<img src=".github/readme-assets/pi.svg" alt="" width="18" height="18" align="texttop" /> Pi ·
+<img src=".github/readme-assets/qoder.svg" alt="" width="18" height="18" align="texttop" /> Qoder ·
+<img src=".github/readme-assets/qwen-code.svg" alt="" width="18" height="18" align="texttop" /> Qwen Code
+</p>
 
 ## Delegation and Context Transfer Protocol
 

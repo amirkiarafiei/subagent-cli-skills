@@ -1,12 +1,17 @@
 # Kimi Code CLI — reference
 
-> **Checked against the official Moonshot AI documentation on 2026-09-19. Not run against an installed
-> binary — confirm with `kimi --help` before trusting a flag.**
+> **Checked against the official Moonshot AI documentation on 2026-11-05; not run against an installed
+> binary.** Latest npm release of `@moonshot-ai/kimi-code` is 2.5.1. Confirm with `kimi --help` before
+> trusting a flag.
 >
 > **Version note:** Moonshot AI is winding down the legacy Python **Kimi CLI** (frozen since v1.44.0,
 > 2026-05-13) in favor of the rewritten **Kimi Code CLI** (TypeScript). Both ship the `kimi` binary and
 > the new one auto-migrates the old one's config/sessions, but flag semantics differ materially —
 > notably around approvals. This reference describes **current Kimi Code CLI**.
+
+## Install
+
+`npm install -g @moonshot-ai/kimi-code` (binary `kimi`). The unscoped npm package `kimi-code` is a different project that also installs a `kimi` binary. Do not install it.
 
 ## Authentication
 
@@ -70,6 +75,8 @@ no-ops waiting on approval; only explicit config-level deny rules block a call. 
 | `kimi vis` | Session visualizer. |
 | `kimi provider [catalog list ...]` | Manage providers/models. |
 | `kimi install-desktop` | Install desktop integration. |
+| `kimi import-sessions` | Import recent Claude Code and Codex sessions as Kimi Code sessions (15-day or 30-day window, newest 100 per run). |
+| `kimi app` | Open the Kimi Code desktop app in the current or a given directory. Needs the desktop app installed. |
 
 ## Agent Skills
 
@@ -77,9 +84,11 @@ Kimi Code CLI has a documented Agent Skills system. A skill is a Markdown docume
 frontmatter, either as a `SKILL.md` inside a directory (with supporting files alongside it) or a flat
 standalone `.md` file for simple skills. Required frontmatter: `name`, `description`, `type`; optional:
 `whenToUse`, `disableModelInvocation`, `arguments`. Load priority: **Project > User > Extra > Built-in**,
-from `.kimi-code/skills/` (project), `$KIMI_CODE_HOME/skills/` (user), and `extra_skill_dirs` in
-`config.toml`. A `--skills-dir` CLI flag was mentioned in one source but could not be re-confirmed —
-treat its existence as unverified. Beyond Skills, Kimi Code CLI also documents Plugins, Sub-agents
+from `.kimi-code/skills/` and `.agents/skills/` (project; the root is the nearest directory with a
+`.git`), `$KIMI_CODE_HOME/skills/` (default `~/.kimi-code/skills/`) and `~/.agents/skills/` (user), and
+`extra_skill_dirs` in `config.toml`. The command reference page documents `--skills-dir <dir>`
+(repeatable; replaces the auto-discovered user and project directories for that launch). The skills
+page does not mention it, so treat it as unverified. Beyond Skills, Kimi Code CLI also documents Plugins, Sub-agents
 (`--agent`, `--agent-file`), Hooks (script injection at lifecycle checkpoints: formatting, approvals,
 notifications), MCP support, and Custom Themes as separate customization layers.
 
@@ -87,8 +96,8 @@ notifications), MCP support, and Custom Themes as separate customization layers.
 
 | Component | Path |
 |---|---|
-| Project skills | `.kimi-code/skills/` |
-| User skills | `$KIMI_CODE_HOME/skills/` |
+| Project skills | `.kimi-code/skills/`, `.agents/skills/` |
+| User skills | `$KIMI_CODE_HOME/skills/` (default `~/.kimi-code/skills/`), `~/.agents/skills/` |
 | Extra skill dirs | `extra_skill_dirs` in `config.toml` |
 | Legacy Ralph-loop setting | `[loop_control].max_ralph_iterations` in `config.toml` (legacy Kimi CLI only, per third-party analysis; not confirmed present in current Kimi Code CLI) |
 

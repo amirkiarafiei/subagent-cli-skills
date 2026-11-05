@@ -1,7 +1,8 @@
 # OpenClaw — reference
 
-> **Checked against `openclaw` 2026.9.5 (ec9c1a1) on 2026-09-20.** Provenance is stated per claim,
-> because not all of it carries the same weight:
+> **Checked against `openclaw` 2026.9.5 (ec9c1a1) on 2026-09-20 (binary), and against the official
+> documentation on 2026-11-05. Not run against the latest npm build, 2026.11.1.** Provenance is stated
+> per claim, because not all of it carries the same weight:
 >
 > - **From `--help`:** every flag and subcommand.
 > - **From real runs:** the JSON envelope and its keys, the stdout/stderr split, exit code `1`, the
@@ -9,14 +10,22 @@
 >   `skills list --json`, and the Node engine requirement.
 > - **From the installed package:** the skill limits (`dist/node-skill-constraints`) and the
 >   frontmatter contract (the bundled `skill-creator` skill).
-> - **From vendor docs only, not reproduced here:** exit codes `0` and `2`, and the full enumeration
->   of security and ask levels. These are marked in place.
+> - **From vendor docs only, not reproduced here:** exit codes `0`, `2`, `130` and `143`, the
+>   `--timeout` and `--config-override` semantics, the extra JSON envelope keys, and the full
+>   enumeration of security and ask levels. These are marked in place.
 >
 > A successful delegation was **not** run, because that needs provider credentials. Nothing here was
 > taken from documentation where the binary could answer instead — the docs already disagree with this
 > build on where `--json` lives and on the description-length limit. `openclaw <command> --help` is the
 > only authority. On an unrecognized flag, re-read `--help`, use what exists, and report that this file
 > needs updating.
+
+## Install
+
+`curl -fsSL https://openclaw.ai/install.sh | bash` (macOS, Linux, WSL2). Alternatives on the official
+page <https://docs.openclaw.ai/install>: `npm install -g openclaw@latest --allow-scripts=openclaw` (npm
+12 or 11.16+; drop the flag on older npm) and
+`pnpm add -g --allow-build=openclaw openclaw@latest`.
 
 ## Authentication
 
@@ -27,7 +36,10 @@ by default.
 - `openclaw models status` — check provider auth health before delegating.
 - `--auth-env-only` on `agent exec` — use provider keys from environment variables only, ignoring
   stored and external CLI logins. Useful for a reproducible or CI-style run.
-- `--no-auth-env-only` — the inverse; allow stored and external CLI credential discovery.
+- `--no-auth-env-only` — the inverse; allow stored and external CLI credential discovery. This is the
+  default (vendor docs).
+- `--auth-env-only` loads no config at all, so it is rejected together with `--config` or
+  `--config-override` (vendor docs).
 
 A run with no usable credential still returns a well-formed JSON envelope and exits `1`:
 
@@ -70,13 +82,14 @@ binary.
 | *(positional)* | The prompt |
 | `--message-file <path>` | Read the UTF-8 prompt from a file; `-` reads stdin |
 | `--json` | Emit the stable agent-exec JSON envelope |
-| `--timeout <seconds>` | Agent deadline; default `600` |
+| `--timeout <seconds>` | Deadline: `600` seconds **per model attempt**, a fresh budget for each fallback; `0` disables it |
 | `--cwd <dir>` | Set both the agent workspace and the tool working directory |
 | `--model <provider/model>` | Explicit primary model |
 | `--fallback <provider/model>` | Ordered fallback; repeatable; requires `--model` |
 | `--thinking <level>` | `off\|minimal\|low\|medium\|high\|xhigh\|adaptive\|max\|ultra` |
 | `--isolated` | Ignore the ambient config; run against exec defaults only |
-| `--config <path>` | Run against an explicit config file |
+| `--config <path>` | Run against an explicit config file (JSON5 and `$include` work) |
+| `--config-override '<JSON>'` | Change selected settings for one run. Objects merge; arrays and scalars replace. Repeatable, applied in order, validated, never saved. Explicit flags such as `--model` still win. Example: `'{"tools":{"deny":["exec"]}}'` disables the exec tool. |
 | `--state-dir <dir>` | Use an existing state directory instead of a temporary one |
 | `--code-mode <mode>` | Tool mode: `direct \| auto \| code` |
 | `--local-model-lean` | Reduced local-model tool surface |
@@ -95,18 +108,26 @@ The global flags on `openclaw` itself are `--container`, `--dev`, `--log-level`,
 ### Output and exit codes
 
 **Observed by running `agent exec --json`:** stdout carries the envelope alone and every diagnostic
-goes to stderr, so the output parses without filtering. The envelope keys are `ok`, `status`, `final`,
+goes to stderr, so the output parses without filtering. The observed keys are `ok`, `status`, `final`,
 `payloads`, `model`, `provider`, `sessionId`, and `error` (`message`, `kind`) on failure. Read the
 answer from `.final`.
 
+**From vendor docs, not observed:** `status` is `ok`, `error` or `timeout`. `usage` is omitted when
+unavailable. Optional keys: `costUsd`, `codeModeEngaged`, `assistantTurns`, `bridgeCalls` (`search`,
+`describe`, `call` counts) and `toolSummary`. `error.kind` can be `cleanup`. If the failure happens
+before model selection, `model` and `provider` are `null`.
+
 | Code | Meaning | Provenance |
 |---|---|---|
-| `0` | Completed turn | vendor docs — **not observed here** |
-| `1` | Model or result error | **observed** on a run with no usable credential |
+| `0` | Successful run | vendor docs — **not observed here** |
+| `1` | Model or result error; also a cleanup failure after a successful run (output is kept) | **observed** on a run with no usable credential; the cleanup case is vendor docs |
 | `2` | Timeout | vendor docs — **not observed here** |
+| `130` | Cancelled by `SIGINT` | vendor docs — **not observed here** |
+| `143` | Cancelled by `SIGTERM` | vendor docs — **not observed here** |
 
-Only exit `1` was reproduced, because a successful turn and a timeout both need working provider
-credentials. Treat `0` and `2` as documented rather than proven, and confirm them on first use.
+If cleanup fails after a run error or timeout, the original exit code is kept and the cleanup failure
+goes to stderr (vendor docs). Only exit `1` was reproduced, because a successful turn and a timeout
+both need working provider credentials. Treat the rest as documented rather than proven.
 Check `.ok` as well as the exit code: a failed run still prints a well-formed envelope.
 
 ## Approvals and permissions
@@ -114,13 +135,14 @@ Check `.ok` as well as the exit code: a failed run still prints a well-formed en
 Approvals are **host configuration, not a flag**. There is no per-run approve-all option on
 `agent exec`, and none is needed on a default host.
 
-Verified default on a clean install, from `openclaw exec-policy show`:
+Observed default on a clean 2026.9.5 install, from `openclaw exec-policy show` (**not re-checked on
+2026.11.1; the current approvals doc states only that the default `askFallback` is `deny`**):
 
     tools.exec   requested: host=auto, security=full, ask=off     (all "OpenClaw default")
                  host:      security=full, ask=off, askFallback=deny
                  effective: security=full, ask=off
 
-So OpenClaw ships auto-approving and a headless run does not stall. The effective policy is the host
+So on 2026.9.5 OpenClaw shipped auto-approving and a headless run did not stall. The effective policy is the host
 approvals policy intersected with the requested `tools.exec` policy.
 
 | Command | Purpose |
@@ -212,7 +234,8 @@ to gate themselves on what the machine actually has; `openclaw skills list --jso
 default and takes `--port`, `--auth <mode>`, `--token` and `--password`; the `--dev` profile shifts it
 to 19001. None of this matters for `agent exec`, which runs without a Gateway.
 
-`openclaw` requires Node `>=24.16.0 <25` or `>=26.1.0`; the installer refuses to run on older Node.
+`openclaw` 2026.9.5 required Node `>=24.16.0 <25` or `>=26.1.0`; the installer refused to run on older
+Node. The current install page says "Node 24.16.0+ on 24.x, or 26.1.0+".
 
 ## Documentation
 
@@ -221,6 +244,7 @@ to 19001. None of this matters for `agent exec`, which runs without a Gateway.
 - Approvals: <https://docs.openclaw.ai/cli/approvals>
 - Models: <https://docs.openclaw.ai/cli/models>
 - Skills: <https://docs.openclaw.ai/cli/skills>
+- Install: <https://docs.openclaw.ai/install>
 - `openclaw docs "<query>"` searches the live docs from the terminal.
 
 ## Delegation Checklist

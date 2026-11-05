@@ -126,13 +126,15 @@ loudly.
 ### Binary and prompt form
 
 - **Binary:** `grok`
-- **Prompt form:** **flag.** The prompt is the value of `-p`, `--single <PROMPT>`.
+- **Install:** `curl -fsSL https://x.ai/cli/install.sh | bash` (macOS, Linux). Windows: `irm https://x.ai/cli/install.ps1 | iex`.
+- **Prompt form:** **flag.** The prompt is the value of `-p <PROMPT>`. Older notes also list `--single`;
+  the vendor reference page names only `-p`, so use `-p`.
 
 ### Headless and output flags
 
 | Need | Flag |
 |---|---|
-| Run once and exit | `-p`, `--single <PROMPT>` |
+| Run once and exit | `-p <PROMPT>` |
 | Output format | `--output-format plain\|json\|streaming-json` (examples in the docs use `plain`; it is not explicitly stated as the default) |
 | Turn cap | `--max-turns <N>` |
 | Run inline, not fullscreen | `--no-alt-screen` |
@@ -141,9 +143,9 @@ loudly.
 ### Approvals and permissions
 
 `--always-approve` "skips ordinary permission prompts so tools run without waiting for a click" —
-documented deny rules, hooks, and some shell `ask` rules still apply on top of it. **`--yolo` is not a
-current flag or alias** — it exists only as a legacy `yolo = true` key in `config.toml`, superseded by
-`permission_mode` / `--always-approve`; do not pass `--yolo` on the command line. Narrower options:
+documented deny rules, hooks, and some shell `ask` rules still apply on top of it. The vendor
+reference lists `--yolo` as an alias of `--always-approve`. This card uses `--always-approve`. A legacy
+`yolo = true` key in `config.toml` is superseded by `permission_mode` / `--always-approve`. Narrower options:
 `--allow <RULE>` / `--deny <RULE>` (work in both interactive and headless sessions), and `--sandbox
 <PROFILE>` (documented as a flag; its profile values are not documented).
 
@@ -182,5 +184,7 @@ grok -p "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [
 
 - Flags, models, permissions, skills, paths: [reference.md](reference.md)
 - Vendor documentation: <https://docs.x.ai/build/cli/reference> and <https://docs.x.ai/build/cli/headless-scripting>
-- **Checked against the official xAI documentation on 2026-09-19. Not run against an installed binary —
-  confirm with `grok --help` before trusting a flag.**
+- **Checked against the official xAI documentation on 2026-11-05; not run against an installed binary.**
+  The docs show no version number, so no version is stated. Confirm with `grok --help` before trusting
+  a flag. `--no-alt-screen`, `--no-auto-update` and the `--effort` values are not on the reference
+  page; they are unverified.

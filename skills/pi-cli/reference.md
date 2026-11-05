@@ -1,7 +1,15 @@
 # Pi CLI — reference
 
-> **Checked against the official Pi documentation on 2026-09-19. Not run against an installed binary —
-> confirm with `pi --help` and `pi --list-models` before trusting a flag.**
+> **Checked against the official documentation on 2026-11-05; not run against an installed binary.**
+> Latest release on npm: `@earendil-works/pi-coding-agent` 1.5.0. Confirm with `pi --help` and
+> `pi --list-models` before trusting a flag.
+
+## Install
+
+`curl -fsSL https://pi.dev/install.sh | sh`, or
+`npm install -g --ignore-scripts @earendil-works/pi-coding-agent` (Node 22.19+), or
+`nix profile add github:earendil-works/pi/stable`. Source: <https://pi.dev/docs/latest/quickstart>.
+Do not confuse this with `pi install <source>`, which installs extension packages.
 
 ## Authentication
 
@@ -29,10 +37,10 @@ only.
 | `--list-models [search]` | List available models. |
 | `-a`, `--approve` | Trust project-local files for this run — project trust, *not* tool approval. |
 | `-na`, `--no-approve` | Ignore project-local files for this run. |
-| `--tools <list>` | Allowlist of tools. |
-| `--exclude-tools <list>` | Denylist of tools. |
+| `-t`, `--tools <list>` | Allowlist of tools. |
+| `-xt`, `--exclude-tools <list>` | Denylist of tools. |
 | `-nbt`, `--no-builtin-tools` | Disable built-in tools only. |
-| `--no-tools` | Disable all tools. |
+| `-nt`, `--no-tools` | Disable all tools. |
 | `-c`, `--continue` | Resume the most recent session. |
 | `-r`, `--resume` | Browse and select a session. |
 | `--session <path\|id>` | Use a specific session file or UUID. |
@@ -40,7 +48,7 @@ only.
 | `--no-session` | Ephemeral, unsaved run. |
 | `-e`, `--extension <source>` | Load an extension (path, npm, git). Repeatable. |
 | `--skill <path>` | Load a skill explicitly. Repeatable; additive even with `--no-skills`. |
-| `--no-skills` | Disable skill discovery. |
+| `-ns`, `--no-skills` | Disable skill discovery. |
 | `--api-key <key>` | Override credentials from the environment. |
 | `@file` | Attach a file to the message (`pi @README.md "prompt"`). |
 
@@ -115,8 +123,8 @@ Pi can read other agents' skills, opt-in via settings — add their directories 
 
 - Vendor documentation: <https://pi.dev/docs/latest/usage>, <https://pi.dev/docs/latest/settings>,
   <https://pi.dev/docs/latest/skills>
-- **Checked against the official documentation on 2026-09-19. Not run against an installed binary —
-  confirm with `pi --help` before trusting a flag.**
+- **Checked against the official documentation on 2026-11-05; not run against an installed binary**
+  (npm `@earendil-works/pi-coding-agent` 1.5.0). Confirm with `pi --help` before trusting a flag.
 
 ## Delegation Checklist
 

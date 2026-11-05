@@ -1,18 +1,25 @@
 # Oh My Pi (`omp`) — reference
 
-> **Checked against the official oh-my-pi documentation on 2026-09-19. Not run against an installed
-> binary — confirm with `omp --help` and `omp models` before trusting a flag.**
+> **Checked against the official documentation on 2026-11-05; not run against an installed binary.**
+> Latest release on npm: `@oh-my-pi/pi-coding-agent` 18.16.0. Confirm with `omp --help` and
+> `omp models` before trusting a flag.
 >
-> **Sourcing note:** `omp.sh/docs` is a client-rendered SPA that returns HTTP 403 to non-browser
-> fetches. The facts below come from the vendor's own documentation source
-> (`docs/*.md` in the `can1357/oh-my-pi` GitHub repository), which is what that site renders.
+> **Sourcing note:** the facts below come from the vendor's own documentation source (`docs/*.md` in
+> the `can1357/oh-my-pi` GitHub repository), which the `omp.sh/docs` site renders. Do not confuse the
+> package with the unrelated npm package `oh-my-pi`.
+
+## Install
+
+`bun install -g @oh-my-pi/pi-coding-agent` (recommended in the README), `curl -fsSL https://omp.sh/install | sh`,
+`brew install can1357/tap/omp`, or `nix profile add github:can1357/oh-my-pi`. Source:
+<https://github.com/can1357/oh-my-pi>.
 
 ## Authentication
 
 Per-provider environment variables rather than one key — e.g. `ANTHROPIC_OAUTH_TOKEN` (takes
 precedence) or `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY`, and more. `--api-key <key>`
-overrides. `/login` is an interactive TUI slash command; no headless `omp login` subcommand is
-documented.
+overrides. `/login` is an interactive TUI slash command. The CLI reference lists a `login` subcommand;
+whether it works headlessly is **unverified**.
 
 ## Models
 
@@ -83,11 +90,12 @@ silent flag and no general exit-code table are documented.
 
 ## Approvals and permissions
 
-Three tiers, set with `--approval-mode <mode>` (or `--auto-approve`/`--yolo` to force `yolo`):
+Four tiers, set with `--approval-mode <mode>` (or `--auto-approve`/`--yolo` to force `yolo`):
 
 | Mode | Auto-approves | Prompts for |
 |---|---|---|
 | `always-ask` | read | write, exec |
+| `always-ask-cached` | read | as `always-ask`, and remembers answers; also asks before a tool reads a file it has not been granted |
 | `write` | read, write | exec |
 | `yolo` (**default**) | read, write, exec | none |
 
@@ -132,7 +140,9 @@ skipped. Optional: `globs`, `alwaysApply`, `hide`, `disableModelInvocation` (keb
 are preserved as metadata.
 
 `omp` reads Claude Code's `~/.claude/skills/` (both user and project) at priority 80, so skills
-installed for Claude Code are visible to `omp` too. No `omp skills` subcommand is documented.
+installed for Claude Code are visible to `omp` too. The CLI reference lists a `skill` subcommand (alias
+`skills`); the skills doc names `omp skill list --json` and `omp skill install`. The native `.omp`
+directories in the table above are **unverified**: the skills doc does not list them.
 
 ## Configuration and paths
 
@@ -152,10 +162,10 @@ path becomes `~/.omp/profiles/<name>/agent/skills/`.
 ## Documentation
 
 - Vendor documentation: <https://github.com/can1357/oh-my-pi/tree/main/docs> (source of the
-  client-rendered `omp.sh/docs` site)
+  `omp.sh/docs` site)
 - Key pages used: `docs/approval-mode.md`, `docs/cli-reference.md`, `docs/models.md`, `docs/skills.md`
-- **Checked against the official documentation on 2026-09-19. Not run against an installed binary —
-  confirm with `omp --help` before trusting a flag.**
+- **Checked against the official documentation on 2026-11-05; not run against an installed binary**
+  (npm `@oh-my-pi/pi-coding-agent` 18.16.0). Confirm with `omp --help` before trusting a flag.
 
 ## Delegation Checklist
 

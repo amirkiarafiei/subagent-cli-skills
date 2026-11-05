@@ -1,7 +1,6 @@
 # Cline CLI — reference
 
-> **Verified against `cline` 3.0.62 on 2026-09-21 by running the binary** (`--help`, `auth --help`,
-> `skill --help`). Flags below came from that build, not from documentation. A full delegation was
+> **Checked on 2026-11-05 against the official documentation and the 3.0.63-3.0.74 release notes. Not run against an installed binary.** The flag details come from a `cline` 3.0.62 run of `--help`, `auth --help` and `skill --help` on 2026-09-21. The latest npm version is 3.0.74. A full delegation was
 > not run, because that needs provider credentials. `cline --help` is the only authority. On an
 > unrecognized flag, re-read `--help`, use what exists, and report that this file needs updating.
 
@@ -55,7 +54,7 @@ identifier into a delegation — take it from the user, or leave the configured 
 **`-p` collides across commands.** At the top level `-p` is `--plan`; inside `cline auth` it is
 `--provider`. It is never the prompt.
 
-`-y`/`--yolo` and `--team-name` parse but are hidden from `--help` in 3.0.62. `--yolo` is not needed,
+`-y`/`--yolo` is listed in `cline --help` since the 3.0.6x release notes (it was hidden in 3.0.62). `--team-name` was hidden in 3.0.62; this was not re-checked. `--yolo` is not needed,
 because auto-approve is already the default.
 
 Command-level restriction is environment-based, not a flag:
@@ -124,7 +123,8 @@ presence of `~/.cline`.
 
 ## Documentation
 
-- Vendor documentation: <https://docs.cline.bot/>
+- Vendor documentation: <https://docs.cline.bot/cli/cli-reference>
+- Install: `npm i -g cline` (<https://docs.cline.bot/cli/overview>)
 - Repository: <https://github.com/cline/cline>
 - Package: `cline` on npm. A separate `@cline/cli` package exists, is marked experimental, and
   installs a different binary (`clite`) — it is not this CLI.

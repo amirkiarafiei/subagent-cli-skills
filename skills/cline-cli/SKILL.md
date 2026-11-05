@@ -125,6 +125,7 @@ loudly.
 ### Binary and prompt form
 
 - **Binary:** `cline`
+- **Install:** `npm i -g cline` (vendor CLI overview page).
 - **Prompt form:** **positional.** `cline "prompt"` — the usage line is
   `cline [options] [command] [prompt]`, and the argument help reads "Your prompt. Default to start in
   act mode with auto-approve enabled."
@@ -204,7 +205,7 @@ in the background and watch the log.
 ### Docs and reference
 
 - Flags, models, approvals, skills and paths: [reference.md](reference.md)
-- Vendor documentation: <https://docs.cline.bot/>
-- **Verified against `cline` 3.0.62 by running `--help`, `auth --help` and `skill --help` on
-  2026-09-21. Flags came from the binary, not from documentation. A full delegation was not run,
-  because that needs provider credentials.**
+- Vendor documentation: <https://docs.cline.bot/cli/cli-reference>
+- **Checked on 2026-11-05 against the official documentation and the 3.0.63-3.0.74 release notes. Not
+  run against an installed binary; the flag details come from a `cline` 3.0.62 `--help` run on
+  2026-09-21. The latest npm version is 3.0.74.**

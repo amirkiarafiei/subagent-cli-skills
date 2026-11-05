@@ -126,6 +126,13 @@ loudly.
 ### Binary and prompt form
 
 - **Binary:** `openhands`
+- **Install:** `uv tool install openhands --python 3.12` (needs Python 3.12+ and uv 0.11.6 or newer), or
+  `curl -fsSL https://install.openhands.dev/install.sh | sh` for the executable binary (official page
+  <https://docs.openhands.dev/openhands/usage/cli/installation>).
+- **Maintenance status:** the official headless page says **"The OpenHands CLI is no longer actively
+  maintained"** and points to Agent Canvas for a maintained local setup. The GitHub repo
+  `OpenHands/OpenHands-CLI` is not archived and still gets commits (last push seen: 2026-10-22). The
+  signals conflict. Tell the user before relying on this CLI.
 - **Prompt form:** **flag.** The task is the value of `-t`/`--task "[prompt]"`, or load it from a file
   with `-f`/`--file [file]`. One of the two is required to run headless — there is no bare positional
   form.
@@ -139,7 +146,6 @@ loudly.
 | Task from file | `-f`, `--file [file]` |
 | Structured JSONL event stream | `--json` |
 | Resume a previous conversation | `--resume` |
-| Force env-var model overrides | `--override-with-envs` |
 
 ### Approvals and permissions
 
@@ -151,18 +157,20 @@ case of a tool call that still can't be resolved — headless is unconditionally
 
 ### Models and how to list them
 
-No CLI command to list models is documented. The model is set with environment variables — `LLM_MODEL`
-(provider-prefixed, e.g. `openhands/<identifier>` or `anthropic/<identifier>`) and `LLM_API_KEY` — read
-at startup, or persisted into `~/.openhands/settings.json` after an interactive first run.
-`--override-with-envs` forces `LLM_MODEL`/`LLM_BASE_URL` from the environment to take precedence over
-saved settings for that run. For capability and price comparisons, check
-[Artificial Analysis](https://artificialanalysis.ai/) and the vendor's own documentation.
+No CLI command to list models is documented, and the official headless page does not say how a
+headless run picks its model. The official installation page says the LLM settings live in
+**`~/.openhands/agent_settings.json`**: the CLI asks for them on the first interactive run and reuses
+them in later sessions. Configure the model once with an interactive `openhands` run (or edit that
+file) **before** delegating headless. A third-party, source-derived index (DeepWiki) says the model is
+read from that file and that no `LLM_MODEL`/`LLM_API_KEY` environment variables exist. This card does
+not document those variables or an `--override-with-envs` flag: the official docs do not mention them.
+For capability and price comparisons, check [Artificial Analysis](https://artificialanalysis.ai/) and
+the vendor's own documentation.
 
 ### Command pattern
 
 ```bash
-LLM_MODEL=<provider/identifier> LLM_API_KEY=<key> \
-openhands --headless -t "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" --override-with-envs 2>&1
+openhands --headless -t "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" 2>&1
 ```
 
 ### Prompt examples
@@ -175,6 +183,6 @@ openhands --headless -t "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] 
 
 - Flags, models, delegation checklist: [reference.md](reference.md)
 - Vendor documentation: <https://docs.openhands.dev/openhands/usage/cli/headless> and
-  <https://docs.openhands.dev/openhands/usage/llms/openhands-llms>
-- **Checked against the official OpenHands documentation on 2026-09-19. Not run against an installed
-  binary — confirm with `openhands --help` before trusting a flag.**
+  <https://docs.openhands.dev/openhands/usage/cli/installation>
+- **Checked against the official documentation on 2026-11-05; not run against an installed binary.**
+  Latest release on PyPI: `openhands` 1.16.0. Confirm with `openhands --help` before trusting a flag.

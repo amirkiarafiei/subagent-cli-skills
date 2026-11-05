@@ -1,7 +1,12 @@
 # Mistral Vibe CLI — reference
 
-> **Checked against the official Mistral AI documentation on 2026-09-19. Not run against an installed
-> binary — confirm with `vibe --help` before trusting a flag.**
+> **Checked against the official documentation on 2026-11-05; not run against an installed binary.**
+> Latest release on PyPI: `mistral-vibe` 3.1.0. Confirm with `vibe --help` before trusting a flag.
+
+## Install
+
+`curl -LsSf https://mistral.ai/vibe/install.sh | bash`, or `uv tool install mistral-vibe`, or
+`pip install mistral-vibe` (official repo README: <https://github.com/mistralai/mistral-vibe>).
 
 ## Authentication
 
@@ -27,34 +32,40 @@ lists the full catalog or only opens a picker is unconfirmed. Check
 | `--output` | `text` (default), `json`, or `streaming`. |
 | `--max-turns` | Limit the maximum number of assistant turns. |
 | `--max-price` | Indicative (soft) cost cap in dollars — not a hard guarantee. |
+| `--max-tokens <N>` | Cap total prompt and completion tokens. |
+| `--time-limit <seconds>` | Stop the run at the deadline; the session can be resumed. `SIGTERM` stops it the same way. |
+| `--prompt-file <path>` | Read the prompt from a file. |
+| `--system-prompt-file <path>` | Replace Vibe's built-in instructions; project context and `AGENTS.md` still apply. |
+| `--output-dir <dir>` | Write `export.json` (config, token usage, cost, stop reason, outcome) and a session copy. |
+| `--disabled-tools <list>` | Disable tools after `--enabled-tools` filtering. Repeatable. |
+| `--worktree [name]` | Run in a git worktree under `~/.vibe/worktrees/`. |
 | `--enabled-tools <list>` | Enable only the named tools (exact name, glob, or `re:` regex); disables all others. |
-| `--agent <mode>` | Approval mode: `default`, `plan`, `accept-edits`, `auto-approve`. |
+| `--agent <name>` | Built-in agent: `ask`, `accept-edits` (default), `smart-approve`, `auto-approve` (`lean` is Lean 4 only). |
+| `--auto-approve`, `--yolo` | Approve every tool call. Ignored if an admin sets `enable_auto_approve = false`. |
 | `--trust` | Grant temporary folder trust for this invocation only (non-persistent). |
 | `--continue`/`-c` | Resume the most recent session. |
 | `--resume <SESSION_ID>` | Resume a specific session. |
 | `--setup` | Run/re-run the credential setup wizard. |
 | `--version` | Print version. |
 
-There is no bare `--yolo` or `--auto-approve` boolean flag — passing one is rejected as an unrecognized
-argument; use `--agent auto-approve` instead (or rely on the programmatic-mode fallback below).
+`--auto-approve` and `--yolo` are documented flags. This card prefers `--agent auto-approve`, which
+names the agent explicitly.
 
 ## Approvals and permissions
 
-`--agent` selects one of four modes: `default` (ask before every tool), `plan` (read-only — auto-approves
-safe reads, blocks edits/commands), `accept-edits` (auto-approves file edits, still asks for
-shell/sensitive tools), `auto-approve` (approves everything). **In programmatic mode (`--prompt`), Vibe
-falls back to `auto-approve` when `--agent` is omitted** — this is the documented default, so no extra
-flag is required to get full auto-approval headlessly. There is a real multi-tier permission system
+`--agent` selects a built-in agent: `ask`, `accept-edits` (the default), `smart-approve`, or
+`auto-approve` (approves everything, sandbox use only). `lean` exists for Lean 4 only. Vibe has no
+built-in `plan` agent; `default_agent = "plan"` warns and starts `ask`. **A programmatic run
+(`--prompt`) does not auto-approve.** It uses the default agent, and Vibe denies every tool call that
+needs approval. Pass `--agent auto-approve` for a run that must act. There is a real multi-tier permission system
 underneath this (per-tool `"always"/"ask"` settings, bash allow/deny lists, `--trust` for folder trust) —
-it is not the case that "no permission system exists"; it's simply defaulted to `auto-approve` for
-`--prompt` runs unless overridden.
+it is not the case that "no permission system exists".
 
-**Unanswered-approval / stall behavior is not documented.** No exit-code or hang contract is stated for
-a blocked tool call in headless mode. A community bug report (a specific released version) found that
-even with `auto-approve` active, a complex prompt could trigger an internal plan-confirmation step that
-the run then stalls on, waiting for input headless mode cannot supply. Treat this as a known,
-version-dependent edge case rather than confirmed universal behavior — always wrap a `vibe --prompt` run
-in an external timeout.
+**Exit codes (vendor docs):** `0` the agent finished; `1` the run could not start (invalid flag or
+config); `2` model API or runtime failure; `3` the agent stopped before finishing (limit reached, run
+stopped, or the model declined). Denial, not a stall, is the documented outcome for a call that needs
+approval. A community report of a stall on an internal plan-confirmation step came from an older
+release and is **unverified for the current one**. Keep an external timeout around every run.
 
 ## Subcommands
 

@@ -1,6 +1,6 @@
 # Antigravity CLI — reference
 
-> **Verified against `agy` v1.1.12 on 2026-08-12 by running the binary.** Flags change between builds,
+> **Checked against `agy` 1.5.1 `--help` on 2026-11-05.** Flags change between builds,
 > and this vendor's changelog has announced flags the shipped binary rejects. `agy --help` and
 > `agy models` are the only authorities. On `flags provided but not defined`, re-read `--help`, use
 > what exists, and report that this file needs updating.
@@ -17,8 +17,8 @@ Run **`agy models`** for the identifiers this build accepts. No fixed list is re
 and tiers change, and a list written into this file goes stale.
 
 Identifiers carry a reasoning tier. Pass either a full tiered identifier, or a family name together
-with `--effort low|medium|high` — a family name **alone is rejected** with
-`requires --effort (available: low, medium, high)`. Headless mode does **not** fall back on an unknown
+with `--effort low|medium|high|xhigh|max` — a family name **alone is rejected** with
+`requires --effort`, which lists the available levels. Headless mode does **not** fall back on an unknown
 model: it exits non-zero with `status: "ERROR"` and lists what is available in the `error` field.
 
 Note that `agy models` does **not** accept `--output-format` on this build, despite the changelog
@@ -31,10 +31,10 @@ announcing it.
 | `-p`, `--print`, `--prompt` | Run a single prompt non-interactively and print the response. **Required for delegation.** |
 | `--output-format` | `text` (default), `json`, `stream-json`. |
 | `--model` | Model identifier for this run (see `agy models`). |
-| `--effort` | Reasoning effort: `low`, `medium`, `high`. |
-| `--mode` | `accept-edits` or `plan`. Do not use `plan` for delegation. |
+| `--effort` | Reasoning effort: `low`, `medium`, `high`, `xhigh`, `max`. |
+| `--mode` | `accept-edits`, `auto` or `plan`. Do not use `plan` for delegation. `--help` does not say what `auto` approves. |
 | `--add-dir` | Add a directory to the workspace (repeatable). **Absolute paths only.** |
-| `--print-timeout` | Maximum wait for a response; default `5m`. |
+| `--print-timeout` | Maximum wait for a response; default `0s`, which waits until the turn completes. |
 | `--json-schema` | Schema string or file path to enforce structured output. |
 | `--dangerously-skip-permissions` | Auto-approve every tool. Blunt — prefer `--add-dir` and allow-rules. |
 | `--agent` | Select an agent for the run (see `agy agents`). |
@@ -90,8 +90,13 @@ simply read as part of the prompt.
 
 | Scope | Path |
 |---|---|
-| **Global (user)** | `~/.gemini/antigravity-cli/skills/` |
-| **Workspace** | `<workspace-root>/.agents/skills/` |
+| **Global (user), recommended** | `~/.gemini/config/skills/<skill-folder>/` — read by the App, CLI and IDE. Install here. |
+| CLI-only user paths (still supported) | `~/.gemini/antigravity-cli/skills/` and `~/.gemini/skills/` |
+| Plugin skills (CLI) | `~/.gemini/config/plugins/<plugin-folder>/skills/` |
+| **Workspace** | `<workspace-root>/.agents/skills/<skill-folder>/`. The App and CLI also read `.agents/skills/` in each parent folder up to the repository root. |
+| Legacy | `~/.gemini/antigravity/skills/` (IDE only); `.agent/skills` is still read for backward compatibility. |
+
+Source: <https://antigravity.google/docs/skills>, and strings compiled into `agy` 1.5.1.
 
 ## Configuration and paths
 
@@ -107,8 +112,7 @@ simply read as part of the prompt.
 ## Documentation
 
 - Vendor documentation: <https://antigravity.google/docs/cli/headless>, <https://antigravity.google/docs/cli/reference>
-- **Verified against `agy` v1.1.12 on 2026-08-12 by running the binary** — the only file in this
-  catalog with binary-level verification rather than a documentation check.
+- **Checked against `agy` 1.5.1 `--help` on 2026-11-05.** Install command from the vendor getting-started page.
 
 ## Delegation Checklist
 

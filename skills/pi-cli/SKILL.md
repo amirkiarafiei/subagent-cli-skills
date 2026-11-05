@@ -126,6 +126,10 @@ loudly.
 ### Binary and prompt form
 
 - **Binary:** `pi`
+- **Install:** `curl -fsSL https://pi.dev/install.sh | sh`, or
+  `npm install -g --ignore-scripts @earendil-works/pi-coding-agent` (Node 22.19+). Official page:
+  <https://pi.dev/docs/latest/quickstart>. The old package name `@mariozechner/pi-coding-agent` is
+  superseded.
 - **Prompt form:** **positional**, gated by a boolean flag. `-p`/`--print` ("print response and exit")
   takes no value itself — the prompt is a separate positional argument: `pi -p "text"`,
   `pi --mode json "Your prompt"`. Attachments use `@file` (`pi @README.md "prompt"`).
@@ -152,7 +156,7 @@ for one run: whether `.pi/settings.json`, project resources, and extensions are 
 decision exists, and non-interactive modes (`-p`, `--mode json`, `--mode rpc`) never show a trust
 prompt — they just apply that fallback. Since there is no tool-call gate at all, there is no
 "stall vs. reject" question for delegated actions: a run acts with your full user permissions
-immediately. Scope risk with `--tools <list>` / `--no-tools` instead of looking for a bypass flag that
+immediately. Scope risk with `--tools <list>` (`-t`) / `--no-tools` (`-nt`) instead of looking for a bypass flag that
 doesn't exist. Pi's own docs recommend running untrusted work in a container, VM, or other sandbox you
 provide yourself.
 
@@ -180,5 +184,6 @@ pi -p "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [co
 
 - Flags, JSON events, trust model, skills, auth: [reference.md](reference.md)
 - Vendor documentation: <https://pi.dev/docs/latest/usage> and <https://pi.dev/docs/latest/settings>
-- **Checked against the official Pi documentation on 2026-09-19. Not run against an installed binary —
-  confirm with `pi --help` before trusting a flag.**
+- **Checked against the official documentation on 2026-11-05; not run against an installed binary.**
+  Latest release on npm: `@earendil-works/pi-coding-agent` 1.5.0. Confirm with `pi --help` before
+  trusting a flag.

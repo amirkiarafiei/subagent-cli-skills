@@ -124,8 +124,10 @@ loudly.
 
 ### Binary and prompt form
 
-- **Binary:** `dcode` (Deep Agents Code). Installed with
-  `curl -LsSf https://langch.in/dcode | bash`, not from a package registry.
+- **Binary:** `dcode` (Deep Agents Code). The PyPI package is `deepagents-code`.
+- **Install:** `curl -LsSf https://langch.in/dcode | bash` (vendor quickstart). From 0.2.0 the package
+  requires Python 3.14 (`>=3.14,<3.15`, per the changelog). The script handles that.
+  `uv tool install deepagents-code` needs Python 3.14 to be available.
 - **Prompt form:** **flag.** `dcode -n "prompt"` (`-n`, `--non-interactive TEXT` — "Run a single task
   non-interactively and exit"). A bare `dcode` opens the interactive interface and never returns.
 - **Piped input also works.** When stdin is piped, the run goes non-interactive automatically, and
@@ -135,8 +137,10 @@ loudly.
   ("Initial prompt to auto-submit on start") and `-M, --model MODEL` for the model. Cline and Kilo
   Code both use `-m` for the model, so carrying that habit here silently passes a model identifier as
   the prompt. `-a` is `--agent`, not anything else. Use the long names: `--model`, `--agent`.
-- **A second trap:** several unrelated `dcode` packages exist on npm and PyPI. Do not install one.
-  The only correct source is the vendor's own script above.
+- **A second trap:** several unrelated packages named `dcode` exist on npm and PyPI. Do not install
+  one. The real PyPI package is `deepagents-code`; the vendor script above is the documented route.
+- **Resuming threads:** the 0.1.87 changelog adds resuming threads in non-interactive mode. This card
+  has not checked the flag for it; read `dcode --help`.
 
 ### Headless and output flags
 
@@ -234,7 +238,9 @@ cat task.md | dcode --stdin -S "git,pytest" --quiet
 
 - Flags, models, approvals, skills and paths: [reference.md](reference.md)
 - Vendor documentation: <https://docs.langchain.com/oss/deepagents/code/cli-reference>
-- **Verified against `deepagents-code` 0.1.72 on 2026-09-21** by running `--help`, `config --help`,
+- **Checked on 2026-11-05 against the changelog and the official documentation (latest PyPI
+  version 0.2.4). Not run against an installed binary; the flag details below are from the
+  0.1.72 run.** Earlier check: `deepagents-code` 0.1.72 on 2026-09-21, by running `--help`, `config --help`,
   `config --path`, `skills --help`, `skills list`, and a real `-n` invocation, and by reading the
   installed package source for the `recommended` command list, the shell gating and the exit codes.
   The vendor documentation disagrees with this build in several places; each is called out above and

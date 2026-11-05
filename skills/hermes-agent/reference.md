@@ -1,7 +1,11 @@
 # Hermes Agent CLI — reference
 
-> **Checked against the official Nous Research documentation on 2026-09-19. Not run against an installed
-> binary — confirm with `hermes --help` before trusting a flag.**
+> **Checked against `hermes` build 2026.9.24 (`hermes --version`) `--help` on 2026-11-05.** Latest release is v0.22.7.
+> Docs-sourced details were not run. Confirm with `hermes --help` before trusting a flag.
+
+## Install
+
+Linux, macOS, WSL2: `curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash`. Windows: `iex (irm https://hermes-agent.nousresearch.com/install.ps1)`. Source: <https://hermes-agent.nousresearch.com/docs/>.
 
 ## Authentication
 
@@ -13,8 +17,8 @@ are added.
 ## Models
 
 Models are specified as `provider/model-name`. Run **`hermes model`** for the interactive provider+model
-picker. A documented `--refresh` flag to re-fetch a provider's live model list was **not confirmed** in
-the pages checked. `hermes config show` and `hermes status [--all] [--deep]` show current configuration
+picker. `hermes model --refresh` wipes the model picker cache and re-fetches every provider's live
+`/v1/models` list (confirmed in the build's help). `hermes config show` and `hermes status [--all] [--deep]` show current configuration
 (exact output formatting not confirmed).
 
 Documented provider keys: `openai-api`, `gemini`, `zai` (not `zhipuai`), `deepseek`, `kimi-coding` /
@@ -29,7 +33,7 @@ exact ID via `hermes model` rather than guessing.
 | Flag | Purpose |
 |------|---------|
 | `chat -q "prompt"` / `--query` | Seed a session with a prompt (first turn). |
-| `-z "prompt"` | Minimal one-shot: prints only the final text to stdout; exit codes `0`/`2`/`130`. |
+| `-z "prompt"` | Minimal one-shot: prints only the final text to stdout; approvals are auto-bypassed (per `--help`); exit codes `0`/`2`/`130` (a secondary source also lists `1` for no text). |
 | `-Q`, `--quiet` | Suppress banner, spinner, tool previews — use for programmatic delegation. |
 | `-m`, `--model "provider/model"` | Specify model. |
 | `--provider name` | Force a specific provider. |
@@ -39,7 +43,7 @@ exact ID via `hermes model` rather than guessing.
 | `-c`, `--continue [name]` | Resume the most recent session. |
 | `-r`, `--resume <session>` | Resume a specific session by ID/title, or `latest`. |
 | `-v`, `--verbose` | Enable debug/verbose output. |
-| `--max-turns N` | Cap tool-calling iterations. One official source states a default of 500 — treat any other number as unverified. |
+| `--max-turns N` | Cap tool-calling iterations. `hermes chat --help` on build 2026.9.24 states default 500 (or `agent.max_turns`); other versions may differ. |
 | `--checkpoints` | Snapshot files before destructive operations (`/rollback` restores). |
 | `--ignore-user-config` | Bypass `~/.hermes/config.yaml` (isolated CI-like run). |
 | `--ignore-rules` | Skip `AGENTS.md`, `SOUL.md`, `.cursorrules`, memory, and preloaded skills. |
@@ -55,7 +59,7 @@ documented. `--accept-hooks` is scoped to shell hooks only (persisted to
 `~/.hermes/shell-hooks-allowlist.json`), not general tool approval. No per-tool allow-rule flag exists —
 scoping is only via `--toolsets`.
 
-The primary gate is **`approvals.mode`** in `~/.hermes/config.yaml` (`smart` default = auxiliary-LLM
+`-z` auto-bypasses approvals (per `hermes --help`). For `chat -q`, the primary gate is **`approvals.mode`** in `~/.hermes/config.yaml` (`smart` default = auxiliary-LLM
 risk assessment, `manual` = always prompt, `off` = disabled), plus three headless-specific keys that each
 **default to `deny`**: `single_query_mode` (`-q`/one-shot), `cron_mode` (scheduled jobs), and
 `unattended_mode` (webhook/API sessions). With the default `deny`, a dangerous command is blocked and the
@@ -68,7 +72,7 @@ hooks are "skipped rather than silently approved."
 | Subcommand | Purpose |
 |---|---|
 | `hermes setup [--quick\|--non-interactive\|--reset]` / `hermes setup --portal` | Initial auth/config. |
-| `hermes model` | Interactive provider+model picker; add providers/keys/OAuth. |
+| `hermes model [--refresh]` | Interactive provider+model picker; add providers/keys/OAuth. `--refresh` re-fetches live model lists. |
 | `hermes config show` | Show current configuration. |
 | `hermes status [--all] [--deep]` | Inspect session/config state. |
 | `hermes tools` / `hermes tools list` | Curses UI / list enabled toolsets. |

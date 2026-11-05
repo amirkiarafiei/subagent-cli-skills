@@ -1,6 +1,6 @@
 # Deep Agents Code (`dcode`) — reference
 
-> **Verified against `deepagents-code` 0.1.72 on 2026-09-21 by running the binary** (`--help`,
+> **Checked on 2026-11-05 against the changelog and the official documentation (latest PyPI version 0.2.4). Not run against an installed binary.** The flag details come from this earlier check: `deepagents-code` 0.1.72 on 2026-09-21, run by hand (`--help`,
 > `config --help`, `config path`, `skills --help`, `skills list`, and a real `-n` run) and by reading
 > the installed package source. **The official documentation disagrees with this build in several
 > places** — `config show`/`config list`, the `--allow-fs-tools execute` example, and the role of
@@ -15,10 +15,12 @@ curl -LsSf https://langch.in/dcode | bash
 ```
 
 The binary is `dcode`. Deep Agents Code is the `deepagents-code` package in
-`langchain-ai/deepagents` (`libs/code`).
+`langchain-ai/deepagents` (`libs/code`). Since 0.2.0 it requires Python 3.14 (`>=3.14,<3.15`); the
+script handles that, and `uv tool install deepagents-code` needs Python 3.14 to be available.
+The 0.1.87 changelog added resuming threads in non-interactive mode; the flag is not checked here.
 
-> **Do not install anything called `dcode` from npm or PyPI.** Several unrelated packages use that
-> name — a Material Design UI library, a URL-sharing tool, and others. None is this CLI. The npm
+> **Do not install anything called `dcode` from npm or PyPI.** The real PyPI package is
+> `deepagents-code`. Several unrelated packages use the name `dcode` — a Material Design UI library, a URL-sharing tool, and others. None is this CLI. The npm
 > `deepagents-cli` package and the PyPI `deepagents-cli` package are deploy tooling, not this agent;
 > the PyPI one is deprecated in favour of `managed-deepagents` (`mda`), which is also a different
 > thing. Use the vendor script above.

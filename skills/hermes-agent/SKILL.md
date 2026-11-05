@@ -126,10 +126,13 @@ loudly.
 ### Binary and prompt form
 
 - **Binary:** `hermes`
+- **Install:** `curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash` (Linux, macOS, WSL2). Windows: `iex (irm https://hermes-agent.nousresearch.com/install.ps1)`.
 - **Prompt form:** **flag.** `hermes chat -q "prompt"` (alias `--query`) seeds the session with the
   prompt as its first turn. For a minimal, purely non-interactive one-shot run there is also **`hermes
   -z "prompt"`**, which prints only the final text to stdout and nothing else, with defined exit codes
-  (`0` completed, `2` failed/partial, `130` interrupted). Add `-Q`/`--quiet` alongside `chat -q` for
+  (`0` completed, `2` failed/partial, `130` interrupted; a secondary source also lists `1` for a turn
+  that produced no text, which the help does not confirm). **`-z` auto-bypasses approvals** (the
+  `hermes --help` text says so). Add `-Q`/`--quiet` alongside `chat -q` for
   programmatic use — it suppresses the banner, spinner, and tool previews.
 
 ### Headless and output flags
@@ -137,10 +140,10 @@ loudly.
 | Need | Flag |
 |---|---|
 | One-shot query, seeds first turn | `chat -q "prompt"` / `--query` |
-| Minimal one-shot, final text only, defined exit codes | `-z "prompt"` |
+| Minimal one-shot, final text only, defined exit codes (approvals auto-bypassed) | `-z "prompt"` |
 | Quiet, script-safe output | `-Q`, `--quiet` |
 | Verbose/debug output | `--verbose`, `-v` |
-| Turn cap | `--max-turns N` (one official source states a default of 500; treat any other stated default as unverified) |
+| Turn cap | `--max-turns N` (`hermes chat --help` on build 2026.9.24 states default 500, or `agent.max_turns` in config; the default may differ in other versions) |
 | Tag session as third-party | `--source tool` (keeps it out of the user's own session list; documented default is `cli`) |
 
 No dedicated `--output-format json` flag is documented; `-Q`/`-z` plus the final response is the
@@ -156,7 +159,7 @@ sounds: it only auto-approves shell **hooks** (event/command pairs), persisting 
 `~/.hermes/shell-hooks-allowlist.json` — it is not general tool approval. No per-tool allow-rule flag is
 documented; the only tool-level scoping is `--toolsets` (enabling whole bundles).
 
-The real gate for headless runs is **`approvals.mode`** in `~/.hermes/config.yaml` (`smart` = default,
+`-z` skips this gate: its help says approvals are auto-bypassed. The real gate for `chat -q` runs is **`approvals.mode`** in `~/.hermes/config.yaml` (`smart` = default,
 auxiliary-LLM risk assessment; `manual` = always prompt; `off` = disabled), plus three separate
 headless-context keys that each **default to `deny`**: `single_query_mode` (governs `-q`/one-shot),
 `cron_mode` (scheduled jobs), and `unattended_mode` (webhook/API sessions). **With the default `deny`, a
@@ -169,8 +172,8 @@ mode to `approve` to auto-approve in that context. Unapproved shell hooks specif
 
 Models are specified as `provider/model-name`. Run **`hermes model`** for the interactive provider+model
 picker (also the place to add new providers/API keys/OAuth — in-session `/model` only switches among
-already-configured models). A `--refresh` flag on `hermes model` is **not confirmed** in the docs
-checked. `hermes config show` and `hermes status [--all] [--deep]` show current configuration.
+already-configured models). `hermes model --refresh` wipes the model picker cache and re-fetches every provider's live
+`/v1/models` list (confirmed in `hermes model --help`). `hermes config show` and `hermes status [--all] [--deep]` show current configuration.
 
 Documented provider keys: `openai-api`, `gemini`, `zai` (not `zhipuai`), `deepseek`, `kimi-coding` /
 `kimi-coding-cn`, `minimax` / `minimax-cn`, `nous`, `openrouter`, `xai`, `ollama-cloud`, plus many more
@@ -197,7 +200,6 @@ hermes chat -q "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRA
 
 - Delegation checklist and full flag/tool/toolset/model tables: [reference.md](reference.md)
 - Vendor documentation: <https://hermes-agent.nousresearch.com/docs/>
-- **Checked against the official Nous Research documentation on 2026-09-19. Not run against an installed
-  binary — confirm with `hermes --help` before trusting a flag.** This is a smaller, actively maintained
-  open-source project; several precise details (exact `HERMES_YOLO_MODE` value, `--max-turns` default,
-  whether skills surface as slash commands) could not be pinned to a single authoritative sentence.
+- **Checked against `hermes` build 2026.9.24 (`hermes --version`) `--help` on 2026-11-05.** Latest release is v0.22.7,
+  so newer flags may exist. The `-z` exit codes, provider keys, `approvals.mode` keys and paths come
+  from the vendor docs and were not run. Confirm with `hermes --help` before trusting a flag.

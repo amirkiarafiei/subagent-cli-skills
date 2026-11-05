@@ -1,4 +1,4 @@
-> **Checked against the official GitHub documentation on 2026-09-19. Not run against an installed binary — confirm with `copilot --help` before trusting a flag.**
+> **Checked against `copilot` 1.0.73 `--help` on 2026-11-05** (npm latest is 1.0.105; not re-checked against it). Install: `npm install -g @github/copilot` (official GitHub docs).
 
 ## Authentication
 
@@ -32,7 +32,7 @@ for current identifiers and pricing before picking one.
 | Flag | Grants |
 |---|---|
 | `--allow-all` (alias `--yolo`) | All permissions — tools and URL fetches. |
-| `--allow-all-tools` | Every tool, without per-call confirmation (narrower than `--allow-all`: does not itself grant URL access). |
+| `--allow-all-tools` | Every tool, without per-call confirmation (narrower than `--allow-all`: no paths or URLs). `--help`: "required for non-interactive mode" (env `COPILOT_ALLOW_ALL`). |
 | `--allow-tool=<TOOL>` | One specific tool (comma-separated list for several). |
 | `--allow-url=<URL>` | One specific URL/domain. |
 | `--deny-tool=<TOOL>`, `--deny-url=<URL>` | Explicit denials. |
@@ -40,7 +40,7 @@ for current identifiers and pricing before picking one.
 The official docs recommend minimal grants (`--allow-tool`/`--allow-url`) over `--allow-all` outside
 a sandboxed environment. **Unanswered approval, documented behavior:** not explicitly documented for
 a call that falls outside every allow flag in headless mode — do not rely on a graceful denial; pass
-`--allow-all` (or the precise tool/URL grants the task needs) before running headless.
+`--allow-all`, or `--allow-all-tools` with `--deny-tool` limits, before running headless. `--allow-tool` alone is not enough: `--help` says `--allow-all-tools` is required for non-interactive mode.
 
 ## Subcommands
 

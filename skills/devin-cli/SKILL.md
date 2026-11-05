@@ -123,13 +123,14 @@ loudly.
 
 ## Vendor card
 
-> **Documented, not run against a binary.** Checked against `docs.devin.ai` on 2026-09-19. Confirm
+> **Documented, not run against a binary.** Checked against `docs.devin.ai` on 2026-11-05. Confirm
 > every flag with `devin --help` before trusting it, especially the permission-mode value — see
 > below.
 
 ### Binary and prompt form
 
 - **Binary:** `devin`
+- **Install:** `curl -fsSL https://cli.devin.ai/install.sh | bash` (macOS, Linux, WSL; vendor CLI docs). On Windows, run `irm https://static.devin.ai/cli/setup.ps1 | iex` in PowerShell.
 - **Prompt form:** **flag.** `-p`, `--print [PROMPT]` is documented as "print response and exit
   (non-interactive mode)," with the prompt as its argument, e.g. `devin -p "prompt text"`. The
   prompt can also be given after a bare `--` (`devin -- add a login page`), but for delegation use
@@ -195,6 +196,7 @@ devin -p "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: 
 - Flags, permission modes, models, skills, auth: [reference.md](reference.md)
 - Vendor documentation: <https://docs.devin.ai/cli/reference/commands> and
   <https://docs.devin.ai/cli/reference/permissions>
-- **Checked against the official Devin documentation on 2026-09-19. Not run against an installed
-  binary — confirm with `devin --help` before trusting a flag**, particularly the exact
-  `--permission-mode` bypass value.
+- **Checked against the official Devin documentation on 2026-11-05; not run against an installed
+  binary. Confirm with `devin --help` before trusting a flag**, particularly the exact
+  `--permission-mode` bypass value. The commands reference lists `dangerous` (aliases `yolo`,
+  `bypass`); the permissions page omits `dangerous`. This is a vendor docs inconsistency.

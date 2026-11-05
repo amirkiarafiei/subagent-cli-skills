@@ -125,6 +125,7 @@ loudly.
 ### Binary and prompt form
 
 - **Binary:** `kilo` (the package also installs `kilocode`, which points at the same file)
+- **Install:** `npm install -g @kilocode/cli` (npm package `@kilocode/cli`).
 - **Prompt form:** **positional**, after the `run` subcommand: `kilo run "prompt"`
   (`kilo run [message..]` — the message is a variadic positional argument). A bare `kilo` opens the
   interactive interface and never returns.
@@ -202,6 +203,7 @@ kilo run "[prompt]" --auto --print-logs > /tmp/kilo-run.log 2>&1 &
 
 - Flags, models, approvals, skills and paths: [reference.md](reference.md)
 - Vendor documentation: <https://kilo.ai/docs/code-with-ai/platforms/cli>
-- **Verified against `kilo` 7.7.6 by running `--help`, `run --help` and `models --help` on
-  2026-09-21. Flags came from the binary, not from documentation. A full delegation was not run,
-  because that needs provider credentials.**
+- **Checked on 2026-11-05.** Flags were last run against `kilo` 7.7.6 (`--help`, `run --help`,
+  `models --help`). Latest release on npm (`@kilocode/cli`) is 7.8.27; kilo is not installed here, so the flags were not re-run
+  on it. The vendor docs page says it applies to Kilo 1.0 and later and does not state `--auto`'s
+  default. A full delegation was not run, because that needs provider credentials.

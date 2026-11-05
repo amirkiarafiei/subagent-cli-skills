@@ -26,7 +26,7 @@ TOOL_NAMES=(
 TOOL_DIRS=(
   "$HOME/.claude/skills"
   "$HOME/.cursor/skills"
-  "$HOME/.gemini/antigravity-cli/skills"
+  "$HOME/.gemini/config/skills"
   "$HOME/.agents/skills"
   "$HOME/.gemini/skills"
   "$HOME/.copilot/skills"

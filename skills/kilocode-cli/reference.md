@@ -1,7 +1,8 @@
 # Kilo Code CLI — reference
 
-> **Verified against `kilo` 7.7.6 on 2026-09-21 by running the binary** (`--help`, `run --help`,
-> `models --help`). Flags below came from that build, not from documentation. A full delegation was
+> **Checked on 2026-11-05.** Flags were last run against `kilo` 7.7.6 (`--help`, `run --help`,
+> `models --help`). Latest release on npm (`@kilocode/cli`) is 7.8.27; kilo is not installed here, so flags were not re-run on
+> it. A full delegation was
 > not run, because that needs provider credentials. `kilo help` is the only authority. On an
 > unrecognized flag, re-read `--help`, use what exists, and report that this file needs updating.
 
@@ -135,6 +136,7 @@ turns the behaviour off entirely.
 
 - Vendor documentation: <https://kilo.ai/docs/code-with-ai/platforms/cli>
 - Repository: <https://github.com/Kilo-Org/kilocode>
+- Install: `npm install -g @kilocode/cli`.
 - Package: `@kilocode/cli` on npm; it installs both `kilo` and `kilocode`, pointing at the same file.
 
 ## Delegation Checklist

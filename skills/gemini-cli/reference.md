@@ -1,8 +1,9 @@
-> **Checked against the official Google/Gemini CLI documentation on 2026-09-19. Not run against an installed binary — confirm with `gemini --help` before trusting a flag.**
+> **Checked against `gemini` 0.51.0 `--help` on 2026-11-05.** Docs-only behavior was not run.
 
-> [!WARNING]
-> **DEPRECATED**: Gemini CLI has been deprecated in favor of **Antigravity CLI** (`agy`). We
-> strongly recommend migrating to `/antigravity-cli` for up-to-date features and performance.
+> [!NOTE]
+> Google says Antigravity CLI (`agy`) replaced Gemini CLI on 2026-06-18 for free individual access and
+> Google AI Pro/Ultra. The `gemini` repository still ships for enterprise Code Assist. Use
+> `/antigravity-cli` for individual tiers.
 
 ## Authentication
 
@@ -29,6 +30,7 @@ current identifiers and pricing.
 | `--skip-trust` | | Trust the current workspace for this session, skipping the folder-trust check. |
 | `--worktree [name]` | `-w` | Start in a new Git worktree; requires `experimental.worktrees: true` in settings. |
 | `--allowed-mcp-server-names` | | Allowed MCP server names (comma-separated or repeatable). |
+| `--output-format <text\|json\|stream-json>` | `-o` | Output format (`json` is one result, `stream-json` is streamed events). |
 | `--debug` | `-d` | Verbose logging. |
 
 Piped stdin (non-TTY) is prepended to the `--prompt`/positional query, joined by a blank line; an
@@ -58,13 +60,16 @@ Piped stdin (non-TTY) is prepended to the `--prompt`/positional query, joined by
 
 Primarily invoked as `gemini -p "..."` with flags. `/agents list` / `reload` / `enable` / `disable`
 / `config` manage local and remote subagents interactively (agent directories:
-`~/.gemini/agents` and `.gemini/agents`).
+`~/.gemini/agents` and `.gemini/agents`). `gemini skills list|enable|disable|install|link|uninstall`
+manages agent skills (`--scope` for user or workspace).
 
 ## Configuration and paths
 
 - `<root>/.gemini` (root is `$GEMINI_CLI_HOME` or the OS home directory) — `google_accounts.json`,
   `trustedFolders.json`, and other CLI state.
 - `~/.gemini/agents` and `.gemini/agents` — subagent directories.
+- `~/.gemini/skills/` or `~/.agents/skills/` — user skills. `.gemini/skills/` or `.agents/skills/` —
+  workspace skills. Workspace beats user. In one tier, `.agents/skills/` beats `.gemini/skills/`.
 
 ## Documentation
 
