@@ -125,8 +125,10 @@ loudly.
 
 ### Binary and prompt form
 
-*The command name. Whether the prompt is a flag argument or a positional argument. State this
-clearly — this is the mistake that makes a run hang forever.*
+*The command name, and the official install command. Take the install command from the vendor's
+docs or its official package; if the vendor documents none, say so and link the docs — never guess
+a package name, because look-alike packages exist. Then whether the prompt is a flag argument or a
+positional argument. State this clearly — this is the mistake that makes a run hang forever.*
 
 ### Headless and output flags
 

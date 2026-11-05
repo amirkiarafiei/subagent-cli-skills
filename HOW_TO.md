@@ -67,7 +67,8 @@ You have copied the template and are filling the Vendor card. Work through this 
 Run `tool --help` and `tool <subcommand> --help` **first**, and take every flag below from that output.
 - [ ] **Force Non-Interactive Mode**: the flag or subcommand that makes the tool run once and exit. Confirm whether the prompt is a **flag argument or a positional**—getting this wrong is the single most common cause of an infinite hang.
 - [ ] **Clean Output**: the flag that returns only the response, without banners, spinners, or stats.
-- [ ] **Auto-Approval**: the flag that lets the subagent use tools unattended. Prefer the **narrowest** option the tool offers (scoped allow-rules, an added directory, or a read-only/plan mode) and document the blunt "approve everything" flag as a last resort rather than the default.
+- [ ] **Auto-Approval**: the mode or flag that lets the subagent do the work unattended, without asking. Headless mode has nobody to answer a prompt, so a mode that asks will stall or return nothing. **Never use a plan or read-only mode for this** — it makes the other agent plan for itself. For a no-edit run, keep the working mode and write "report only, no edits" in the handoff.
+- [ ] **Install command**: put the official install command in the vendor card's first section. Take it from the vendor's docs or its official package. If the vendor documents none, say so and link the docs. Never guess a package name — look-alike packages exist (for example, npm `dcode` and npm `kimi-code` are unrelated to those agents).
 - [ ] **No invented aliases**: if `--help` shows no short form, do not write one. A skill listing `-m` for `--model` will fail on a tool that has no `-m`.
 
 ### 2. Context & Delegation Depth
