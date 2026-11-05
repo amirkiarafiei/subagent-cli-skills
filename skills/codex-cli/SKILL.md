@@ -184,8 +184,8 @@ codex exec "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS
 ### Prompt examples
 
 - **Implement:** `codex exec "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" --yolo`
-- **Logic check:** `codex exec "GOAL: Analyze logic for edge cases and race conditions | SCOPE: [paths] | VERIFICATION: [check_command] | OUTPUT: detailed report" --model <identifier> --sandbox read-only`
-- **Audit:** `codex exec "GOAL: Security audit of the authentication layer | SCOPE: [paths] | CONSTRAINTS: report only, no edits | OUTPUT: audit report" --sandbox read-only`
+- **Logic check:** `codex exec "GOAL: Analyze logic for edge cases and race conditions | SCOPE: [paths] | CONSTRAINTS: report only, no edits | VERIFICATION: [check_command] | OUTPUT: detailed report" --model <identifier>`
+- **Audit:** `codex exec "GOAL: Security audit of the authentication layer | SCOPE: [paths] | CONSTRAINTS: report only, no edits | OUTPUT: audit report"`
 
 ### Docs and reference
 

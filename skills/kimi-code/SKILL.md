@@ -132,7 +132,7 @@ loudly.
 ### Binary and prompt form
 
 - **Binary:** `kimi`
-- **Install:** `npm install -g @moonshot-ai/kimi-code` (binary `kimi`). Use the scoped name. The unscoped npm package `kimi-code` is a different project that also installs a `kimi` binary.
+- **Install:** `curl -fsSL https://code.kimi.com/kimi-code/install.sh | bash` (the vendor README's primary method), or `npm install -g @moonshot-ai/kimi-code` (binary `kimi`). Use the scoped name. The unscoped npm package `kimi-code` is a different project that also installs a `kimi` binary.
 - **Prompt form:** **flag.** `-p`, `--prompt "prompt"` runs a single prompt non-interactively and
   streams output to stdout; it does not open the TUI.
 

@@ -1,7 +1,7 @@
 # Kilo Code CLI — reference
 
 > **Checked on 2026-11-05.** Flags were last run against `kilo` 7.7.6 (`--help`, `run --help`,
-> `models --help`). Latest release is 7.8.18; kilo is not installed here, so flags were not re-run on
+> `models --help`). Latest release on npm (`@kilocode/cli`) is 7.8.27; kilo is not installed here, so flags were not re-run on
 > it. A full delegation was
 > not run, because that needs provider credentials. `kilo help` is the only authority. On an
 > unrecognized flag, re-read `--help`, use what exists, and report that this file needs updating.

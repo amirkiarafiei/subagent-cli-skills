@@ -204,6 +204,6 @@ kilo run "[prompt]" --auto --print-logs > /tmp/kilo-run.log 2>&1 &
 - Flags, models, approvals, skills and paths: [reference.md](reference.md)
 - Vendor documentation: <https://kilo.ai/docs/code-with-ai/platforms/cli>
 - **Checked on 2026-11-05.** Flags were last run against `kilo` 7.7.6 (`--help`, `run --help`,
-  `models --help`). Latest release is 7.8.18; kilo is not installed here, so the flags were not re-run
+  `models --help`). Latest release on npm (`@kilocode/cli`) is 7.8.27; kilo is not installed here, so the flags were not re-run
   on it. The vendor docs page says it applies to Kilo 1.0 and later and does not state `--auto`'s
   default. A full delegation was not run, because that needs provider credentials.

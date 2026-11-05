@@ -123,7 +123,7 @@ loudly.
 
 ## Vendor card
 
-> **Documented, not run against a binary.** Checked against `docs.devin.ai` on 2026-09-19. Confirm
+> **Documented, not run against a binary.** Checked against `docs.devin.ai` on 2026-11-05. Confirm
 > every flag with `devin --help` before trusting it, especially the permission-mode value — see
 > below.
 
