@@ -1,7 +1,14 @@
 # OpenCode CLI — reference
 
-> **Checked against the official OpenCode documentation on 2026-09-19. Not run against an installed
-> binary — confirm with `opencode run --help` before trusting a flag.**
+> **Checked against `opencode` 1.17.19 `--help` on 2026-11-05.** The latest 1.x on npm is 1.19.5 and
+> was not run. This file covers OpenCode **v1**. The current docs also describe OpenCode v2
+> with its own upgrade path, which `opencode upgrade --help` in 1.17.19 does not show; v2 flags are not verified here.
+
+## Install
+
+`npm install -g opencode-ai`, `curl -fsSL https://opencode.ai/install | bash`, or
+`brew install anomalyco/tap/opencode` install v1 (official page <https://opencode.ai/docs/>). Plain
+`brew install opencode` installs v2.
 
 ## Authentication
 
@@ -22,7 +29,7 @@ No fixed catalog is reproduced here since names and tiers change — consult
 | Flag | Purpose |
 |------|---------|
 | `run [message..]` | Execute prompt and exit (non-interactive). Prompt is **positional** — variadic. |
-| `--auto` | Auto-approve permission requests that are not explicitly denied. **The real flag — `--dangerously-skip-permissions` does not exist and does not appear in the docs.** |
+| `--auto` | Auto-approve permissions that are not explicitly denied (`--help`: "dangerous!"). **The real flag — `--dangerously-skip-permissions` does not exist and does not appear in the docs.** |
 | `-m`, `--model` | Specify the model to use (format: `provider/model`). |
 | `--agent` | Agent to run as. Leave unset (`build`) for delegation; never `plan`. |
 | `--print-logs` | Print logs to stderr, instead of the default timestamped files under `~/.local/state/opencode/logs/`. |
@@ -41,7 +48,9 @@ No fixed catalog is reproduced here since names and tiers change — consult
 | `-p`, `--password` | Basic-auth password for `--attach`. **Not the prompt — see Approvals below.** |
 | `-u`, `--username` | Basic-auth username for `--attach`. |
 | `--port` | Local server port (random if unspecified). |
-| `--command` | Specifies the command to run. |
+| `--command` | The command to run; use the message for its args. |
+| `--pure` | Run without external plugins. |
+| `-i`, `--interactive` | Direct interactive split-footer mode (default off). |
 
 ## Approvals and permissions
 
@@ -90,8 +99,8 @@ convention, not a documented OpenCode-native skill loader — do not present it 
 
 - Vendor documentation: <https://opencode.ai/docs/cli/>, <https://opencode.ai/docs/permissions/>,
   <https://opencode.ai/docs/troubleshooting/>
-- **Checked against the official documentation on 2026-09-19. Not run against an installed binary —
-  confirm with `opencode run --help` before trusting a flag.**
+- **Checked against `opencode` 1.17.19 `--help` on 2026-11-05** (latest 1.x: 1.19.5, not run).
+  Confirm with `opencode run --help` before trusting a flag.
 
 ## Delegation Checklist
 

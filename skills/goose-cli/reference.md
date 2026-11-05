@@ -1,10 +1,10 @@
 # Goose CLI — reference
 
-> **Verified against `goose` 1.51.0 on 2026-09-21 by running the binary** (`--help`, `run --help`,
-> `skills --help`, `skills list`, `info`), cross-checked against the official docs in
-> `aaif-goose/goose`. `GOOSE_MODE`, its four values and its `auto` default are documentation-sourced,
-> not visible in `--help`. The vendor moved: docs now live at `goose-docs.ai` and the repository org
-> was renamed from `block` to `aaif-goose`.
+> **Checked on 2026-11-05.** Flags were last run against `goose` 1.51.0 (`--help`, `run --help`,
+> `skills --help`, `skills list`, `info`). Latest release is v1.57.0; goose is not installed here, so
+> flags were not re-run on it. `GOOSE_MODE`, its four values and its `auto` default are
+> documentation-sourced, not visible in `--help`. The vendor moved: docs now live at `goose-docs.ai`
+> and the repository org was renamed from `block` to `aaif-goose`.
 > A full delegation was not run, because that needs provider credentials. `goose run --help` is the
 > only authority. On an unrecognized flag, re-read `--help`, use what exists, and report that this
 > file needs updating.
@@ -142,7 +142,7 @@ Supporting files (scripts, templates) may sit alongside it.
 | `~/.local/state/goose/logs` | Logs |
 | `~/.agents/skills/` | Global skills |
 
-Install with the vendor script; `GOOSE_BIN_DIR` chooses the install directory (default
+Install with `curl -fsSL https://github.com/aaif-goose/goose/releases/download/stable/download_cli.sh | bash`; `GOOSE_BIN_DIR` chooses the install directory (default
 `~/.local/bin`) and `CONFIGURE=false` skips the interactive configure step.
 
 ## Documentation

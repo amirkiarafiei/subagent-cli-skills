@@ -1,4 +1,4 @@
-> **Checked against the official OpenAI documentation on 2026-09-19. Not run against an installed binary — confirm with `codex --help` before trusting a flag.**
+> **Checked against the official documentation on 2026-11-05 (latest npm version 0.166.0). Not run against an installed binary — confirm with `codex --help` before trusting a flag.** Install: `npm install -g @openai/codex` or `brew install --cask codex`.
 
 ## Authentication
 
@@ -7,9 +7,8 @@ stored credentials.
 
 ## Models
 
-No dedicated `exec`-time flag to print the full model catalog is confirmed in the same depth as
-other flags; the docs reference **`codex debug models`** for inspecting available models — verify
-this against the installed binary before relying on it. Select the model for a run with `--model`,
+Run **`codex debug models`** to print the raw model catalogue as JSON. `--bundled` skips the refresh
+and prints only the catalogue bundled with the binary. Select the model for a run with `--model`,
 `-m <identifier>`. Reasoning effort/tier is a separate, model-independent setting (see below), not
 part of the model string. Interactively, `/model` changes the model and effort mid-session. Search
 the web / [Artificial Analysis](https://artificialanalysis.ai/) for current identifiers and pricing
@@ -24,8 +23,9 @@ Reasoning effort is set independently of the model, e.g. via a config override s
 |------|---------|
 | `exec "prompt"` (alias `e`) | Run Codex non-interactively; exits after the response. Prompt is positional. |
 | `--sandbox`, `-s <read-only\|workspace-write\|danger-full-access>` | Sandbox policy for model-generated shell commands. |
-| `--ask-for-approval`, `-a <never\|on-request\|on-failure\|untrusted>` | Approval policy. Root-level flag; the docs' own examples highlight `on-request` and `never`. |
+| `--ask-for-approval`, `-a <on-request\|never>` | Approval policy. Global flag: put it before `exec`. The current docs list only these two values. |
 | `--dangerously-bypass-approvals-and-sandbox` (alias `--yolo`) | Sets sandbox to `danger-full-access` and approval policy to `never` together. Only in an already-hardened environment. |
+| `--approve-for-me` (alias `--not-so-yolo`) | Automatic approval review with `on-request` approvals and the `workspace-write` sandbox. Conflicts with `--sandbox` and `--yolo`. |
 | `--model`, `-m` | Specify the model to use. |
 | `--profile`, `-p <name>` | Layer a named configuration profile. |
 | `--json` | Print newline-delimited JSON events instead of formatted text. |
@@ -56,7 +56,7 @@ Reasoning effort is set independently of the model, e.g. via a config override s
 | `login` / `logout` | Manage authentication. |
 | `agents` | Browse agent sessions on the shared local app-server daemon. |
 | `features list` / `enable <name>` / `disable <name>` | Manage feature flags in `config.toml`. |
-| `debug models` | Inspect available models (verify against your install). |
+| `debug models` | Print the model catalogue as JSON (`--bundled` for the bundled catalogue). |
 
 ## Configuration and paths
 
@@ -67,8 +67,7 @@ Reasoning effort is set independently of the model, e.g. via a config override s
 
 ## Documentation
 
-- Official docs: <https://developers.openai.com/codex/cli>,
-  <https://developers.openai.com/codex/cli/reference>
+- Official docs: <https://learn.chatgpt.com/docs/developer-commands?surface=cli>
 - Vendor card in this skill: [SKILL.md](SKILL.md)
 
 ## Delegation Checklist

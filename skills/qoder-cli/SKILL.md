@@ -126,14 +126,21 @@ loudly.
 ### Binary and prompt form
 
 - **Binary:** `qodercli`
-- **Prompt form:** **flag.** The prompt is the value of `-p`/`--print "prompt"` (also written
-  `--prompt` in places) — "Non-Interactive Mode: output a single response and exit."
+- **Install:** `curl -fsSL https://qoder.com/install | bash` (recommended native build), or
+  `npm install -g @qoder-ai/qodercli` (legacy; Node 20+). Official page:
+  <https://docs.qoder.com/cli/installation>.
+- **Prompt form:** **flag plus positional.** `-p`/`--print` is a **boolean** ("Print response and exit
+  (non-interactive)"); it takes no value. The prompt is the positional `[query]`, so
+  `qodercli -p "prompt"` works because the next token becomes the query. **There is no `--prompt`
+  option** — it gives an unknown-option error. The only other prompt option is
+  `-i, --prompt-interactive <text>`, which runs the prompt and then stays interactive, so do not use it
+  for delegation.
 
 ### Headless and output flags
 
 | Need | Flag |
 |---|---|
-| Run once and exit | `-p`, `--print "prompt"` |
+| Run once and exit | `-p`, `--print` (prompt is positional) |
 | Plain text | `-o text` / `--output-format text` (default) |
 | One JSON object | `-o json` |
 | Event stream | `-o stream-json` |
@@ -150,17 +157,18 @@ loudly.
 | `default` | Auto-runs safe reads/internal ops; sensitive actions need confirmation — **not available headlessly, see below** |
 | `accept_edits` | Auto-approves in-workspace file edits; shell/external ops still gated |
 | `auto` | An agent-side authorization decision per action, no interactive prompt; a circuit breaker asks for confirmation after too many consecutive blocks |
-| `bypass_permissions` (`--yolo` / `--dangerously-skip-permissions`) | Skips approval prompts, but destructive operations against the working dir, home dir, filesystem root, or top-level dirs still require confirmation |
+| `bypass_permissions` (`--dangerously-skip-permissions`, or the hidden alias `--yolo`) | Skips approval prompts, but destructive operations against the working dir, home dir, filesystem root, or top-level dirs still require confirmation |
 | `dont_ask` | Built for non-interactive workflows: anything that would need approval is **denied** instead of asked |
 | `plan` | Legacy: maps to `default` plus a read-only work state — do not use for delegation |
 
 Critically, the official docs state the **headless default explicitly**: **"Headless (`-p`/`--prompt`):
-Auto-deny. No interaction available; `ask` becomes `deny`."** So a plain `-p` run with no
-`--permission-mode` set will silently refuse anything gated — pass `--yolo` (or
-`--dangerously-skip-permissions`, documented as identical) for delegation that needs to act, or
-`dont_ask` if you want that same deny-everything behavior made explicit. `--allowed-tools` /
+Auto-deny. No interaction available; `ask` becomes `deny`."** (The docs write `--prompt` there; the
+binary has no such option, so use `-p`.) So a plain `-p` run with no `--permission-mode` set will
+silently refuse anything gated — pass `--dangerously-skip-permissions` for delegation that needs to
+act, or `dont_ask` if you want that same deny-everything behavior made explicit. `--yolo` is the same
+flag; it works but `--help` hides it. `--allowed-tools` /
 `--disallowed-tools` and `--tools` scope which tools are available at all; `--max-turns` bounds the
-dialog length.
+dialog length (documented in the CLI reference; hidden from `--help`).
 
 ### Models and how to list them
 
@@ -177,19 +185,21 @@ listed by `--list-models` — do not hardcode one here, since names and credit c
 
 ```bash
 qodercli -p "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" \
-  --yolo --model <tier-or-identifier> -o text 2>&1
+  --dangerously-skip-permissions --model <tier-or-identifier> -o text 2>&1
 ```
 
 ### Prompt examples
 
-- **Implement:** `qodercli -p "GOAL: [goal] | SCOPE: [paths] | VERIFICATION: [test_command] | OUTPUT: [format]" --yolo --model efficient -o text`
-- **Investigate:** `qodercli -p "GOAL: Map how [feature] works | SCOPE: [paths] | OUTPUT: concise file:line map" --yolo --model efficient -o text`
-- **Heavy reasoning:** `qodercli -p "GOAL: Design architecture for [feature] | SCOPE: [paths] | OUTPUT: architecture plan" --yolo --model ultimate --reasoning-effort high -o text`
+- **Implement:** `qodercli -p "GOAL: [goal] | SCOPE: [paths] | VERIFICATION: [test_command] | OUTPUT: [format]" --dangerously-skip-permissions --model efficient -o text`
+- **Investigate:** `qodercli -p "GOAL: Map how [feature] works | SCOPE: [paths] | OUTPUT: concise file:line map" --dangerously-skip-permissions --model efficient -o text`
+- **Heavy reasoning:** `qodercli -p "GOAL: Design architecture for [feature] | SCOPE: [paths] | OUTPUT: architecture plan" --dangerously-skip-permissions --model ultimate --reasoning-effort high -o text`
 
 ### Docs and reference
 
 - Flags, model tiers, permission modes, config paths: [reference.md](reference.md)
 - Vendor documentation: <https://docs.qoder.com/cli/cli-reference> and
   <https://docs.qoder.com/en/cli/permissions>
-- **Checked against the official Qoder documentation on 2026-09-19. Not run against an installed
-  binary — confirm with `qodercli --help` before trusting a flag.**
+- **Checked against `qodercli` 1.1.20 `--help` on 2026-11-05** (the version installed here). The latest
+  published version is 1.1.83 (npm `@qoder-ai/qodercli`); it was not run, so newer flags may exist.
+  Docs claims not visible in `--help` (hidden `--yolo` and `--max-turns`, the permissions quote) come
+  from the official documentation.

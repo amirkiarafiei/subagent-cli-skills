@@ -126,6 +126,8 @@ loudly.
 ### Binary and prompt form
 
 - **Binary:** `vibe`
+- **Install:** `curl -LsSf https://mistral.ai/vibe/install.sh | bash`, or `uv tool install mistral-vibe`
+  (both from the official repo README, <https://github.com/mistralai/mistral-vibe>).
 - **Prompt form:** **flag.** The prompt is the value of `--prompt "prompt"`, e.g. `vibe --prompt
   "Analyze the codebase" --max-turns 5 --output json`. Passing `--prompt` puts Vibe in **programmatic
   mode**, which skips the interactive chat UI entirely and disables interactive tools (e.g.
@@ -139,31 +141,36 @@ loudly.
 | Output format | `--output text\|json\|streaming` (text default) |
 | Turn cap | `--max-turns <N>` |
 | Cost cap | `--max-price <dollars>` — documented as **"indicative only"**, a soft/approximate limit, not a hard guarantee |
+| Token cap | `--max-tokens <N>` |
+| Deadline | `--time-limit <seconds>` — stops the run; the session can be resumed |
 | Restrict tool set | `--enabled-tools <list>` — exact names, globs (`bash*`), or regex via `re:` prefix (e.g. `re:^serena_.*$`) |
 | Resume | `--continue`/`-c` (most recent session) or `--resume <SESSION_ID>` (specific session) |
 
 ### Approvals and permissions
 
-Approval is controlled by **`--agent <mode>`**, with four documented values: `default` (asks before
-every tool), `plan` (read-only — auto-approves safe reads, blocks edits/commands; **do not use for
-delegation**), `accept-edits` (auto-approves file edits, still asks for shell/sensitive tools), and
-`auto-approve` (approves everything — the vendor's own docs flag this as risky). **There is no generic
-`--yolo` or bare `--auto-approve` boolean flag** — passing one is rejected as an unrecognized argument.
-**In programmatic mode (`vibe --prompt …`), Vibe falls back to `auto-approve` when `--agent` is not
-provided** — this is documented and confirmed, so no extra flag is required for a headless run to get
-full auto-approval. Finer-grained control exists via per-tool `"always"/"ask"` settings, bash allow/deny
+Approval is controlled by **`--agent <name>`**. The documented built-in agents are `ask` (asks before
+tool calls), `accept-edits` (the **default**: auto-approves file edits, needs approval for the rest),
+`smart-approve`, and `auto-approve` (approves every tool call — the vendor says to use it only in a
+sandboxed environment). A fifth agent, `lean`, is for Lean 4 work only. Vibe has no built-in `plan`
+agent. The flags `--auto-approve` and `--yolo` also exist and approve every tool call. An admin can set
+`enable_auto_approve = false`, and then both flags are ignored.
+
+**A headless run does not auto-approve by default.** A `vibe --prompt …` run uses the default agent
+(`accept-edits`). Nobody can answer an approval prompt, so Vibe **denies every tool call that needs
+approval** — shell commands included. For a run that must act, **pass `--agent auto-approve`
+explicitly**. Finer-grained control exists via per-tool `"always"/"ask"` settings, bash allow/deny
 lists, and `--trust` (grants temporary folder trust for the current invocation only, non-persistent).
 
-**Unanswered-approval behavior is not documented** — there is no stated exit-code/hang/stall contract for
-a blocked call in headless mode. One community bug report (a specific released version) found that even
-with the `auto-approve` fallback active, a sufficiently complex prompt could trigger an internal "plan
-confirmation" step that the run then **stalls on**, waiting for input headless mode cannot supply — a
-known edge case, not confirmed universal or version-independent behavior. Don't assume a `--prompt` run
-is failure-proof against hanging; wrap it in an external timeout regardless.
+Exit codes (vendor docs, not reproduced here): `0` the agent finished, `1` the run could not start,
+`2` model API or runtime failure, `3` stopped early (limit reached, stop, or the model declined). Use
+`--time-limit <seconds>` for a deadline. An older community report described a run that stalled on an
+internal plan-confirmation step. It is **unverified for the current release**, so keep an external
+timeout around the run anyway.
 
 ### Models and how to list them
 
-No `vibe models` subcommand or `--list-models` flag is documented. Selection is `--model [model_name]`;
+No `vibe models` subcommand or `--list-models` flag is documented. Selection is `--model <alias>` (it
+starts a new session on that model and does not change `active_model`);
 model IDs can be a `-latest` alias (e.g. a "medium" or "small" tier) or a dated/version-pinned snapshot
 made by replacing `-latest` with a date/version suffix — prefer a pinned snapshot for reproducible
 delegations. An interactive `/model` slash command exists to select the active model, but whether it
@@ -176,19 +183,19 @@ If the user names a model, use it. Otherwise check the vendor's own documentatio
 
 ```bash
 vibe --prompt "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" \
-  --model <identifier> --output text 2>&1
+  --agent auto-approve --model <identifier> --output text --time-limit 2700 2>&1
 ```
 
 ### Prompt examples
 
-- **Implement:** `vibe --prompt "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | VERIFICATION: [test_command] | OUTPUT: [format]" --model <identifier>`
-- **Investigate (report only):** `vibe --prompt "GOAL: Map how [feature] works | SCOPE: [paths] | CONSTRAINTS: do not edit any file | OUTPUT: concise file:line map" --agent accept-edits --model <small-tier identifier>`
-- **Bounded run:** `vibe --prompt "GOAL: [task] | VERIFICATION: [test_command] | OUTPUT: [format]" --max-turns 15 --max-price 2`
+- **Implement:** `vibe --prompt "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | VERIFICATION: [test_command] | OUTPUT: [format]" --agent auto-approve --model <identifier>`
+- **Investigate (report only):** `vibe --prompt "GOAL: Map how [feature] works | SCOPE: [paths] | CONSTRAINTS: do not edit any file | OUTPUT: concise file:line map" --agent accept-edits --model <small-tier identifier>` (shell calls are denied under `accept-edits`; use `--agent auto-approve` if the investigation needs to run commands)
+- **Bounded run:** `vibe --prompt "GOAL: [task] | VERIFICATION: [test_command] | OUTPUT: [format]" --agent auto-approve --max-turns 15 --max-price 2`
 
 ### Docs and reference
 
 - Flags, models, config: [reference.md](reference.md)
 - Vendor documentation: <https://docs.mistral.ai/vibe/code/cli/work-with-cli> and
   <https://docs.mistral.ai/vibe/code/safety-approvals-permissions>
-- **Checked against the official Mistral AI documentation on 2026-09-19. Not run against an installed
-  binary — confirm with `vibe --help` before trusting a flag.**
+- **Checked against the official documentation on 2026-11-05; not run against an installed binary.**
+  Latest release on PyPI: `mistral-vibe` 3.1.0. Confirm with `vibe --help` before trusting a flag.

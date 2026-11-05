@@ -126,6 +126,9 @@ loudly.
 ### Binary and prompt form
 
 - **Binary:** `omp`
+- **Install:** `bun install -g @oh-my-pi/pi-coding-agent` (the README recommends bun), or
+  `curl -fsSL https://omp.sh/install | sh`, or `brew install can1357/tap/omp`
+  (all from <https://github.com/can1357/oh-my-pi>).
 - **Prompt form:** **positional**, gated by a boolean flag. `-p`/`--print` runs `omp` non-interactively
   (processes the prompt, streams the result to stdout, exits) but takes no value itself — the prompt
   text follows it positionally: `omp -p "prompt"`. A bare `omp` opens the interactive TUI and never
@@ -143,11 +146,12 @@ loudly.
 
 ### Approvals and permissions
 
-Three tiers, set with `--approval-mode <mode>` (or `--auto-approve`/`--yolo` to force `yolo`):
+Four tiers, set with `--approval-mode <mode>` (or `--auto-approve`/`--yolo` to force `yolo`):
 
 | Mode | Auto-approves | Prompts for |
 |---|---|---|
 | `always-ask` | read | write, exec |
+| `always-ask-cached` | read | as `always-ask`, and remembers answers; also asks before a tool reads a file it has not been granted |
 | `write` | read, write | exec |
 | `yolo` (**default**) | read, write, exec | none |
 
@@ -187,8 +191,8 @@ omp -p "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [c
 ### Docs and reference
 
 - Flags, approval modes, models, skills, auth, paths: [reference.md](reference.md)
-- Vendor documentation: <https://github.com/can1357/oh-my-pi/tree/main/docs> (the `omp.sh/docs` site is
-  a client-rendered SPA that 403s non-browser fetches; this GitHub `docs/*.md` tree is what it renders
-  from and is the vendor's own source)
-- **Checked against the official oh-my-pi documentation on 2026-09-19. Not run against an installed
-  binary — confirm with `omp --help` before trusting a flag.**
+- Vendor documentation: <https://github.com/can1357/oh-my-pi/tree/main/docs> (the vendor's own
+  source; the `omp.sh/docs` site renders from it)
+- **Checked against the official documentation on 2026-11-05; not run against an installed binary.**
+  Latest release on npm: `@oh-my-pi/pi-coding-agent` 18.16.0. Confirm with `omp --help` before trusting
+  a flag.

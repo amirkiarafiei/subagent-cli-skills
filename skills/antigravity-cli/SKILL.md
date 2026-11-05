@@ -126,6 +126,7 @@ loudly.
 ### Binary and prompt form
 
 - **Binary:** `agy`
+- **Install:** `curl -fsSL https://antigravity.google/cli/install.sh | bash` (macOS and Linux). Windows commands are in the vendor getting-started page.
 - **Prompt form:** **flag.** The prompt is the argument of `-p` (aliases `--print`, `--prompt`).
   A bare `agy "prompt"` opens the interactive interface and never returns.
 
@@ -138,7 +139,7 @@ loudly.
 | One JSON object | `--output-format json` |
 | Event stream | `--output-format stream-json` |
 | Structured answer | `--json-schema <schema or path>` |
-| Longer runs | `--print-timeout <duration>` — the default is only 5 minutes |
+| Limit a run | `--print-timeout <duration>` — the default `0s` waits until the turn completes. Set an external timeout too. |
 
 ### Approvals and permissions
 
@@ -153,12 +154,14 @@ option upward:
    `action(target)`, for example `command(git)`. Inspect the effective rules with
    `agy -p "/permissions"`, which answers without starting a run.
 3. **`--dangerously-skip-permissions`** — approves every tool, including writes and shell commands.
+   This is the documented unattended path. `--mode` also accepts `accept-edits` and `auto` (and `plan`,
+   which you must not use for delegation). `agy --help` does not say what `auto` approves, so this card does not rely on it.
 
 ### Models and how to list them
 
 Run **`agy models`** for the identifiers this build accepts.
 
-Selection is `--model <identifier>` together with `--effort low|medium|high`. A model family on its
+Selection is `--model <identifier>` together with `--effort low|medium|high|xhigh|max`. A model family on its
 own is rejected — pass the full tiered identifier, or the family plus an effort level. An unknown
 model does not fall back silently: the run exits non-zero and lists what is available.
 
@@ -184,4 +187,4 @@ agy -p "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [c
 
 - Flags, models, permissions and paths: [reference.md](reference.md)
 - Vendor documentation: <https://antigravity.google/docs/cli/headless>
-- **Verified against `agy` v1.1.12 on 2026-08-12.**
+- **Checked against `agy` 1.5.1 `--help` on 2026-11-05.**

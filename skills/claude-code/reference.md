@@ -1,4 +1,4 @@
-> **Checked against the official Anthropic documentation on 2026-09-19. Not run against an installed binary — confirm with `claude --help` before trusting a flag.**
+> **Checked against `claude` 2.1.318 `--help` on 2026-11-05.** Install command from the official setup page.
 
 ## Authentication
 
@@ -24,14 +24,14 @@ names and pricing before picking one for the user.
 |------|---------|
 | `--print`, `-p` | Execute prompt and exit (non-interactive). Prompt is positional/stdin, not this flag's value. |
 | `--bare` | Minimal mode: skips hooks, LSP, plugin sync, auto-memory, keychain reads, and CLAUDE.md auto-discovery. |
-| `--permission-mode <mode>` | `default`, `acceptEdits`, `plan`, `auto`, `dontAsk`, `bypassPermissions`, or `manual` (alias for `default`, v2.1.200+). |
+| `--permission-mode <mode>` | `acceptEdits`, `auto`, `bypassPermissions`, `manual`, `dontAsk` or `plan`. `default` is not valid in 2.1.318. |
 | `--dangerously-skip-permissions` | Equivalent to `--permission-mode bypassPermissions`. Bypasses all confirmation prompts. |
 | `--allowedTools`, `--disallowedTools` | Scope tool grants/denials without a full bypass, e.g. `--allowedTools "Bash,Read,Edit"`. |
 | `--permission-prompts none` | Deny anything that would prompt instead of waiting on a permission host (v2.1.259+). |
 | `--permission-prompt-tool <mcp-tool>` | Route permission prompts to an MCP tool in non-interactive mode. |
 | `--model` | Specify the model to use. |
 | `--output-format` | `text` (default), `json`, or `stream-json`. |
-| `--max-turns` | Limit the number of agentic turns. |
+| `--max-turns` | Limit the number of agentic turns. Hidden from `--help` but accepted: the 2.1.318 binary defines it. |
 | `--add-dir` | Grant access to an additional directory. |
 | `--settings` | Inline JSON or file path to apply settings for this session only. |
 
@@ -53,7 +53,7 @@ names and pricing before picking one for the user.
 - `claude -p "prompt"` — headless one-shot run.
 - `claude agents` — browse/launch agents; accepts `--permission-mode`, `--model`, `--effort`,
   `--dangerously-skip-permissions`, `--settings`, `--add-dir`, `--plugin-dir`, `--mcp-config`,
-  `--strict-mcp-config`, `--cwd` (v2.1.14x+).
+  `--strict-mcp-config`, `--cwd` (v2.1.14x+). `--cwd <dir>` is hidden from `--help` but accepted: the 2.1.318 binary defines it.
 
 ## Configuration and paths
 

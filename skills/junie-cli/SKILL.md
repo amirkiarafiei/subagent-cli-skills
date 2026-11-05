@@ -126,22 +126,29 @@ loudly.
 ### Binary and prompt form
 
 - **Binary:** `junie`
+- **Install:** `curl -fsSL https://junie.jetbrains.com/install.sh | bash` (macOS, Linux). Windows: `powershell -NoProfile -Command "iex (irm 'https://junie.jetbrains.com/install.ps1')"`.
 - **Prompt form:** **positional** is the documented headless form: `junie --auth="$JUNIE_API_KEY"
   "prompt text" --model <alias>`. A `--task <text>` flag also exists as an explicit alternative to the
-  positional argument. **Do not confuse this with `--prompt`** — that flag starts an *interactive*
-  session with the prompt pre-submitted as the first turn; it is not the headless form.
+  positional argument. JetBrains' docs also describe a `--prompt` flag that opens an *interactive*
+  session; build 888.212's `--help` does not list it. Neither way is the headless form — use the
+  positional argument or `--task`.
 
 ### Headless and output flags
 
 | Need | Flag |
 |---|---|
 | Non-interactive run | prompt as a positional argument, or `--task <text>` |
-| Output format | `--output-format text\|json\|json-stream` (three values) |
+| Output format | `--output-format text\|json` (build 888.212 accepts only these two) |
 | Input format (piped input) | `--input-format text\|json` |
 | Save JSON output to a file | `--json-output-file <path>` |
 | Project directory | `-p`, `--project <path>` |
-| Resume a session | `--session-id <id>` or `--resume` (resumes the last session, or the one named by `--session-id`) |
-| Specialized modes | `--review`, `--merge [branch]`, `--rebase` (flags on the base binary — there are no `chat`/`review` subcommands) |
+| Follow up a previous session | `--session-id <id>` |
+| Time limit in milliseconds | `-t`, `--timeout <int>` |
+| Skip the startup update check (use in CI) | `--skip-update-check` |
+
+JetBrains' parameters page still lists `--review`, `--merge`, `--rebase`, `--resume` and
+`--output-format json-stream`, but build 888.212 does not accept them. Check `junie --help` before
+use. There are no `chat`/`review` subcommands.
 
 ### Approvals and permissions
 
@@ -160,9 +167,8 @@ that still exists via the persistent **Action Allowlist** at `~/.junie/allowlist
 `prefix`/`pattern` + `action: allow|ask` across `fileEditing`, `executables`, `mcpTools`,
 `readOutsideProject`, `readSecretFile`) — how an `ask` entry resolves in a non-interactive run specifically
 is not spelled out verbatim in the docs; treat it as most likely resolving the same "trusted by design"
-way, but unconfirmed. A `--sandbox` flag / `/sandbox` command also exists for OS-level command
-sandboxing, but is currently limited to development/nightly/experimental builds — **do not rely on it in
-a stable release.**
+way, but unconfirmed. The `/sandbox` slash command is documented for development/nightly builds only. Build 888.212 has no
+`--sandbox` flag in its help — do not rely on sandboxing.
 
 ### Models and how to list them
 
@@ -176,19 +182,21 @@ check [Artificial Analysis](https://artificialanalysis.ai/) and the vendor's own
 
 ```bash
 junie --auth="$JUNIE_API_KEY" "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" \
-  --model <alias> --output-format text 2>&1
+  --model <alias> --output-format text --skip-update-check 2>&1
 ```
 
 ### Prompt examples
 
 - **Implement:** `junie --auth="$JUNIE_API_KEY" "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | VERIFICATION: [test_command] | OUTPUT: [format]" --model <alias>`
-- **Code review:** `junie --auth="$JUNIE_API_KEY" --review "GOAL: Review my changes for [concerns] | SCOPE: [paths] | VERIFICATION: [check_command] | OUTPUT: review report"`
-- **Conflict resolution:** `junie --auth="$JUNIE_API_KEY" --merge [branch] "GOAL: Resolve conflicts between current branch and [branch] | CONSTRAINTS: prefer [strategy]"`
+- **Code review (report only):** `junie --auth="$JUNIE_API_KEY" "GOAL: Review my changes for [concerns] | SCOPE: [paths] | CONSTRAINTS: do not edit any file | OUTPUT: review report" --skip-update-check`
+- **Investigate with a time limit:** `junie --auth="$JUNIE_API_KEY" "GOAL: Map how [feature] works | SCOPE: [paths] | CONSTRAINTS: do not edit any file | OUTPUT: file:line map" --timeout 600000 --skip-update-check`
 
 ### Docs and reference
 
 - Flags, allowlist, model selection: [reference.md](reference.md)
 - Vendor documentation: <https://junie.jetbrains.com/docs/junie-headless.html> and
   <https://junie.jetbrains.com/docs/parameters.html>
-- **Checked against the official JetBrains documentation on 2026-09-19. Not run against an installed
-  binary — confirm with `junie --help` before trusting a flag.**
+- **Checked against `junie` build 888.212 `--help` (captured output) on 2026-11-05.** Junie was not run
+  for any task. The `--prompt` flag is not in the build's help; the docs list it. `JUNIE_API_KEY`,
+  "trusted by design" and the allowlist come from the vendor docs and were not run. Confirm with
+  `junie --help` before trusting a flag.

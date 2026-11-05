@@ -126,6 +126,10 @@ loudly.
 ### Binary and prompt form
 
 - **Binary:** `opencode`
+- **Install:** `npm install -g opencode-ai`, or `curl -fsSL https://opencode.ai/install | bash`, or
+  `brew install anomalyco/tap/opencode` (official page <https://opencode.ai/docs/>). These install
+  OpenCode **v1**. This card covers v1 only. The current docs also describe OpenCode v2, whose flags may
+  differ; plain `brew install opencode` installs v2.
 - **Prompt form:** **positional**, after the `run` subcommand: `opencode run "prompt"`
   (`opencode run [message..]` — the message is variadic positional args).
 - **The verified trap:** `-p` is `--password` (used for basic-auth against `--attach`ed servers), not
@@ -194,5 +198,6 @@ opencode run "[prompt]" --auto --print-logs > /tmp/oc-run.log 2>&1 &
 
 - Flags, agents, models, auth, permissions: [reference.md](reference.md)
 - Vendor documentation: <https://opencode.ai/docs/cli/> and <https://opencode.ai/docs/permissions/>
-- **Checked against the official OpenCode documentation on 2026-09-19. Not run against an installed
-  binary — confirm with `opencode run --help` before trusting a flag.**
+- **Checked against `opencode` 1.17.19 `--help` on 2026-11-05.** The latest 1.x on npm is 1.19.5 and
+  was not run. The docs now describe OpenCode v2 too; this card covers v1 only. Confirm with
+  `opencode run --help` before trusting a flag.

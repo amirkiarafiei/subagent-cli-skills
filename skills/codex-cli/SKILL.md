@@ -126,6 +126,7 @@ loudly.
 ### Binary and prompt form
 
 - **Binary:** `codex`
+- **Install:** `npm install -g @openai/codex`, or `brew install --cask codex` (from the vendor GitHub README).
 - **Prompt form:** **positional**, under the `exec` subcommand (alias `codex e`). `codex exec
   "prompt"` runs non-interactively and exits when the task completes; the prompt string is a plain
   argument to `exec`, not a flag's value. A bare `codex "prompt"` (no `exec`) opens the interactive
@@ -145,13 +146,17 @@ loudly.
 
 - **Sandbox policy** — `--sandbox`, `-s <read-only\|workspace-write\|danger-full-access>` — bounds
   what model-generated shell commands can touch.
-- **Approval policy** — `--ask-for-approval`, `-a <value>` — the CLI's own docs page highlights
-  `on-request` and `never`; the source additionally defines `on-failure` and `untrusted` as accepted
-  values. `--ask-for-approval never` suppresses prompts but does **not** by itself grant network
+- **Approval policy** — `--ask-for-approval`, `-a <on-request|never>` — the current CLI reference
+  lists these two values. It is a global flag, so put it before `exec` if you use it. `exec` already
+  defaults to `never`, so you rarely need it. `--ask-for-approval never` suppresses prompts but does **not** by itself grant network
   access — that's a separate `sandbox_workspace_write.network_access` config setting.
 - **Full bypass** — **`--dangerously-bypass-approvals-and-sandbox`** (alias **`--yolo`**) — sets the
   sandbox to `danger-full-access` and the approval policy to `never` together. This is the flag to
   use for unattended delegation; only run it in an already-hardened environment (container/VM/CI).
+- **Middle ground** — **`--approve-for-me`** (alias **`--not-so-yolo`**) — uses automatic approval
+  review with `on-request` approvals and the `workspace-write` sandbox. It conflicts with `--sandbox`
+  and `--yolo`, and the interactive CLI rejects `--ask-for-approval` with it. This card does not
+  verify it inside `exec`; check `codex exec --help` first.
 - **`codex exec` defaults to `AskForApproval::Never`** even without any flag — headless mode does
   not wait for approval by default.
 - **What happens with nobody to answer:** the official docs state plainly that when an approval is
@@ -159,13 +164,12 @@ loudly.
 
 ### Models and how to list them
 
-No dedicated `exec`-time flag to print the model catalog is confirmed; the docs reference `codex
-debug models` for inspecting available models, but this is not documented in the same depth as the
-`--model` flag itself, so verify it against the installed binary. Select the model for a run with
+Run **`codex debug models`**. It prints the raw model catalogue as JSON. Add `--bundled` to skip the
+refresh and print only the catalogue bundled with the installed binary. Select the model for a run with
 `--model`, `-m <identifier>`; reasoning effort/tier is a config-level concern, not part of the model
 string. Interactively, `/model` lets you change the model and effort mid-session.
 
-If the user names a model, use it. Otherwise check `codex debug models` (or the docs below) and
+If the user names a model, use it. Otherwise run `codex debug models` (or check the docs below) and
 [Artificial Analysis](https://artificialanalysis.ai/) for current identifiers and pricing before
 picking one — Codex model names and retirements change often enough that a pinned one can fail
 outright.
@@ -180,16 +184,15 @@ codex exec "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS
 ### Prompt examples
 
 - **Implement:** `codex exec "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" --yolo`
-- **Logic check:** `codex exec "GOAL: Analyze logic for edge cases and race conditions | SCOPE: [paths] | VERIFICATION: [check_command] | OUTPUT: detailed report" --model <identifier> --sandbox read-only --ask-for-approval never`
-- **Audit:** `codex exec "GOAL: Security audit of the authentication layer | SCOPE: [paths] | CONSTRAINTS: report only, no edits | OUTPUT: audit report" --sandbox read-only --ask-for-approval never`
+- **Logic check:** `codex exec "GOAL: Analyze logic for edge cases and race conditions | SCOPE: [paths] | VERIFICATION: [check_command] | OUTPUT: detailed report" --model <identifier> --sandbox read-only`
+- **Audit:** `codex exec "GOAL: Security audit of the authentication layer | SCOPE: [paths] | CONSTRAINTS: report only, no edits | OUTPUT: audit report" --sandbox read-only`
 
 ### Docs and reference
 
 - Flags, sandbox/approval values, delegation checklist: [reference.md](reference.md)
-- Vendor documentation: <https://developers.openai.com/codex/cli> and
-  <https://developers.openai.com/codex/cli/reference>
-- **Checked against the official OpenAI documentation on 2026-09-19. Not run against an installed
-  binary — confirm with `codex --help` before trusting a flag.** Note on `--full-auto`: an earlier version of
+- Vendor documentation: <https://learn.chatgpt.com/docs/developer-commands?surface=cli>
+- **Checked against the official documentation on 2026-11-05 (latest npm version 0.166.0). Not run
+  against an installed binary — confirm with `codex --help` before trusting a flag.** Note on `--full-auto`: an earlier version of
   this card recommended it. It is now **deprecated** — it still works for one release cycle and prints
   a warning, but it is scheduled for hard removal, so a command relying on it will start failing. The
   bypass flag is `--dangerously-bypass-approvals-and-sandbox` (alias `--yolo`).

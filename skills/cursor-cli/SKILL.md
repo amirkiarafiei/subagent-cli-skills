@@ -126,6 +126,7 @@ loudly.
 ### Binary and prompt form
 
 - **Binary:** `agent`
+- **Install:** `curl https://cursor.com/install -fsS | bash` (macOS and Linux; from the vendor CLI installation page).
 - **Prompt form:** **positional.** `-p` / `--print` is a mode flag ("print responses to console for
   scripts or non-interactive use") — it does not carry the prompt text itself. The prompt is the
   plain string given alongside it, e.g. `agent -p --force "prompt text"`. A bare `agent "prompt"`
@@ -146,12 +147,13 @@ loudly.
 - **`-f`, `--force`** (alias **`--yolo`**) — "force allow commands unless explicitly denied."
 - **`--approve-mcps`** — automatically approve all MCP servers.
 - **`--sandbox <enabled\|disabled>`** — sandbox the run.
-- **What happens with nobody to answer:** confirmed from the official headless docs — **without
-  `--force`/`--yolo`, changes are only proposed, not applied.** It is not a stall and not an error:
-  in `-p` mode, Cursor still writes its response, but file edits and other actions requiring
-  confirmation are silently skipped rather than made. For a delegation that must actually change
-  files, `--force`/`--yolo` is mandatory; for a report-only run, the default (no `--force`) already
-  behaves as "no edits."
+- **What happens with nobody to answer:** `agent --help` says `-p` "has access to all tools,
+  including write and shell". It does not say what a run without `--force` does when a command needs
+  approval. The vendor headless docs say changes are only proposed without `--force`; the help does
+  not confirm that. Do not rely on `-p` alone for a no-edit run.
+- **`--mode plan` and `--mode ask`** are read-only per `--help`. Do not use them for delegation (see
+  the plan-mode rule above). For a no-edit run, write "report only, no edits" in the **Output** field.
+  For a delegation that must change files, pass `--force`/`--yolo`.
 
 ### Models and how to list them
 
@@ -171,16 +173,15 @@ agent -p --force "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONST
 ### Prompt examples
 
 - **Implement:** `agent -p --force "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]"`
-- **Investigate (no edits needed):** `agent -p "GOAL: Map how [feature] works | SCOPE: [paths] | OUTPUT: concise file:line map"` — omitting `--force` already means nothing gets written.
-- **Review:** `agent -p "GOAL: Review [scope] for [concerns] | OUTPUT: findings with severity"`
+- **Investigate (no edits needed):** `agent -p "GOAL: Map how [feature] works | SCOPE: [paths] | CONSTRAINTS: report only, no edits | OUTPUT: concise file:line map"`
+- **Review:** `agent -p "GOAL: Review [scope] for [concerns] | CONSTRAINTS: report only, no edits | OUTPUT: findings with severity"`
 
 ### Docs and reference
 
 - Flags, delegation checklist: [reference.md](reference.md)
 - Vendor documentation: <https://cursor.com/docs/cli/headless> and
   <https://cursor.com/docs/cli/reference/parameters>
-- **Checked against the official Cursor documentation on 2026-09-19. Not run against an installed
-  binary — confirm with `agent --help` before trusting a flag.** Note: the previous version of this
+- **Checked against `cursor-agent` 2026.06.04 `--help` on 2026-11-05.** Note: the previous version of this
   card documented `--mode agent|plan|ask`; the official reference only lists `--mode <plan|ask>` (no
   explicit `agent` value — that's simply the unnamed default) plus a `--plan` shorthand for
   `--mode=plan`.

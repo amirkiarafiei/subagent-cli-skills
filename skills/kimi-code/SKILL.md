@@ -132,6 +132,7 @@ loudly.
 ### Binary and prompt form
 
 - **Binary:** `kimi`
+- **Install:** `npm install -g @moonshot-ai/kimi-code` (binary `kimi`). Use the scoped name. The unscoped npm package `kimi-code` is a different project that also installs a `kimi` binary.
 - **Prompt form:** **flag.** `-p`, `--prompt "prompt"` runs a single prompt non-interactively and
   streams output to stdout; it does not open the TUI.
 
@@ -201,6 +202,7 @@ kimi --prompt "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAI
 
 - Flags, models, skills, subcommands: [reference.md](reference.md)
 - Vendor documentation: <https://moonshotai.github.io/kimi-code/en/reference/kimi-command.html>
-- **Checked against the official Moonshot AI documentation on 2026-09-19. Not run against an installed
-  binary — confirm with `kimi --help` before trusting a flag**, and confirm which generation (legacy
-  `kimi-cli` vs current `kimi-code`) is actually installed.
+- **Checked against the official Moonshot AI documentation on 2026-11-05; not run against an installed
+  binary.** The latest npm release of `@moonshot-ai/kimi-code` is 2.5.1. Confirm with `kimi --help`
+  before trusting a flag, and confirm which generation (legacy `kimi-cli` vs current `kimi-code`) is
+  installed.

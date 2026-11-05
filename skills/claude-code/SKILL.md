@@ -126,6 +126,7 @@ loudly.
 ### Binary and prompt form
 
 - **Binary:** `claude`
+- **Install:** `curl -fsSL https://claude.ai/install.sh | bash` (macOS, Linux, WSL). The npm package also works: `npm install -g @anthropic-ai/claude-code`.
 - **Prompt form:** **positional** (or stdin). `-p` / `--print` is a mode flag that switches the CLI
   to non-interactive "print and exit" behavior — it does not itself carry the prompt text. The
   prompt is the plain string that follows on the command line, e.g. `claude -p "prompt text"`, or it
@@ -138,7 +139,7 @@ loudly.
 | Run once and exit | `-p`, `--print` |
 | Minimal startup (skips hooks, LSP, plugin sync, auto-memory, keychain, CLAUDE.md auto-discovery) | `--bare` |
 | Output format | `--output-format text` (default), `json`, or `stream-json` |
-| Cap agentic turns | `--max-turns <n>` |
+| Cap agentic turns | `--max-turns <n>` (hidden from `--help` but accepted; the 2.1.318 binary defines it) |
 | Scope tool grants without a full bypass | `--allowedTools "Bash,Read,Edit"`, `--disallowedTools` |
 
 `--bare` changes auth: Anthropic auth becomes strictly `ANTHROPIC_API_KEY` or `apiKeyHelper` via
@@ -148,8 +149,8 @@ pass context explicitly via `--add-dir`, `--system-prompt`, `--settings`, `--age
 
 ### Approvals and permissions
 
-- **`--permission-mode`** accepts `default`, `acceptEdits`, `plan`, `auto`, `dontAsk`,
-  `bypassPermissions`, or `manual` (an alias for `default`, Claude Code v2.1.200+).
+- **`--permission-mode`** accepts `acceptEdits`, `auto`, `bypassPermissions`, `manual`,
+  `dontAsk` or `plan`. `default` is not a valid value in 2.1.318.
   `--permission-mode auto` runs unattended with a classifier-backed safety check.
   `--permission-mode bypassPermissions` is equivalent to **`--dangerously-skip-permissions`** and
   bypasses every confirmation.
@@ -192,5 +193,4 @@ claude -p "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS:
 - Flags, models, delegation checklist: [reference.md](reference.md)
 - Vendor documentation: <https://code.claude.com/docs/en/cli-reference> and
   <https://code.claude.com/docs/en/headless>
-- **Checked against the official Anthropic documentation on 2026-09-19. Not run against an
-  installed binary — confirm with `claude --help` before trusting a flag.**
+- **Checked against `claude` 2.1.318 `--help` on 2026-11-05.**

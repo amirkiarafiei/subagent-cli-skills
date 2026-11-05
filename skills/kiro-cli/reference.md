@@ -1,17 +1,22 @@
 # Kiro CLI — reference
 
-> **Checked against the official Kiro (kiro.dev) documentation on 2026-09-19. Not run against an
-> installed binary — confirm with `kiro-cli --help` before trusting a flag.** AWS renamed Amazon Q
+> **Checked against the official Kiro (kiro.dev) documentation on 2026-11-05; not run against an
+> installed binary.** The docs describe CLI 3.0.0 or later. Confirm with `kiro-cli --help` before
+> trusting a flag. AWS renamed Amazon Q
 > Developer CLI to Kiro CLI effective 2025-11-17 and moved authoritative docs to kiro.dev/docs;
 > docs.aws.amazon.com now mostly redirects there.
+
+## Install
+
+`curl -fsSL https://cli.kiro.dev/install | bash`. The docs list no Homebrew or npm option. Source: <https://kiro.dev/docs/cli/>.
 
 ## Authentication
 
 **Default/normal auth is browser-based**, not a simple API key: AWS Builder ID, AWS IAM Identity Center
 (SSO), an external enterprise IdP, or social login (GitHub/Google) — this is the primary documented path.
 
-`KIRO_API_KEY` is also a real, documented env var, but it is specifically scoped to **headless/CI-CD
-use** ("CI/CD pipelines and automation scripts instead of interactive sign-in"). Setting it skips the
+`KIRO_API_KEY` is **required for headless mode** ("Headless mode requires an API key set as the
+`KIRO_API_KEY` environment variable"). Setting it also suits CI/CD and skips the
 browser login flow. Keys have a `ksk_` prefix, are created at app.kiro.dev under an API Keys section, and
 are long-lived credentials — rotate carefully. **API-key auth requires a paid subscription (Pro, Pro+,
 Pro Max, or Power tier) and is not available on the Free tier.**
@@ -19,7 +24,7 @@ Pro Max, or Power tier) and is not available on the Free tier.**
 ## Models
 
 Run **`kiro-cli chat --list-models`** (add `--format json`) to list available models. Selection is
-`--model <alias>` on `chat`; set a permanent default with `kiro-cli settings chat.defaultModel <alias>`.
+`--model <alias>` on `chat`; a `chat.defaultModel` setting appears in the docs only as a value `--model` overrides, so setting it via `kiro-cli settings` is unverified.
 Kiro's credit-based subscription tiers gate access to newer/premium models — Free-tier accounts get a
 baseline model plus open-weight models; paid tiers unlock premium/newer models and an "Auto" routing
 option. Check [Artificial Analysis](https://artificialanalysis.ai/) and Kiro's own pricing docs for
@@ -32,7 +37,9 @@ current availability and cost.
 | `chat --no-interactive` | Primary command for non-interactive execution; prompt is positional (or piped via stdin). |
 | `chat --list-models [--format json]` | List available models. |
 | `--trust-all-tools` | Auto-approve all tools, including arbitrary shell — "use with caution." |
-| `--trust-tools=<list>` | Granular auto-approval (e.g. `read,grep`) — recommended over `--trust-all-tools`. |
+| `--trust-tools=<list>` | Granular auto-approval. Non-interactive V3 needs exact internal tool IDs (docs example: `read_file,grep_search`); CLI 2.x accepts its own names. Recommended over `--trust-all-tools`. |
+| `--v2`, `--v3`, `--agent-engine <v1\|v2\|v3>` | Pick the agent harness. CLI 3.0.0 and later start V3 by default when none is named. |
+| `--output-format stream-json` | JSON Lines on stdout. Needs V2 or V3. Plain text is the default. |
 | `--model <alias>` | Specify the model to use. |
 | `--agent "<name>"` | Select a built-in or custom agent. |
 | `--require-mcp-startup` | Exit code 3 if MCP servers don't start/report status within 30s; without it, startup issues are only logged. |
@@ -40,10 +47,11 @@ current availability and cost.
 ## Approvals and permissions
 
 `--trust-all-tools` (blanket) or `--trust-tools=<list>` (scoped) are the only documented approval-bypass
-mechanisms. **What happens if neither is passed and a tool needs approval during `--no-interactive` is
-NOT DOCUMENTED** in AWS/Kiro's official docs — no stated fallback to stall, error, or silent exit 0.
-Always pass an explicit trust flag for a headless delegation rather than relying on undocumented default
-behavior.
+mechanisms. Without a trust flag, the headless docs say a V3 sub-agent's tool call is denied ("[denied] tool
+permission approval is not supported in non-interactive mode. Use --trust-all-tools to auto-approve"),
+and a Hook confirmation is denied too. `--trust-tools` cannot approve a Hook request. The docs do not
+spell out the general case for the main agent, so always pass an explicit trust flag for a headless
+delegation.
 
 ## Subcommands
 
@@ -53,7 +61,7 @@ behavior.
 | `kiro-cli chat --list-models [--format json]` | List models. |
 | `kiro-cli agent list\|create\|edit\|validate\|migrate\|set-default` | Manage agents. |
 | `kiro-cli settings list\|open\|--delete` | Manage settings (prefer this over hand-editing the JSON file). |
-| `kiro-cli settings chat.defaultModel <alias>` | Set the permanent default model. |
+| `kiro-cli settings chat.defaultModel <alias>` | Unverified: the docs show `chat.defaultModel` only as a value `--model` overrides. |
 
 ## Built-in agents
 

@@ -126,6 +126,9 @@ loudly.
 ### Binary and prompt form
 
 - **Binary:** `openclaw`
+- **Install:** `curl -fsSL https://openclaw.ai/install.sh | bash` (official install page,
+  <https://docs.openclaw.ai/install>). It needs Node 24.16.0+ on 24.x, or 26.1.0+. The page also lists
+  `npm install -g openclaw@latest --allow-scripts=openclaw`.
 - **Prompt form:** **positional**, after the `agent exec` subcommand:
   `openclaw agent exec "prompt"` (usage: `openclaw agent exec [options] [message]`). For a long
   handoff, use `--message-file <path>` instead, or `--message-file -` to read it from stdin.
@@ -144,7 +147,8 @@ loudly.
 | Run once and exit, no Gateway | `agent exec "prompt"` |
 | Prompt from a file | `--message-file <path>` (`-` reads stdin) |
 | One JSON envelope | `--json` |
-| Deadline | `--timeout <seconds>` — default 600 |
+| Deadline | `--timeout <seconds>` — default 600 **per model attempt** (each fallback gets a fresh budget); `0` disables it |
+| Change settings for one run | `--config-override '<JSON>'` — objects merge, arrays and scalars replace, never saved (e.g. `'{"tools":{"deny":["exec"]}}'` blocks the exec tool) |
 | Workspace and tool working directory | `--cwd <dir>` |
 | Ignore the ambient config | `--isolated` |
 | Keep a state directory instead of a temporary one | `--state-dir <dir>` |
@@ -155,19 +159,24 @@ loudly.
 
 With `--json`, **stdout carries the envelope alone and every diagnostic goes to stderr**, so
 `openclaw agent exec "…" --json` can be parsed directly without filtering. Read the answer from
-`.final`. The envelope also carries `ok`, `status`, `payloads`, `model`, `provider`, `sessionId`, and
-`error` with `message` and `kind` when the run fails.
+`.final`. The envelope also carries `ok`, `status` (`ok`, `error` or `timeout`), `payloads`, `model`,
+`provider`, `sessionId`, `usage` (omitted when unavailable), and `error` with `message` and `kind` when
+the run fails. The vendor docs also list optional `costUsd`, `codeModeEngaged`, `assistantTurns`,
+`bridgeCalls` and `toolSummary`.
 
-Exit codes: `0` for a completed turn, `1` for a model or result error, `2` for a timeout. Only `1` was
-reproduced when this card was written — treat `0` and `2` as documented rather than proven. A failed
-run still prints a well-formed envelope with `"ok": false`, so check `.ok` as well as the exit code.
+Exit codes (vendor docs): `0` success, `1` model or result error (also a cleanup failure after a
+successful run; the output is kept), `2` timeout, `130` SIGINT, `143` SIGTERM. Only `1` was reproduced
+on 2026.9.5. A failed run still prints a well-formed envelope with `"ok": false`, so check `.ok` as
+well as the exit code.
 
 ### Approvals and permissions
 
-**Verified: OpenClaw already auto-approves by default, so a headless run does not stall.**
-`openclaw exec-policy show` on a clean install reports `security=full`, `ask=off` and
-`askFallback=deny`, all marked as OpenClaw's own defaults. There is no per-run approve-all flag in
-`agent exec`, and none is needed.
+**Observed on 2026.9.5: OpenClaw auto-approved by default, so a headless run did not stall.**
+`openclaw exec-policy show` on a clean 2026.9.5 install reported `security=full`, `ask=off` and
+`askFallback=deny`, all marked as OpenClaw's own defaults. The current docs state only that the default
+`askFallback` is `deny`; they do not state default `security` or `ask` values. **Re-run
+`openclaw exec-policy show` on the build you use.** There is no per-run approve-all flag in
+`agent exec`.
 
 This is the one CLI in this catalogue where the mode that works without asking is not a flag but the
 default state of the host. So:
@@ -217,8 +226,9 @@ openclaw agent exec --message-file ./task.md --cwd /absolute/path/to/repo --json
 
 - Flags, models, approvals, Gateway and paths: [reference.md](reference.md)
 - Vendor documentation: <https://docs.openclaw.ai/cli/agent>
-- **Checked against `openclaw` 2026.9.5 on 2026-09-20.** Flags came from `--help`; the JSON envelope,
-  the stdout/stderr split, exit code `1` and the default approval policy came from real runs; the skill
-  limits and the frontmatter contract were read from the installed package. Exit codes `0` and `2` are
-  documented but were not reproduced, because a successful delegation needs provider credentials.
-  `reference.md` states the provenance of each claim.
+- **Checked against `openclaw` 2026.9.5 on 2026-09-20 (binary), and against the official documentation
+  on 2026-11-05 (not run against the latest build, 2026.11.1).** Flags, the JSON envelope, the
+  stdout/stderr split, exit code `1` and the default approval policy came from real runs on 2026.9.5.
+  The exit-code table, `--timeout` semantics, `--config-override` and the extra envelope keys come from
+  <https://docs.openclaw.ai/cli/agent> and were not reproduced. `reference.md` states the provenance of
+  each claim.

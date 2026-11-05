@@ -1,4 +1,4 @@
-> **Documented, not run against a binary.** Checked against `docs.devin.ai` on 2026-09-19. `devin --help` is the only authority. On an unrecognized flag or rejected value, re-read `--help`, use what exists, and report that this skill needs updating.
+> **Documented, not run against a binary.** Checked against `docs.devin.ai` on 2026-11-05. Install: `curl -fsSL https://cli.devin.ai/install.sh | bash`. The commands reference lists the `dangerous` permission mode; the permissions page omits it. `devin --help` is the only authority. On an unrecognized flag or rejected value, re-read `--help`, use what exists, and report that this skill needs updating.
 
 ## Authentication
 

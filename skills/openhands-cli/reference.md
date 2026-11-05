@@ -1,25 +1,34 @@
 # OpenHands CLI — reference
 
-> **Checked against the official OpenHands documentation on 2026-09-19. Not run against an installed
-> binary — confirm with `openhands --help` before trusting a flag.**
+> **Checked against the official documentation on 2026-11-05; not run against an installed binary.**
+> Latest release on PyPI: `openhands` 1.16.0. Confirm with `openhands --help` before trusting a flag.
+>
+> **Maintenance status:** the official headless page says "The OpenHands CLI is no longer actively
+> maintained" and points to Agent Canvas. The GitHub repo is not archived and was last pushed
+> 2026-10-22. The signals conflict.
+
+## Install
+
+`uv tool install openhands --python 3.12` (Python 3.12+, uv 0.11.6 or newer), or
+`curl -fsSL https://install.openhands.dev/install.sh | sh`. A Docker route also exists. Source:
+<https://docs.openhands.dev/openhands/usage/cli/installation>.
 
 ## Authentication
 
-Configured via environment variables. `LLM_API_KEY` supplies the provider key; there is no separate
-`omp login`-style command documented for headless auth.
+The official installation page says the CLI prompts for the required LLM settings on first run and
+stores them in `~/.openhands/agent_settings.json`. No separate headless login command is documented.
 
 ## Models
 
-No CLI command to list available models is documented. Configure the model with environment variables:
+No CLI command to list available models is documented. Official installation page: LLM settings live
+in `~/.openhands/agent_settings.json`, are asked for on first run, and are reused later. Upgrading from
+a pre-1.0.0 CLI needs the settings set up again. The official headless page does not say how a headless
+run selects its model, so configure it once interactively first.
 
-- `LLM_MODEL` — provider-prefixed identifier, e.g. `openhands/<identifier>` (via the OpenHands-hosted
-  provider) or `<provider>/<identifier>` for a direct provider.
-- `LLM_API_KEY` — the corresponding API key.
-- `LLM_BASE_URL` — optional custom endpoint.
-
-On first interactive run, OpenHands walks through choosing a provider and model and persists the choice
-to `~/.openhands/settings.json`; `--override-with-envs` forces `LLM_MODEL`/`LLM_BASE_URL` from the
-environment to take precedence over that saved configuration for a given run. For capability and price
+Earlier versions of this card named `LLM_MODEL`, `LLM_API_KEY`, `LLM_BASE_URL` and an
+`--override-with-envs` flag. **The official docs mention none of them.** DeepWiki (third-party,
+source-derived) says no such variables or flag exist. They were removed here. Confirm with
+`openhands --help`. For capability and price
 comparisons, check [Artificial Analysis](https://artificialanalysis.ai/) and the vendor's own
 documentation, since no fixed model list is published here.
 
@@ -32,7 +41,6 @@ documentation, since no fixed model list is published here.
 | `-f`, `--file` | Load a task description from a file. |
 | `--json` | Enable structured JSONL output streaming events (actions and observations). |
 | `--resume` | Resume a previous conversation. |
-| `--override-with-envs` | Force `LLM_MODEL`/`LLM_BASE_URL` env vars to override saved settings. |
 
 One of `-t`/`--task` or `-f`/`--file` is required to run headless — there is no bare positional prompt
 form.
@@ -53,14 +61,19 @@ None beyond the top-level flags are documented in the sources used here.
 
 | Component | Path |
 |---|---|
-| Persisted settings (after interactive first run) | `~/.openhands/settings.json` |
+| LLM settings (after interactive first run) | `~/.openhands/agent_settings.json` |
+| CLI preferences | `~/.openhands/cli_config.json` |
+| MCP servers | `~/.openhands/mcp.json` |
+| Conversation history | `~/.openhands/conversations` |
+
+All four paths are from the official installation page.
 
 ## Documentation
 
 - Vendor documentation: <https://docs.openhands.dev/openhands/usage/cli/headless> and
-  <https://docs.openhands.dev/openhands/usage/llms/openhands-llms>
-- **Checked against the official documentation on 2026-09-19. Not run against an installed binary —
-  confirm with `openhands --help` before trusting a flag.**
+  <https://docs.openhands.dev/openhands/usage/cli/installation>
+- **Checked against the official documentation on 2026-11-05; not run against an installed binary**
+  (PyPI `openhands` 1.16.0). Confirm with `openhands --help` before trusting a flag.
 
 ## Delegation Checklist
 

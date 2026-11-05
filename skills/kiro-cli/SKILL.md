@@ -130,6 +130,8 @@ loudly.
 ### Binary and prompt form
 
 - **Binary:** `kiro-cli`
+- **Install:** `curl -fsSL https://cli.kiro.dev/install | bash`. The docs list no Homebrew or npm option.
+- **Auth for headless runs:** set the `KIRO_API_KEY` environment variable. The docs say headless mode requires it. API keys need a paid tier.
 - **Prompt form:** **positional**, on the `chat --no-interactive` subcommand: `kiro-cli chat
   --no-interactive "prompt"`. Reference a file directly with **`@path`** — no space after the `@`
   (e.g. `@src/auth.rs`, `@./relative/path`, `@"path with spaces.txt"`, `@dir/` for a directory tree).
@@ -141,25 +143,30 @@ loudly.
 |---|---|
 | Run once and exit | `chat --no-interactive "prompt"` |
 | List available models | `chat --list-models` (supports `--format json`) |
+| Pick the agent harness | `--v2`, `--v3`, or `--agent-engine <v1\|v2\|v3>`. CLI 3.0.0 and later start V3 by default when no harness is named. |
+| Machine-readable output | `--output-format stream-json` (JSON Lines on stdout). Needs V2 or V3, so add `--v3`. Plain text is the default. |
 | Fail if MCP servers don't come up | `--require-mcp-startup` — exits with code 3 if MCP servers don't start or report status within a 30-second window; without the flag, startup problems are only logged and execution continues |
 
-No dedicated `text`/`json` output-format flag beyond `--list-models --format json` was found documented.
+Example from the docs: `kiro-cli chat --v3 --no-interactive --trust-all-tools --output-format stream-json "..."`.
 
 ### Approvals and permissions
 
 `--trust-all-tools` auto-approves all tool calls without prompting — the docs explicitly flag that this
-includes arbitrary shell execution ("use with caution"). `--trust-tools=<comma-list>` (e.g.
-`read,grep,write`) grants granular auto-approval instead, and the docs recommend it over
-`--trust-all-tools` on least-privilege grounds. **What happens if neither flag is passed and a tool needs
-approval during `--no-interactive` is NOT DOCUMENTED** — AWS's own docs do not state the fallback
-(stall, error, or silent exit 0). Do not assume any of the three; pass an explicit trust flag rather than
-relying on undocumented default behavior.
+includes arbitrary shell execution ("use with caution"). `--trust-tools=<comma-list>` grants granular
+auto-approval instead, and the docs recommend it in headless V3. Non-interactive V3 matches **exact
+internal tool IDs**; the docs example is `--trust-tools=read_file,grep_search`. CLI 2.x accepts its own
+tool names. `--trust-tools` cannot approve a Hook request.
+
+**Without a trust flag, the docs say a V3 sub-agent's tool call is denied** with "[denied] tool
+permission approval is not supported in non-interactive mode. Use --trust-all-tools to auto-approve."
+A Hook confirmation is also denied without `--trust-all-tools`. The docs do not spell out the general
+case for the main agent, so pass an explicit trust flag rather than rely on it.
 
 ### Models and how to list them
 
 Run **`kiro-cli chat --list-models`** (add `--format json` for machine-readable output). Selection is
-`--model <alias>` on `chat`; the permanent default is set with `kiro-cli settings
-chat.defaultModel <alias>`.
+`--model <alias>` on `chat`. A `chat.defaultModel` setting is mentioned in the docs only as a value
+`--model` overrides; setting it with `kiro-cli settings chat.defaultModel <alias>` is unverified.
 
 If the user names a model, use it. Otherwise ask the binary first. Kiro bills by a **credit-based
 subscription** (Free/Pro/Pro+/Pro Max/Power tiers, each with a monthly credit allotment; add-on credits
@@ -180,18 +187,20 @@ work. Users can also define custom agents (`kiro-cli agent create|edit|validate|
 
 ```bash
 kiro-cli chat --no-interactive "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" \
-  --trust-all-tools --model <alias> 2>&1
+  --trust-all-tools --v3 --model <alias> 2>&1
 ```
 
 ### Prompt examples
 
 - **Implement:** `kiro-cli chat --no-interactive "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | VERIFICATION: [test_command] | OUTPUT: [format]" --trust-all-tools`
-- **Investigate:** `kiro-cli chat --no-interactive "GOAL: Map how [feature] works | SCOPE: [paths] | OUTPUT: concise file:line map" --agent "Default" --trust-tools=read,grep`
+- **Investigate:** `kiro-cli chat --no-interactive "GOAL: Map how [feature] works | SCOPE: [paths] | OUTPUT: concise file:line map" --agent "Default" --v3 --trust-tools=read_file,grep_search`
 - **Refactor:** `kiro-cli chat --no-interactive "GOAL: Refactor [area] for better performance | SCOPE: [paths] | VERIFICATION: [test_command] | OUTPUT: summary of edits" --trust-all-tools`
 
 ### Docs and reference
 
 - Delegation checklist, agent/model tables, config paths: [reference.md](reference.md)
 - Vendor documentation: <https://kiro.dev/docs/cli/headless/> and <https://kiro.dev/docs/reference/cli-commands/>
-- **Checked against the official Kiro (kiro.dev) documentation on 2026-09-19. Not run against an
-  installed binary — confirm with `kiro-cli --help` before trusting a flag.**
+- **Checked against the official Kiro (kiro.dev) documentation on 2026-11-05; not run against an
+  installed binary.** The docs describe CLI 3.0.0 or later. `kiro-cli` is not installed here (the local
+  `kiro` command is the IDE launcher). Confirm with `kiro-cli --help` before trusting a flag. The
+  30-second MCP window, the built-in agent list and the billing figures are unverified.

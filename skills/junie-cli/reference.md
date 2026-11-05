@@ -1,7 +1,11 @@
 # Junie CLI — reference
 
-> **Checked against the official JetBrains documentation on 2026-09-19. Not run against an installed
-> binary — confirm with `junie --help` before trusting a flag.**
+> **Checked against `junie` build 888.212 `--help` (captured output) on 2026-11-05.** Docs-only items
+> were not run. Confirm with `junie --help` before trusting a flag.
+
+## Install
+
+macOS/Linux: `curl -fsSL https://junie.jetbrains.com/install.sh | bash`. Windows: `powershell -NoProfile -Command "iex (irm 'https://junie.jetbrains.com/install.ps1')"`. Source: <https://junie.jetbrains.com/docs/junie-cli.html>.
 
 ## Authentication
 
@@ -21,22 +25,21 @@ There is no `junie models` subcommand — list available aliases with `junie --h
 |------|---------|
 | (positional prompt) | The documented headless prompt form. |
 | `--task <text>` | Explicit flag alternative to the positional prompt. |
-| `--prompt` | Starts an **interactive** session with this text as the pre-submitted first turn — not the headless form. |
+| `--prompt` | **Docs only — not in build 888.212's `--help`.** JetBrains describes it as opening an interactive session with this text as the first turn; it is never the headless form. |
 | `-a`, `--auth` | Provide the Junie API token. |
 | `--model` | Specify the model alias. |
-| `--review` | Start a code review task. |
-| `--merge [branch]` | Resolve merge conflicts with the specified branch/commit. |
-| `--rebase` | Resolve rebase conflicts. |
-| `--output-format` | `text` (default), `json`, or `json-stream`. |
+| `--output-format` | `text` (default) or `json`. Build 888.212 accepts only these two. |
 | `--input-format` | `text` or `json`, for piped input. |
 | `--json-output-file <path>` | Save JSON output to a file. |
 | `-p`, `--project <path>` | Path to the project directory. |
-| `--session-id <id>` | Resume or target a specific session. |
-| `--resume` | Resume the most recent session, or the one named by `--session-id`. |
+| `--session-id <id>` | Follow up a previously executed session. |
+| `-t`, `--timeout <int>` | Time limit in milliseconds (non-interactive). |
+| `--skip-update-check` | Skip the automatic update check on startup. Useful for CI or automation. |
 | `--brave` | Toggle Brave Mode — **interactive mode only**, cannot force auto-approval in a headless run. |
-| `--sandbox` | OS-level command sandboxing — currently limited to development/nightly/experimental builds. |
 
-There are no `chat`/`review` subcommands — review/merge/rebase are flags on the base `junie` binary.
+JetBrains' parameters page still lists `--review`, `--merge`, `--rebase`, `--resume` and
+`--output-format json-stream`. Build 888.212 does not accept them. Check `junie --help` before use.
+There are no `chat`/`review` subcommands.
 Slash commands (`/model`, `/brave`, `/sandbox`, `/account`, `/mcp`, `/extensions`, `/settings`, etc.)
 exist only inside interactive sessions.
 
@@ -59,14 +62,12 @@ Fine-grained control below that lives in the **Action Allowlist**, `~/.junie/all
 session specifically is not spelled out verbatim in the docs — most likely it resolves the same
 "trusted by design" way, but this is inferred, not confirmed.
 
-`--sandbox` / `/sandbox` (OS-level command sandboxing via `sandbox-runtime`/`srt`) exists to make Brave
-Mode safer, but is currently only available in development/nightly/experimental builds — not in EAP or
-release builds. Do not rely on it as a currently-usable safety net.
+The docs describe `/sandbox` (OS-level command sandboxing) for development/nightly builds only. Build
+888.212 has no `--sandbox` flag. Do not rely on it as a safety net.
 
 ## Subcommands
 
-None in the traditional sense — `--review`, `--merge`, `--rebase` are flags on the base `junie` binary,
-not separate verbs.
+None. Everything is a flag on the base `junie` binary.
 
 ## Configuration and paths
 

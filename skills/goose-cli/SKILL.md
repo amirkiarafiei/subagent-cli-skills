@@ -125,6 +125,7 @@ loudly.
 ### Binary and prompt form
 
 - **Binary:** `goose`
+- **Install:** `curl -fsSL https://github.com/aaif-goose/goose/releases/download/stable/download_cli.sh | bash` (macOS, Linux). Homebrew: `brew install block-goose-cli`. Windows steps are on the vendor install page.
 - **Prompt form:** **flag**, after the `run` subcommand. `goose run` is described as "Execute
   commands from an instruction file or stdin" and takes the task either way:
   - `-t`, `--text <TEXT>` — the prompt inline
@@ -207,8 +208,9 @@ GOOSE_MODE=auto goose run -i ./task.md --no-session --quiet --max-turns 60
 
 - Flags, models, modes, skills and paths: [reference.md](reference.md)
 - Vendor documentation: <https://goose-docs.ai/docs/>
-- **Verified against `goose` 1.51.0 on 2026-09-21** by running `--help`, `run --help`,
-  `skills --help`, `skills list` and `info`. Flags came from the binary. `GOOSE_MODE` and its default
-  are from the vendor's configuration and headless docs — the variable is not mentioned in `--help`.
-  A model turn was not completed, because that needs provider credentials. Note the vendor moved:
-  docs are now at `goose-docs.ai` and the repository org is `aaif-goose`.
+- **Checked on 2026-11-05.** Flags were last run against `goose` 1.51.0 (`--help`, `run --help`,
+  `skills --help`, `skills list`, `info`). Latest release is v1.57.0; goose is not installed here, so
+  the flags were not re-run on it. Install commands come from the vendor docs. `GOOSE_MODE` and its
+  default are from the vendor's configuration and headless docs — the variable is not in `--help`.
+  A model turn was not completed, because that needs provider credentials. The vendor moved: docs are
+  at `goose-docs.ai` and the repository org is `aaif-goose`.

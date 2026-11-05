@@ -1,4 +1,4 @@
-> **Checked against the official Cursor documentation on 2026-09-19. Not run against an installed binary — confirm with `agent --help` before trusting a flag.**
+> **Checked against `cursor-agent` 2026.06.04 `--help` on 2026-11-05.** Install: `curl https://cursor.com/install -fsS | bash` (vendor installation page).
 
 ## Authentication
 
@@ -37,11 +37,11 @@ with `--model <model>`. New installs default to automatic model routing. Search 
 | `--approve-mcps` | Automatically approve all MCP servers. |
 | `--trust` | Trust the workspace without prompting (headless mode only). |
 
-**Unanswered approval, documented behavior:** confirmed from the official headless docs — **without
-`--force`/`--yolo`, changes are only proposed, not applied.** This is not a stall and not an error:
-the agent still prints its response in `-p` mode, but file edits and other confirmation-gated
-actions are silently skipped rather than made. For a delegation that must change files,
-`--force`/`--yolo` is required; a report-only run can simply omit it.
+**Unanswered approval:** `agent --help` says `-p` "has access to all tools, including write and
+shell", and does not say what happens to a command that needs approval when `--force` is absent. The
+vendor headless docs say changes are only proposed without `--force`; the help does not confirm that,
+so do not rely on it for a no-edit run. `--mode plan` and `--mode ask` are read-only per `--help`, but this skill does not use them for delegation. For a delegation
+that must change files, pass `--force`/`--yolo`.
 
 ## Subcommands
 

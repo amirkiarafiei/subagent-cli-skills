@@ -126,6 +126,7 @@ loudly.
 ### Binary and prompt form
 
 - **Binary:** `copilot`
+- **Install:** `npm install -g @github/copilot` (needs Node.js 22 or later). Other documented routes: `brew install --cask copilot-cli` and `curl -fsSL https://gh.io/copilot-install | bash`.
 - **Prompt form:** **flag.** The prompt is the value of `-p` / `--prompt`, e.g.
   `copilot -p "prompt text"` — "execute a prompt in non-interactive mode; the CLI runs the prompt
   and exits when done." A bare `copilot` with no `-p` opens the interactive interface and never
@@ -145,14 +146,14 @@ loudly.
 
 - **`--allow-all`** (alias **`--yolo`**) — grants all permissions (tools and URL fetches).
 - **`--allow-all-tools`** — narrower: allows every *tool* to run without per-call confirmation, but
-  does not by itself grant URL access.
+  not paths or URLs. `copilot --help` calls it "required for non-interactive mode" (env
+  `COPILOT_ALLOW_ALL`), so every `-p` run needs it, or `--allow-all`.
 - **`--allow-tool=<TOOL>`**, **`--allow-url=<URL>`** — grant only specific tools/URLs; the official
   docs recommend this narrower form over `--allow-all` outside a sandbox.
 - **`--deny-tool=<TOOL>`**, **`--deny-url=<URL>`** — explicit denials.
-- **What happens with nobody to answer:** not explicitly documented for the case where a call falls
-  outside every allow flag in headless mode. Do not rely on a graceful denial — pass `--allow-all`
-  (or the precise `--allow-tool`/`--allow-url` set the task needs) before running headless so the
-  question never comes up.
+- **What happens with nobody to answer:** not documented for a call outside every allow flag in
+  headless mode. Do not rely on a graceful denial. Pass `--allow-all`, or `--allow-all-tools` with
+  `--deny-tool` limits, before you run headless. `--allow-tool` alone is not enough for `-p`.
 
 ### Models and how to list them
 
@@ -182,7 +183,7 @@ copilot -p "[task]" --agent=<agent-name> --allow-all -s 2>&1
 ### Prompt examples
 
 - **Implement:** `copilot -p "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [constraints] | VERIFICATION: [test_command] | OUTPUT: [format]" --allow-all -s`
-- **Investigate:** `copilot -p "GOAL: Map how [feature] works | SCOPE: [paths] | CONSTRAINTS: report only, no edits | OUTPUT: concise file:line map" --allow-tool=read --allow-tool=grep -s`
+- **Investigate:** `copilot -p "GOAL: Map how [feature] works | SCOPE: [paths] | CONSTRAINTS: report only, no edits | OUTPUT: concise file:line map" --allow-all-tools --deny-tool=write --deny-tool=shell -s`
 - **Audit:** `copilot -p "GOAL: Audit the codebase for security issues | SCOPE: [paths] | CONSTRAINTS: report only, no edits | OUTPUT: security report" --allow-all -s`
 
 ### Docs and reference
@@ -191,8 +192,7 @@ copilot -p "[task]" --agent=<agent-name> --allow-all -s 2>&1
 - Vendor documentation:
   <https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-programmatic-reference>
   and <https://docs.github.com/copilot/concepts/agents/about-copilot-cli>
-- **Checked against the official GitHub documentation on 2026-09-19. Not run against an installed
-  binary — confirm with `copilot --help` before trusting a flag.** Note: the previous version of
-  this card used `--yolo` and `--allow-all-tools` together as if they were both required; the
-  official docs treat `--allow-all` (aliased `--yolo`) as the single broad grant, with
-  `--allow-all-tools` as a narrower tools-only variant.
+- **Checked against `copilot` 1.0.73 `--help` on 2026-11-05 (npm latest is 1.0.105; not re-checked
+  against it).** The **Investigate** example takes its flags from that help. The help does not say
+  that `--deny-tool` wins over `--allow-all-tools`, so the prompt also says "report only, no edits".
+  `--allow-all` (alias `--yolo`) is the single broad grant; `--allow-all-tools` covers tools only.

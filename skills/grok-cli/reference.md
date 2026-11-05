@@ -1,7 +1,11 @@
 # Grok CLI — reference
 
-> **Checked against the official xAI documentation on 2026-09-19. Not run against an installed binary —
-> confirm with `grok --help` before trusting a flag.**
+> **Checked against the official xAI documentation on 2026-11-05; not run against an installed binary.**
+> The docs show no version number. Confirm with `grok --help` before trusting a flag.
+
+## Install
+
+macOS/Linux: `curl -fsSL https://x.ai/cli/install.sh | bash`. Windows: `irm https://x.ai/cli/install.ps1 | iex`. Source: <https://docs.x.ai/build/overview>.
 
 ## Authentication
 
@@ -20,7 +24,7 @@ it uses marketing names, not CLI identifiers.
 
 | Flag | Purpose |
 |------|---------|
-| `-p`, `--single <PROMPT>` | Send one prompt and exit. The prompt is a flag value, not positional. |
+| `-p <PROMPT>` | Send one prompt and exit. The prompt is a flag value, not positional. |
 | `--output-format <fmt>` | `plain`, `json` (one object on completion), `streaming-json` (newline-delimited events). |
 | `-m`, `--model <MODEL>` | Model ID for this run (see `grok models`). |
 | `--effort <LEVEL>` | Reasoning effort. Accepted levels not documented — check `--help`. |
@@ -41,8 +45,8 @@ documented — judge success by output, not status alone.
 ## Approvals and permissions
 
 `--always-approve` skips ordinary permission prompts; documented deny rules, hooks, and some shell `ask`
-rules still apply on top of it. `--yolo` is **not** a current CLI flag — it survives only as a legacy
-`yolo = true` key in `config.toml`, superseded by `permission_mode` / `--always-approve`. Narrower
+rules still apply on top of it. The vendor reference lists `--yolo` as an alias of `--always-approve`. A legacy
+`yolo = true` key in `config.toml` is superseded by `permission_mode` / `--always-approve`. Narrower
 options: `--allow <RULE>` / `--deny <RULE>` (both interactive and headless), `--sandbox <PROFILE>`
 (flag exists; profile values undocumented).
 
@@ -102,7 +106,7 @@ and other agents.
 | Relocate home | `$GROK_HOME` env var |
 | Global skills | `~/.grok/skills/` |
 | Marketplaces | `~/.grok/plugins/known_marketplaces.json` |
-| Sessions | not documented — no page states an explicit session-storage directory |
+| Sessions | `~/.grok/sessions` (headless sessions made or resumed with `--session-id`, `--resume` or `--continue`) |
 
 ## Documentation
 

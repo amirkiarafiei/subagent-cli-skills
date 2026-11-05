@@ -126,6 +126,8 @@ loudly.
 ### Binary and prompt form
 
 - **Binary:** `qwen`
+- **Install:** `npm install -g @qwen-code/qwen-code@latest` (Node 22+), or `brew install qwen-code`, or the
+  quick-install script on the official page <https://qwenlm.github.io/qwen-code-docs/en/users/quickstart/>.
 - **Prompt form:** **flag.** The prompt is the value of `-p`/`--prompt "prompt"`. Content can also be
   piped in, e.g. `cat file.ts | qwen -p "summarize"`.
 
@@ -136,8 +138,7 @@ loudly.
 | Run once and exit | `-p`, `--prompt "prompt"` |
 | Output format | `--output-format text\|json\|stream-json` |
 | Streamed input | `--input-format stream-json` |
-| Wall-clock / call limits | `--max-wall-time`, `--max-tool-calls`, `--max-subagent-depth`, `--deadline` |
-| Reasoning depth | `--effort <level>` |
+| Wall-clock / call / turn limits | `--max-wall-time`, `--max-tool-calls`, `--max-session-turns` |
 
 ### Approvals and permissions
 
@@ -167,7 +168,7 @@ control that separately, and untrusted delegated work should still run in a disp
 No model-listing command is documented for this CLI. Select with `--model <identifier>`; there is no
 fixed, stable set of accepted strings recorded here — current identifiers split roughly into a
 coding-tuned tier for implementation and a higher-reasoning tier for complex architecture, but exact
-names shift often. `--fallback-model <identifier>` sets a fallback if the primary is unavailable.
+names shift often.
 Search the web and consult [Artificial Analysis](https://artificialanalysis.ai/) for current
 identifiers, pricing, and benchmarks before picking one; if the user names a model, use it as given.
 
@@ -189,5 +190,7 @@ qwen -p "GOAL: [goal] | DECISIONS: [decisions] | SCOPE: [paths] | CONSTRAINTS: [
 - Flags, approval modes, skills, JSON output: [reference.md](reference.md)
 - Vendor documentation: <https://qwenlm.github.io/qwen-code-docs/en/users/features/approval-mode/> and
   <https://qwenlm.github.io/qwen-code-docs/en/users/configuration/settings/>
-- **Checked against the official Qwen Code documentation on 2026-09-19. Not run against an installed
-  binary — confirm with `qwen --help` before trusting a flag.**
+- **Checked against the official documentation on 2026-11-05; not run against an installed binary.**
+  Latest release on npm: `@qwen-code/qwen-code` 0.26.7. The headless page documents exit codes `53`
+  (turn cap exceeded), `55` (budget abort) and `130` (SIGINT); it has no full table. Confirm with
+  `qwen --help` before trusting a flag.

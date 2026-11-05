@@ -1,7 +1,14 @@
 # Qoder CLI — reference
 
-> **Checked against the official Qoder documentation on 2026-09-19. Not run against an installed
-> binary — confirm with `qodercli --help` before trusting a flag.**
+> **Checked against `qodercli` 1.1.20 `--help` on 2026-11-05** (the version installed here). The latest
+> published version is 1.1.83 (npm `@qoder-ai/qodercli`) and was not run. Items not visible in
+> `--help` come from the official documentation and are marked.
+
+## Install
+
+`curl -fsSL https://qoder.com/install | bash` (recommended native build), or
+`npm install -g @qoder-ai/qodercli` (legacy, Node 20+). Windows commands and details:
+<https://docs.qoder.com/cli/installation>.
 
 ## Authentication
 
@@ -22,7 +29,7 @@ names and credit costs change frequently and are not reproduced here.
 | Ultimate | `--model ultimate` | Complex system design, deep reasoning |
 | Performance | `--model performance` | Core features, architecture, refactoring |
 | Efficient | `--model efficient` | Basic code gen, tests, daily Q&A |
-| Lite | `--model lite` | Quick validation, basic logic (free for Team users) |
+| Lite | `--model lite` | Quick validation, basic logic (docs say free for Team users; unverified) |
 
 ### Frontier models
 
@@ -34,21 +41,22 @@ will go stale.
 
 | Flag | Purpose |
 |------|---------|
-| `-p`, `--print` (also `--prompt`) | Execute prompt and exit (non-interactive). |
+| `-p`, `--print` | Boolean: print the response and exit (non-interactive). The prompt is the positional `[query]`. There is **no `--prompt` option**. |
+| `-i`, `--prompt-interactive <text>` | Run the prompt, then continue interactively. Not for delegation. |
 | `-o`, `--output-format` | Output format: `text` (default), `json`, `stream-json`. |
 | `--list-models` | Print available models without opening the TUI. |
 | `-m`, `--model` | Specify model tier or a frontier model name. |
 | `--reasoning-effort` | Thinking depth: `low`, `medium`, `high`, `xhigh`, `max`. |
 | `--context-window` | Max context in tokens. |
-| `--yolo` | Skip permission checks — shorthand for `--permission-mode bypass_permissions`. |
-| `--dangerously-skip-permissions` | Same as `--yolo`. |
-| `--permission-mode` | `default`, `plan`, `auto`, `bypass_permissions`, `accept_edits`, `dont_ask` (case-insensitive; `bypassPermissions` etc. also accepted). |
+| `--dangerously-skip-permissions` | Bypass all permission checks (`--help`). Documented as equivalent to `--permission-mode bypass_permissions`. |
+| `--yolo` | Same effect; accepted but **hidden from `--help`** in 1.1.20 (documented in the CLI reference). |
+| `--permission-mode` | `default`, `accept_edits`, `auto`, `bypass_permissions`, `dont_ask` are listed by `--help`. `plan` is accepted by the validator and the docs but omitted from `--help`. |
 | `-w` | Specify workspace directory. |
-| `--worktree [name]` | Start in a separate Git worktree, with auto-merge. |
+| `--worktree [name]` | Start in a new git worktree. |
 | `--tools` | Restrict to specific built-in tools (`""` disables all, `default` allows all). |
 | `--allowed-tools` | Allow only specified tools (e.g. `Read,Grep,Bash`). |
 | `--disallowed-tools` | Disallow specified tools. |
-| `--max-turns` | Limit maximum dialog turns. |
+| `--max-turns` | Limit maximum dialog turns (documented; hidden from `--help` in 1.1.20). |
 
 ## Approvals and permissions
 
@@ -64,9 +72,9 @@ will go stale.
 | `plan` | Legacy compatibility mode: `default` plus a read-only work state (disableable via config) — do not use for delegation |
 
 **Headless default, stated explicitly by the vendor:** "Headless (`-p`/`--prompt`): Auto-deny. No
-interaction available; `ask` becomes `deny`." A plain `-p` run with no `--permission-mode` set will
-therefore silently refuse anything gated under `default` — pass `--yolo` /
-`--dangerously-skip-permissions` for delegation that must act, or `dont_ask` for the same deny-everything
+interaction available; `ask` becomes `deny`." (The binary has no `--prompt` option; use `-p`.) A plain
+`-p` run with no `--permission-mode` set will therefore silently refuse anything gated under
+`default` — pass `--dangerously-skip-permissions` (or the hidden `--yolo`) for delegation that must act, or `dont_ask` for the same deny-everything
 behavior made explicit. Non-default modes only take effect in trusted directories; in an untrusted
 directory, Qoder falls back to `default`.
 
@@ -85,6 +93,8 @@ directory, Qoder falls back to `default`.
 | `update` | Self-update. |
 | `remote-control` | Remote control. |
 | `status` | Status info. |
+| `security` | Scan source code for security issues (in `--help`). |
+| `sites` | Listed in the CLI reference; not in 1.1.20 `--help`. |
 | `feedback` | Send feedback. |
 | `wiki` | Wiki helper. |
 
@@ -115,8 +125,8 @@ pages consulted — confirm with `qodercli skills --help`.
 - Vendor documentation: <https://docs.qoder.com/cli/cli-reference>,
   <https://docs.qoder.com/en/cli/permissions>, <https://docs.qoder.com/en/cli/model>,
   <https://docs.qoder.com/cli/subagent>
-- **Checked against the official documentation on 2026-09-19. Not run against an installed binary —
-  confirm with `qodercli --help` before trusting a flag.**
+- **Checked against `qodercli` 1.1.20 `--help` and the official documentation on 2026-11-05.** Latest
+  published: 1.1.83 (not run). Confirm with `qodercli --help` before trusting a flag.
 
 ## Delegation Checklist
 

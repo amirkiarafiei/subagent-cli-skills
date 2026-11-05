@@ -1,7 +1,14 @@
 # Qwen-Code CLI — reference
 
-> **Checked against the official Qwen Code documentation on 2026-09-19. Not run against an installed
-> binary — confirm with `qwen --help` before trusting a flag.**
+> **Checked against the official documentation on 2026-11-05; not run against an installed binary.**
+> Latest release on npm: `@qwen-code/qwen-code` 0.26.7. Confirm with `qwen --help` before trusting a
+> flag.
+
+## Install
+
+`npm install -g @qwen-code/qwen-code@latest` (Node 22+), `brew install qwen-code`, or the quick-install
+script. Source: <https://qwenlm.github.io/qwen-code-docs/en/users/quickstart/>. Restart the terminal,
+run `qwen`, then use `/auth`.
 
 ## Authentication
 
@@ -10,8 +17,7 @@
 
 ## Models
 
-No model-listing command is documented. Select with `--model <identifier>`; `--fallback-model
-<identifier>` sets a fallback if the primary is unavailable. No fixed catalog of accepted strings is
+No model-listing command is documented. Select with `--model <identifier>`. No fixed catalog of accepted strings is
 reproduced here — identifiers and tiers change frequently. Current offerings split roughly into a
 coding-tuned tier for implementation and a higher-reasoning ("thinking") tier for complex architecture;
 confirm current names and pricing via the web and
@@ -26,15 +32,11 @@ names directly.
 | `--output-format` | | `text`, `json`, `stream-json`. |
 | `--input-format` | | `stream-json`, for streamed input. |
 | `--model` | | Specify the model to use. |
-| `--fallback-model` | | Fallback model identifier. |
 | `--approval-mode` | | `plan`, `default`, `auto-edit`, `auto`, `yolo` — see Approvals below. |
 | `--yolo` | | Shorthand for `--approval-mode yolo`. |
-| `--effort` | | Reasoning effort level. |
 | `--max-wall-time` | | Wall-clock limit for the run. |
 | `--max-tool-calls` | | Cap on tool calls in the run. |
-| `--max-subagent-depth` | | Cap on nested subagent delegation depth. |
-| `--deadline` | | Hard deadline for the run. |
-| `--sandbox-image` | | Sandbox image to run tool execution in. |
+| `--max-session-turns` | | Cap on session turns. |
 | `--include-directories` | | Extra directories to include in context. |
 | `--disabled-slash-commands` | | Disable specific slash commands. |
 | `--core-tools` | | Restrict to specific core tools. |
@@ -47,7 +49,13 @@ names directly.
 | `--verbose` | | Enable detailed logging for debugging scripts. |
 | `--include-partial-messages` | | Include partial/streamed message chunks in output. |
 
-Not documented in the sources used here: a general exit-code table.
+**Exit codes (headless page):** `53` when the turn cap is exceeded, `55` for a budget abort
+(`FatalBudgetExceededError`), `130` on SIGINT. The page has no full table.
+
+**Flags no longer documented.** The current headless page does not list `--deadline`, `--effort`,
+`--max-subagent-depth`, `--fallback-model` or `--sandbox-image`, and says the first four do not appear
+there. An earlier version of this card listed them. They may be removed or only undocumented. **Do not
+use them until `qwen --help` confirms them.**
 
 ## Approvals and permissions
 
@@ -72,7 +80,7 @@ out in the docs consulted — treat it as an undefined stall risk and always pas
 
 `--yolo` only skips approval prompts; it does **not** enable a sandbox. Sandboxing is a separate,
 explicit opt-in via `--sandbox`, the `QWEN_SANDBOX` environment variable, or `tools.sandbox` in
-settings, and `--sandbox-image` sets which image that sandbox uses. Untrusted delegated work should
+settings. Untrusted delegated work should
 still run inside one of these rather than relying on `--yolo` alone.
 
 ## Subcommands
@@ -92,7 +100,9 @@ Qwen Code loads Agent Skills from `SKILL.md` files.
 |---|---|
 | Personal (user-level) | `~/.qwen/skills/` |
 | Project-level | `.qwen/skills/` |
+| Cross-agent | `.agents/skills/` and `~/.agents/skills/` are also read; `.qwen/skills` wins on a name clash |
 
+Entries in the `skills.directories` setting also apply.
 Frontmatter requires `name` (non-empty string matching `/^[\p{L}\p{N}_:.-]+$/u`) and `description`
 (non-empty string describing what the skill does and when to use it); `priority` is optional.
 Recommended convention: lowercase ASCII with hyphens for shareable skill names. Auto-managed skills
@@ -111,8 +121,8 @@ auto-removed.
 - Vendor documentation: <https://qwenlm.github.io/qwen-code-docs/en/users/features/approval-mode/>,
   <https://qwenlm.github.io/qwen-code-docs/en/users/features/skills/>,
   <https://qwenlm.github.io/qwen-code-docs/en/users/configuration/settings/>
-- **Checked against the official documentation on 2026-09-19. Not run against an installed binary —
-  confirm with `qwen --help` before trusting a flag.**
+- **Checked against the official documentation on 2026-11-05; not run against an installed binary**
+  (npm `@qwen-code/qwen-code` 0.26.7). Confirm with `qwen --help` before trusting a flag.
 
 ## Delegation Checklist
 
